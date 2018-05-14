@@ -1,0 +1,21 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=EPI-GTK
+Name[es]=EPI-GTK
+Name[ca_ES@valencia]=EPI-GTK
+Name[ca_ES.UTF-8@valencia]=EPI-GTK
+Comment=Program to install/uninstall applications
+Comment[es]=Programa para instalar/desinstalar aplicaciones 
+Comment[ca_ES@valencia]=Programa per a instalar/desinstalar aplicacions 
+Comment[ca_ES.UTF-8@valencia]=Programa per a instalar/desinstalar aplicacions 
+GenericName=EPI GTK
+Type=Application
+Exec=epi-gtk %F
+TryExec=epi-gtk
+Icon=epi-gtk
+Terminal=false
+StartupNotify=true
+NoDisplay=true
+Categories=GNOME;GTK;Utility;
+MimeType=application/easy-package-installer

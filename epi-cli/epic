@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+import sys
+
+from clint import arguments
+from clint.textui import puts, indent, colored
+
+from epicli import EPIC
+
+def usage():
+	puts("Usage")
+	with indent(4):
+		puts("epic [FLAGS...] ACTION")
+		puts("Actions")
+		with indent(4):	
+			puts("showinfo PATH APP_EPI_FILE")
+			puts("install PATH APP_EPI_FILE")
+			puts("uninstall PATH APP_EPÌ_FILE")
+
+		puts("Flags")
+		with indent(4):
+			puts("-h --help : Show help")
+			puts("-u --unattended: Run the install/uninstall without prompting for user confirmation")
+
+	sys.exit(1)
+
+#def usage	
+		
+if __name__ == '__main__':
+	args = arguments.Args().copy
+	mode=False
+
+	if args.contains(["-h","--help"]) or len(args.all) == 0 :
+		usage()		
+	if args.contains(["-u","--unattended"]):
+		mode=True
+		index = args.first(["-u","--unattended"])
+		args.pop(index)
+
+	action = args.pop(0)
+	app_file=args.get(0)
+	if app_file ==None:
+		usage()
+
+	epic = EPIC(args.get(0))
+	if action == "showinfo":
+		sys.exit(epic.showInfo())
+	elif action=="install":
+		sys.exit(epic.install(mode))	
+	elif action=="uninstall":
+		sys.exit(epic.uninstall(mode))
+	else:
+		usage()		

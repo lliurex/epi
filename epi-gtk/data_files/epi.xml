@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+   <mime-type type="application/easy-package-installer">
+     <comment>EPI Package</comment>
+     <glob pattern="*.epi"/>
+   </mime-type>
+</mime-info>

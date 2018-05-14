@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-06 13:31+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:298
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:462
+msgid "Install"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:303
+msgid "Reinstall"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:883
+msgid "Application already installed"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:885
+msgid "Application epi file does not exist"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:887
+msgid "You need root privileges"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:889
+msgid "Internet connection not detected"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:891
+msgid "Gathering Information..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:893
+msgid "Downloading application..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:895
+msgid "Preparing installation..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:897
+msgid "Installing application..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:899
+msgid "Ending the installation..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:901
+msgid "Installation completed successfully"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:903
+msgid "Installation aborted. Error ending installation"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:905
+msgid "Installation aborted. Error installing application"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:907
+msgid "Installation aborted. Error preparing system"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:909
+msgid "Installation aborted. Unable to download package"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:911
+msgid "Do you want uninstall the application?"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:913
+msgid "Uninstall application..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:915
+msgid "Application successfully uninstalled"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:917
+msgid "Uninstalled process ending with errors"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/EpiBox.py:157
+msgid "Press to view application information"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/EpiBox.py:159
+msgid "Info not availabled"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/ChooserBox.py:76
+msgid "Please choose a epi file"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:21
+msgid "Choose epi file to install/uninstall the application:"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:72
+msgid "..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:105
+msgid "Application to install"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:158
+msgid "(D) Addicitional application required"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:354
+msgid "Checking system..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:497
+msgid "Uninstall"
+msgstr ""

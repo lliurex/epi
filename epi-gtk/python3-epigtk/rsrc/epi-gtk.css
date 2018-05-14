@@ -1,0 +1,113 @@
+
+	GtkLabel {
+		font: Roboto;
+	}
+	
+	#OPTION_LABEL {
+		color: #707070;
+		font: Roboto Light;
+
+	}
+
+	#MSG_LABEL {
+
+		color: #3366cc;
+		font: Roboto Bold 11;
+			
+	}	
+
+
+	#DEPEND_LABEL {
+
+		color: #707070;
+		font: Roboto Bold 9;
+			
+	}	
+
+	#MSG_ERROR_LABEL {
+
+		color: #CC0000;
+		font: Roboto Bold 11; 
+	}
+	
+	#MSG_CORRECT_LABEL {
+			color: #43a047;
+			font: Roboto Bold 11;
+
+	}
+		
+    #WINDOW{
+		
+		background-color: #f1f1f1;
+		
+	}
+
+
+	#INFO_APP_BUTTON {
+			border-width: 5px;
+			border-radius: 0px;
+			padding: 0px 0px;
+			box-shadow: none;
+			border-color: #f4c20d;
+			
+			color: white;
+			background-image:-gtk-gradient (linear,	left top, left bottom, from (#f4c20d),  to (#f4c20d));
+			text-shadow: none;
+			
+	}
+		
+	#INFO_APP_BUTTON:hover {
+		border-color: #f7d045;
+		background-image:-gtk-gradient (linear,	left top, left bottom, from (#f7d045),  to (#f7d045));
+		box-shadow: -0.5px 3px 3px #aaaaaa;
+	}	
+
+		
+	#APP_BOX {
+		background-color: #ffffff	;
+		box-shadow: -0.5px 3px 2px #cdcdcd;
+		
+	}
+	
+	#APP_BOX:hover {
+		box-shadow: -0.5px 3px 2px #cacaca;
+	}
+	
+	
+	#TITLE {
+		
+			color:#3366cc;
+			font: Roboto 18;
+		}
+		
+	#FULL_DESCRIPTION {
+		
+			color: #707070;
+			font: Roboto 11;
+		}
+		
+	#ROBOTO_MEDIUM_GRAY{
+			color: #A0A0A0;
+			font: Roboto 14;
+		}
+		
+	#SHORT_DESCRIPTION{
+			color: #3366cc;
+			font: Roboto Light 12;
+		}
+	
+	#ITEM_LIST {
+		background-image:-gtk-gradient (linear,	0 0, 0 1, 
+			
+				color-stop(0, rgba(255,255,255,1)),
+				color-stop(0.1, rgba(255,0,0,1)),
+				color-stop(0.2, rgba(0,255,0,1)),
+				color-stop(0.3, rgba(0,0,255,1)),
+				color-stop(0.4, rgba(255,255,0,1)),
+				color-stop(0.5, rgba(255,0,255,1)),
+				color-stop(0.6, rgba(0,255,255,1)),
+				color-stop(0.7, rgba(0,0,0,1)),
+				
+				color-stop(1, rgba(255,255,255,1))
+			);
+	}
