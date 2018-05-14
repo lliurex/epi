@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+case $1 in 
+
+     configure)
+     	update-mime-database /usr/share/mime || true
+	gtk-update-icon-cache /usr/share/icons/hicolor -f || true
+	
+     ;;
+esac
+
+#DEBHELPER#
+exit 0
