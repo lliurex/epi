@@ -104,7 +104,9 @@ class MainWindow:
 		self.epiBox.terminal_scrolled.hide()
 		self.epiBox.viewport.hide()
 		
+		self.eulaBox=self.core.eulaBox
 		self.install_dep=True
+		self.eula_accepted=True
 		self.final_column=0
 		self.final_row=0
 
@@ -133,7 +135,7 @@ class MainWindow:
 	def connect_signals(self):
 		
 		self.main_window.connect("destroy",self.quit)
-		self.apply_button.connect("clicked",self.install_process)
+		self.apply_button.connect("clicked",self.apply_button_clicked)
 		self.uninstall_button.connect("clicked",self.uninstall_process)
 		self.return_button.connect("clicked",self.go_back)
 		self.next_button.connect("clicked",self.go_forward)
@@ -193,6 +195,7 @@ class MainWindow:
 	def pulsate_checksystem(self):
 
 		error=False
+		aditional_info=""
 
 		if not self.checking_system_t.launched:
 			self.checking_system_t.start()
@@ -201,7 +204,7 @@ class MainWindow:
 
 		if self.checking_system_t.done:
 
-			if self.connection:
+			if self.connection[0]:
 				if self.order>0:
 					if not self.required_root:
 						self.load_info()
@@ -213,7 +216,7 @@ class MainWindow:
 							msg_code=0
 							msg=self.get_msg_text(msg_code)
 							self.epiBox.terminal_label.set_text(msg)
-							self.show_apply_uninstall_buttons()
+						self.show_apply_uninstall_buttons()
 						self.stack.set_visible_child_name("epiBox")	
 
 						return False
@@ -222,18 +225,25 @@ class MainWindow:
 						msg_code=2	
 				else:
 					error=True
-					msg_code=1
+					if self.valid_json:
+						msg_code=1
+					else:
+						msg_code=18	
 					
 			else:
 				error=True
 				msg_code=3
+				aditional_info=self.connection[1]
 								
 
 		if error:
 			self.loadingBox.loading_spinner.stop()
 			self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")	
 			msg_error=self.get_msg_text(msg_code)
-			self.write_log(msg_error)
+			if aditional_info!="":
+				self.write_log(msg_error+":"+aditional_info)
+			else:
+				self.write_log(msg_error)	
 			self.loadingBox.loading_label.set_text(msg_error)
 			return False
 
@@ -250,14 +260,17 @@ class MainWindow:
 		time.sleep(1)
 		self.connection=self.core.epiManager.check_connection()
 		
-		if self.connection:
-			self.core.epiManager.read_conf(self.epi_file)
+		if self.connection[0]:
+			self.valid_json=self.core.epiManager.read_conf(self.epi_file)
 			epi_loaded=self.core.epiManager.epiFiles
 			order=len(epi_loaded)
 			if order>0:
 				self.core.epiManager.check_root()
 				self.core.epiManager.get_pkg_info()
 				self.required_root=self.core.epiManager.required_root()
+				self.required_eula=self.core.epiManager.required_eula()
+				if len(self.required_eula)>0:
+					self.eula_accepted=False
 				self.checking_system_t.done=True
 				self.load_epi_conf=self.core.epiManager.epiFiles
 				self.order=len(self.load_epi_conf)
@@ -314,11 +327,16 @@ class MainWindow:
 		status=self.load_epi_conf[0]["status"]
 
 		if status=='availabled':
-			self.apply_button.set_label(_("Install"))
+
+			if not self.eula_accepted:
+				self.apply_button.set_label(_("Accept Eula and Install"))
+			else:	
+				self.apply_button.set_label(_("Install"))
 			self.apply_button.set_sensitive(True)
 			self.uninstall_button.hide()
 
 		else:
+			self.eula_accepted=True
 			self.apply_button.set_label(_("Reinstall"))
 			self.apply_button.set_sensitive(True)
 			if remove:
@@ -400,11 +418,36 @@ class MainWindow:
 	#def spinner_sync						
 
 
-	def install_process(self,wigdet):
+	def apply_button_clicked(self,widget):
+
+		if self.eula_accepted:
+			self.install_process()
+		else:
+			self.eula_order=len(self.required_eula)-1
+			self.eulas_tocheck=self.required_eula.copy()
+			self.accept_eula()
+
+	#def apply_button_clicked
+	
+
+	def accept_eula(self):
+
+		if len(self.eulas_tocheck)>0:
+				self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])
+		else:
+			self.eula_accepted=True
+			self.write_log("Eula accepted")
+			self.eulaBox.eula_window.hide()
+			self.install_process()
+
+	#def accept_eula
+
+	def install_process(self):
 
 		self.sp_cont=0
 		self.epiBox.terminal_scrolled.show()
 		self.epiBox.viewport.show()
+		self.epiBox.manage_vterminal(True,False)
 		self.init_install_process()
 		self.apply_button.set_sensitive(False)
 		self.uninstall_button.set_sensitive(False)
@@ -516,10 +559,13 @@ class MainWindow:
 																msg=self.get_msg_text(9)
 																self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
 																self.epiBox.terminal_label.set_text(msg)
+																self.epiBox.manage_vterminal(False,True)
 																self.write_log_terminal('install')
 																self.load_epi_conf[0]["status"]="installed"
 																self.write_log(msg)
 																self.show_apply_uninstall_buttons()
+																self.core.epiManager.remove_repo_keys()
+
 																return False
 															return False
 
@@ -544,6 +590,7 @@ class MainWindow:
 										
 
 		if error:
+			self.epiBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
 			self.epiBox.terminal_label.set_name("MSG_ERROR_LABEL")
 			self.epiBox.terminal_label.set_text(msg_error)
@@ -551,6 +598,7 @@ class MainWindow:
 			self.core.epiManager.zerocenter_feedback(params[0],"install",False)
 			self.write_log_terminal('install')
 			self.write_log(msg_error)
+			self.core.epiManager.remove_repo_keys()
 			return False
 
 		if self.add_repository_keys_launched:
@@ -736,7 +784,7 @@ class MainWindow:
 		
 
 		if response==Gtk.ResponseType.YES:
-
+			self.epiBox.manage_vterminal(True,False)
 			self.sp_cont=0
 			self.epiBox.terminal_scrolled.show()
 			self.epiBox.viewport.show()
@@ -771,6 +819,7 @@ class MainWindow:
 				self.check_remove()
 			
 			if self.check_remove_done:
+				self.epiBox.manage_vterminal(False,True)
 				
 				if self.remove:
 					msg=self.get_msg_text(16)
@@ -948,7 +997,8 @@ class MainWindow:
 			msg=_("Application successfully uninstalled")
 		elif code==17:
 			msg=_("Uninstalled process ending with errors")
-		
+		elif code==18:
+			msg=_("Application epi file it is not a valid json")
 
 		return msg	
 

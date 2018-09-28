@@ -246,7 +246,14 @@ class EpiBox(Gtk.VBox):
 			self.core.mainWindow.stack.set_visible_child_name("infoBox")
 
 
-	#def show_info_clicked		
+	#def show_info_clicked
+
+	def manage_vterminal(self,enabled_input,sensitive):
+
+		self.vterminal.set_input_enabled(enabled_input)
+		self.vterminal.set_sensitive(sensitive)	
+
+	#def manage_vterminal		
 
 #class EpiBox
 

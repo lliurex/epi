@@ -47,12 +47,16 @@ class EpiManager:
 	
 	def check_connection(self):
 	
+		result=[]
 		try:
 			res=urllib.request.urlopen("http://lliurex.net")
-			return True
+			result.append(True)
 			
-		except:
-			return False	
+		except Exception as e:
+			result.append(False)
+			result.append(str(e))
+			
+		return result	
 
 	#def check_connection	
 
@@ -61,18 +65,23 @@ class EpiManager:
 
 		if os.path.exists(epi_file):
 			f=open(epi_file)
-			epi_load=json.load(f)
-			epi_conf=self.epi_base.copy()
-			f.close()
-			epi_conf.update(epi_load)
-			self.epiFiles[self.order]=epi_conf
-			self.zomando_name[self.order]=epi_conf["zomando"]
 			try:
-				if epi_conf["depends"]!="":
-					self.order=self.order+1
-					self.read_conf(epi_conf["depends"])
-			except :
-				pass		
+				epi_load=json.load(f)
+				epi_conf=self.epi_base.copy()
+				f.close()
+				epi_conf.update(epi_load)
+				self.epiFiles[self.order]=epi_conf
+				self.zomando_name[self.order]=epi_conf["zomando"]
+				try:
+					if epi_conf["depends"]!="":
+						self.order=self.order+1
+						self.read_conf(epi_conf["depends"])
+				except :
+					pass
+			except:
+				return False
+
+		return True			
 
 	#def read_conf		
 
@@ -253,6 +262,26 @@ class EpiManager:
 	#def required_root		
 
 
+	def required_eula(self):
+
+		eulas=[]
+
+		for item in self.epiFiles:
+			cont=0
+			for pkg in self.epiFiles[item]["pkg_list"]:
+				try:
+					if pkg["eula"]!="":
+						tmp={}
+						tmp["order"]=item
+						tmp["pkg_name"]=pkg["name"]
+						tmp["eula"]=pkg["eula"]
+						eulas.append(tmp)
+				except:
+					pass		
+					
+		return eulas
+
+	#def required_eula	
 	
 	def check_update_repos(self):
 		
@@ -301,6 +330,7 @@ class EpiManager:
 		if self.force32:
 			if platform.architecture()[0]=='64bit':
 				cmd='dpkg --add-architecture i386; '
+				self.update=True
 								
 		self.arquitecture=True
 		return cmd		
@@ -399,7 +429,7 @@ class EpiManager:
 					if self.type=="deb":
 						name=item["name"]+".deb"
 						tmp_file=os.path.join(self.download_path,name)
-					else:
+					elif self.type=="file":
 						try:
 							tmp_file=os.path.join(self.download_path,item["alias_download"])
 						except Exception as e:	
@@ -411,7 +441,7 @@ class EpiManager:
 					if os.path.exists(tmp_file):
 						cmd=cmd+'rm -f '+ tmp_file +';'
 					self.download_folder["name"]=tmp_file
-					cmd=cmd+'wget ' +url+version + ' --progress=bar:force -O ' + tmp_file +'; '
+					cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
 
 				cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 			
@@ -503,7 +533,7 @@ class EpiManager:
 		if self.type=="apt":
 
 			update_repos=self.check_update_repos()
-			cmd=update_repos+add_i386 + "LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive apt-get install --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --yes "
+			cmd=add_i386+update_repos+"LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive apt-get install --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --yes "
 			for item in self.epi_conf["pkg_list"]:
 				app=item["name"]
 				cmd=cmd + app +" "
@@ -512,14 +542,14 @@ class EpiManager:
 			
 		elif self.type=="deb":
 			
-			cmd=add_i386 + "dpkg -i "
+			cmd="dpkg -i "
 			for item in self.epi_conf["pkg_list"]:
 				name=item["name"]+".deb"
 				pkg=self.download_folder["name"]
 				cmd=cmd+pkg +" "
 
 			
-		else:
+		elif self.type=="file":
 			self.token_result_install=tempfile.mkstemp("_result")
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):

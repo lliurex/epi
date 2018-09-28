@@ -9,6 +9,7 @@ from . import ChooserBox
 from . import LoadingBox
 from . import EpiBox
 from . import InfoBox
+from . import EulaBox
 from . import settings
 
 class Core:
@@ -45,6 +46,7 @@ class Core:
 		self.loadingBox=LoadingBox.LoadingBox()
 		self.epiBox=EpiBox.EpiBox()
 		self.infoBox=InfoBox.InfoBox()
+		self.eulaBox=EulaBox.EulaBox()
 				
 			
 			# Main window must be the last one
