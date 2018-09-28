@@ -26,7 +26,8 @@ Description:Easy package installer (EPI). CLI tool
 
 Package: epi-gtk
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, gir1.2-webkit-3.0
+Recommends: epi-cli (= ${binary:Version})
 Description:Easy package installer (EPI). GUI tool
   Provides the graphic version (EPI-gtk) of EPI
 

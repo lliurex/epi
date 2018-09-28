@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-06 13:31+0100\n"
-"PO-Revision-Date: 2017-11-06 13:31+0100\n"
+"POT-Creation-Date: 2018-09-05 09:45+0200\n"
+"PO-Revision-Date: 2018-09-05 09:46+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -18,96 +18,104 @@ msgstr ""
 "X-Generator: Poedit 1.8.7.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:298
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:462
+#: epi-gtk/python3-epigtk/MainWindow.py:332
+msgid "Accept Eula and Install"
+msgstr "Aceptar Licencia e Instalar"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:334
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:576
 msgid "Install"
 msgstr "Instalar"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:303
+#: epi-gtk/python3-epigtk/MainWindow.py:339
 msgid "Reinstall"
 msgstr "Reinstalar"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:883
+#: epi-gtk/python3-epigtk/MainWindow.py:975
 msgid "Application already installed"
 msgstr "La aplicación ya esta instalada"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:885
+#: epi-gtk/python3-epigtk/MainWindow.py:977
 msgid "Application epi file does not exist"
 msgstr "El fichero .epi de la aplicación no existe"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:887
+#: epi-gtk/python3-epigtk/MainWindow.py:979
 msgid "You need root privileges"
 msgstr "Necesita permisos de administrador"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:889
+#: epi-gtk/python3-epigtk/MainWindow.py:981
 msgid "Internet connection not detected"
 msgstr "No detectada conexión a Internet"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:891
+#: epi-gtk/python3-epigtk/MainWindow.py:983
 msgid "Gathering Information..."
 msgstr "Recopilando información..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:893
+#: epi-gtk/python3-epigtk/MainWindow.py:985
 msgid "Downloading application..."
 msgstr "Descargando la aplicación..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:895
+#: epi-gtk/python3-epigtk/MainWindow.py:987
 msgid "Preparing installation..."
 msgstr "Preparando la instalación..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:897
+#: epi-gtk/python3-epigtk/MainWindow.py:989
 msgid "Installing application..."
 msgstr "Instalando la aplicación..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:899
+#: epi-gtk/python3-epigtk/MainWindow.py:991
 msgid "Ending the installation..."
 msgstr "Finalizando la instalación..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:901
+#: epi-gtk/python3-epigtk/MainWindow.py:993
 msgid "Installation completed successfully"
 msgstr "Instalación completada correctamente"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:903
+#: epi-gtk/python3-epigtk/MainWindow.py:995
 msgid "Installation aborted. Error ending installation"
 msgstr "Instalación cancelada. Error finalizando la instalación"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:905
+#: epi-gtk/python3-epigtk/MainWindow.py:997
 msgid "Installation aborted. Error installing application"
 msgstr "Instalación cancelada. Error instalando la aplicación"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:907
+#: epi-gtk/python3-epigtk/MainWindow.py:999
 msgid "Installation aborted. Error preparing system"
 msgstr "Instalación cancelada. Error preparando el sistema"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:909
+#: epi-gtk/python3-epigtk/MainWindow.py:1001
 msgid "Installation aborted. Unable to download package"
 msgstr "Instalación cancelada. Imposible descargar la aplicación"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:911
+#: epi-gtk/python3-epigtk/MainWindow.py:1003
 msgid "Do you want uninstall the application?"
 msgstr "¿Desea desinstalar la aplicación?"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:913
+#: epi-gtk/python3-epigtk/MainWindow.py:1005
 msgid "Uninstall application..."
 msgstr "Desinstalando la aplicación..."
 
-#: epi-gtk/python3-epigtk/MainWindow.py:915
+#: epi-gtk/python3-epigtk/MainWindow.py:1007
 msgid "Application successfully uninstalled"
 msgstr "Aplicación desinstalada correctamente"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:917
+#: epi-gtk/python3-epigtk/MainWindow.py:1009
 msgid "Uninstalled process ending with errors"
 msgstr "El proceso de desinstalación ha finalizado con errores"
 
-#: epi-gtk/python3-epigtk/EpiBox.py:157
+#: epi-gtk/python3-epigtk/MainWindow.py:1011
+msgid "Application epi file it is not a valid json"
+msgstr "El fichero .epi de la aplicación no es un json válido"
+
+#: epi-gtk/python3-epigtk/EpiBox.py:159
 msgid "Press to view application information"
 msgstr "Haga clic para ver la información de la aplicación"
 
-#: epi-gtk/python3-epigtk/EpiBox.py:159
+#: epi-gtk/python3-epigtk/EpiBox.py:161
 msgid "Info not availabled"
 msgstr "Información no disponible"
 
-#: epi-gtk/python3-epigtk/ChooserBox.py:76
+#: epi-gtk/python3-epigtk/ChooserBox.py:75
 msgid "Please choose a epi file"
 msgstr "Seleccione un fichero epi"
 
@@ -127,10 +135,14 @@ msgstr "Aplicación para instalar"
 msgid "(D) Addicitional application required"
 msgstr "(D) Aplicación adicional requerida"
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:354
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:245
+msgid "Eula for installing "
+msgstr "Acuerdo de licencia de usuario final para instalar "
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:468
 msgid "Checking system..."
 msgstr "Comprobando el sistema..."
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:497
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:611
 msgid "Uninstall"
 msgstr "Desinstalar"

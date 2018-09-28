@@ -9,19 +9,22 @@
 
 	}
 
+	#PKG_NAME{
+		color:#000000;
+		font: Roboto Light;
+	}
+
 	#MSG_LABEL {
 
 		color: #3366cc;
 		font: Roboto Bold 11;
-			
 	}	
-
 
 	#DEPEND_LABEL {
 
 		color: #707070;
 		font: Roboto Bold 9;
-			
+	
 	}	
 
 	#MSG_ERROR_LABEL {

@@ -15,11 +15,14 @@ class EPIC(object):
 	def __init__(self,app):
 
 		self.epicore=EpiManager.EpiManager()
-		self.epicore.read_conf(app)
+		self.valid_json=self.epicore.read_conf(app)
 		signal.signal(signal.SIGINT,self.handler_signal)
 
 		if len(self.epicore.epiFiles)==0:
-			msg_log='APP epi file not exist'
+			if self.valid_json:
+				msg_log='APP epi file not exist'
+			else:
+				msg_log='APP epi file it is not a valid json'	
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
 			sys.exit(1)
@@ -93,7 +96,7 @@ class EPIC(object):
 
 		self.connection=self.epicore.check_connection()
 
-		if self.connection:
+		if self.connection[0]:
 			self.epicore.check_root()
 			self.epicore.get_pkg_info()
 			self.required_root=self.epicore.required_root()
@@ -109,7 +112,7 @@ class EPIC(object):
 				self.write_log(msg_log)
 				check=False
 		else:
-			msg_log="Internet connection not detected"
+			msg_log="Internet connection not detected: "+self.connection[1] 
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
 			check=False
@@ -311,7 +314,6 @@ class EPIC(object):
 									result=self.postinstall_app()
 									if result:
 										self.epicore.zerocenter_feedback(order,'install',result)
-										self.epicore.remove_repo_keys()
 									else:
 										error=True	
 

@@ -1,3 +1,63 @@
+epi (0.2.8) xenial; urgency=medium
+
+  * Fixed po files
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 07 Sep 2018 14:02:41 +0200
+
+epi (0.2.7) xenial; urgency=medium
+
+  * Fixed po files
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 07 Sep 2018 13:38:35 +0200
+
+epi (0.2.6) xenial; urgency=medium
+
+  * Added support to manage EULA
+
+ -- Juan Ramon Pelegrina <juapesai@hotmai.com>  Fri, 07 Sep 2018 12:41:14 +0200
+
+epi (0.2.5) xenial; urgency=medium
+
+  * Configured wget without checking certificate
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 27 Jul 2018 11:47:10 +0200
+
+epi (0.2.4) xenial; urgency=medium
+
+  * Improved vterminal
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 19 Jul 2018 08:39:22 +0200
+
+epi (0.2.3) xenial; urgency=medium
+
+  * Fixed vterminal management
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 18 Jul 2018 12:58:30 +0200
+
+epi (0.2.2) xenial; urgency=medium
+
+  * Added check to validate epi file (json) 
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 27 Jun 2018 12:46:41 +0200
+
+epi (0.2.1) xenial; urgency=medium
+
+  * Removed tmp sources list when it finishes/aborts the installation process
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 19 Jun 2018 13:05:16 +0200
+
+epi (0.2) xenial; urgency=medium
+
+  * Fixed control file
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 14 Jun 2018 09:58:35 +0200
+
+epi (0.1.9) xenial; urgency=medium
+
+  * Fixed add i386 architecture command
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 30 May 2018 10:00:15 +0200
+
 epi (0.1.8) xenial; urgency=medium
 
   * Resized terminal to avoid debconf warning 
