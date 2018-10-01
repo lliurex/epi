@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+case $1 in 
+
+     configure)
+     	systemctl restart rsyslog.service || true
+	systemctl restart syslog.service || true
+
+     ;;
+esac
+
+#DEBHELPER#
+exit 0
