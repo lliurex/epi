@@ -1,41 +1,41 @@
 
 	GtkLabel {
-		font: Roboto;
+		font: 11pt Roboto;
 	}
 	
 	#OPTION_LABEL {
 		color: #707070;
-		font: Roboto Light;
+		font: 11pt Roboto Light;
 
 	}
 
 	#PKG_NAME{
 		color:#000000;
-		font: Roboto Light;
+		font: 11pt Roboto Light;
 	}
 
 	#MSG_LABEL {
 
 		color: #3366cc;
-		font: Roboto Bold 11;
+		font: 11pt Roboto Bold;
 	}	
 
 	#DEPEND_LABEL {
 
 		color: #707070;
-		font: Roboto Bold 9;
+		font: 9pt Roboto Bold;
 	
 	}	
 
 	#MSG_ERROR_LABEL {
 
 		color: #CC0000;
-		font: Roboto Bold 11; 
+		font: 11pt Roboto Bold; 
 	}
 	
 	#MSG_CORRECT_LABEL {
 			color: #43a047;
-			font: Roboto Bold 11;
+			font: 11pt Roboto Bold;
 
 	}
 		
@@ -80,23 +80,23 @@
 	#TITLE {
 		
 			color:#3366cc;
-			font: Roboto 18;
+			font: 18pt Roboto;
 		}
 		
 	#FULL_DESCRIPTION {
 		
 			color: #707070;
-			font: Roboto 11;
+			font: 11pt Roboto;
 		}
 		
 	#ROBOTO_MEDIUM_GRAY{
 			color: #A0A0A0;
-			font: Roboto 14;
+			font: 14pt Roboto;
 		}
 		
 	#SHORT_DESCRIPTION{
 			color: #3366cc;
-			font: Roboto Light 12;
+			font: 12pt Roboto Light;
 		}
 	
 	#ITEM_LIST {
