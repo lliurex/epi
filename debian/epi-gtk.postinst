@@ -4,11 +4,19 @@ set -e
 
 case $1 in 
 
-     configure)
-     	update-mime-database /usr/share/mime || true
+    configure)
+    	update-mime-database /usr/share/mime || true
 	gtk-update-icon-cache /usr/share/icons/hicolor -f || true
 	
-     ;;
+    ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+    	echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+    
 esac
 
 #DEBHELPER#
