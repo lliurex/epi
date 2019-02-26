@@ -68,6 +68,10 @@ class MainWindow:
 		image = Gtk.Image()
 		image.set_from_stock(Gtk.STOCK_APPLY,Gtk.IconSize.MENU)
 		self.apply_button.set_image(image)	
+		self.unlock_button=builder.get_object("unlock_button")
+		image1 = Gtk.Image()
+		image1.set_from_stock(Gtk.STOCK_APPLY,Gtk.IconSize.MENU)
+		self.unlock_button.set_image(image1)
 		self.uninstall_button=builder.get_object("uninstall_button")	
 		image = Gtk.Image()
 		image.set_from_stock(Gtk.STOCK_REMOVE,Gtk.IconSize.MENU)
@@ -97,6 +101,7 @@ class MainWindow:
 
 		self.next_button.hide()
 		self.apply_button.hide()
+		self.unlock_button.hide()
 		self.uninstall_button.hide()
 		self.return_button.hide()
 		self.epiBox.epi_depend_label.hide()
@@ -109,6 +114,8 @@ class MainWindow:
 		self.eula_accepted=True
 		self.final_column=0
 		self.final_row=0
+		self.time_out=5
+		self.retry=0
 
 		if self.epi_file!=None:
 			self.init_process()
@@ -139,6 +146,7 @@ class MainWindow:
 		self.uninstall_button.connect("clicked",self.uninstall_process)
 		self.return_button.connect("clicked",self.go_back)
 		self.next_button.connect("clicked",self.go_forward)
+		self.unlock_button.connect("clicked",self.unlock_clicked)
 	
 		
 	#def connect_signals
@@ -167,9 +175,13 @@ class MainWindow:
 	def init_threads(self):
 
 		self.checking_system_t=threading.Thread(target=self.checking_system)
+		self.unlock_process_t=threading.Thread(target=self.unlock_process)
 		self.checking_system_t.daemon=True
+		self.unlock_process_t.daemon=True
 		self.checking_system_t.launched=False
+		self.unlock_process_t.launched=False
 		self.checking_system_t.done=False
+		self.unlock_process_t.done=False
 
 		GObject.threads_init()
 
@@ -207,18 +219,11 @@ class MainWindow:
 			if self.connection[0]:
 				if self.order>0:
 					if not self.required_root:
-						self.load_info()
-						self.apply_button.show()
-						self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-						if self.load_epi_conf[0]["status"]=="installed":
-							self.epiBox.terminal_label.set_name("MSG_LABEL")
-							self.epiBox.terminal_label.show()
-							msg_code=0
-							msg=self.get_msg_text(msg_code)
-							self.epiBox.terminal_label.set_text(msg)
-						self.show_apply_uninstall_buttons()
-						self.stack.set_visible_child_name("epiBox")	
-
+						if len (self.lock_info)>0:
+							self.load_unlock_panel()
+													
+						else:
+							self.load_info_panel()
 						return False
 					else:
 						error=True
@@ -271,6 +276,8 @@ class MainWindow:
 				self.required_eula=self.core.epiManager.required_eula()
 				if len(self.required_eula)>0:
 					self.eula_accepted=False
+				self.lock_info=self.core.epiManager.check_locks()	
+				self.write_log("Locks info: "+ str(self.lock_info))
 				self.checking_system_t.done=True
 				self.load_epi_conf=self.core.epiManager.epiFiles
 				self.order=len(self.load_epi_conf)
@@ -283,6 +290,148 @@ class MainWindow:
 
 	#def checking_system	
 
+	def load_unlock_panel(self):
+
+		waiting=0
+
+		if "Lliurex-Up" in self.lock_info:
+			self.loadingBox.loading_spinner.hide()
+			self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
+			self.write_log("Lock info: The system is being updated")
+			msg=self.get_msg_text(19)
+			self.loadingBox.loading_label.set_text(msg)
+
+		else:
+			if self.lock_info["wait"]:
+				self.is_working=False
+				self.abort=False
+				self.lock_error=False
+				self.loadingBox.loading_spinner.start()
+				self.write_log("Lock info: Apt or Dpkg are being executed. Checking if they have finished...")
+				msg=self.get_msg_text(20)
+				self.loadingBox.loading_label.set_text(msg)
+				GLib.timeout_add_seconds(5, self.is_worker)
+			else:
+				self.unlock_button.show()
+				self.loadingBox.loading_spinner.hide()
+				self.unlock_button.show()
+				msg=self.get_msg_text(22)
+				self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
+				self.loadingBox.loading_label.set_text(msg)
+
+	#def load_unlock_panel			
+				
+	
+	def is_worker(self):
+	
+		if self.retry<self.time_out:
+			locks=self.core.epiManager.check_locks()
+			if len(locks)>0:
+				self.retry+=5
+			else:
+				self.abort=True
+		else:
+			locks=self.core.epiManager.check_locks()
+			if len(locks)>0:
+				self.loadingBox.loading_spinner.hide()
+				self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
+				if "Lliurex-Up" in self.lock_info:
+					self.write_log("Lock checking finished: The system is being updated")
+					msg=self.get_msg_text(19)
+					self.loadingBox.loading_label.set_text(msg)	
+					return False
+				else:
+					if locks["wait"]:
+						self.write_log("Lock checking finished: Apt or Dpkg are being executed. Wait")
+						msg=self.get_msg_text(21)
+						self.loadingBox.loading_label.set_text(msg)
+						return False
+					else:
+						self.unlock_button.show("Lock checking finished: Apt or Dpkg are blocked")
+						msg=self.get_msg_text(22)
+						self.loadingBox.loading_label.set_text(msg)
+						return False
+			else:
+				self.abort=True			
+
+		if self.abort:
+			self.write_log("Lock checking finished: no locks detected")
+			self.loadingBox.loading_spinner.hide()
+			self.unlock_button.hide()
+			self.load_info_panel()	
+			return False
+		else:
+			return True
+
+	#def is_worker		
+
+	def unlock_clicked(self,widget):
+	
+		self.unlock_button.set_sensitive(False)
+		msg=self.get_msg_text(23)
+		self.loadingBox.loading_label.set_name("MSG_LABEL")
+		self.loadingBox.loading_label.set_text(msg)
+		self.init_threads()
+		self.loadingBox.loading_spinner.show()
+		GLib.timeout_add(5,self.pulsate_unlock_process)
+
+	#def unlock_clicked	
+		
+
+
+	def pulsate_unlock_process(self):
+
+		if not self.unlock_process_t.launched:
+			self.loadingBox.loading_spinner.start()
+			self.unlock_process_t.start()
+			self.unlock_process_t.launched=True
+
+		if self.unlock_process_t.done:
+			self.loadingBox.loading_spinner.hide()
+			self.unlock_button.hide()
+			if self.unlock_result==0:
+				self.write_log("Unlock process ok")
+				self.load_info_panel()
+				return False
+
+			else:
+				msg=self.get_msg_text(24)
+				self.write_log("Unlock process failed: "+str(self.unlock_result))
+				self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
+				
+				self.loadingBox.loading_label.set_text(msg)
+				return False
+
+		if self.unlock_process_t.launched:
+			if not self.unlock_process_t.done:
+				return True
+
+	#pulsate_unlock_process		
+
+	def unlock_process(self):
+	
+		self.unlock_result=self.core.epiManager.unlock_process()
+		self.unlock_process_t.done=True
+
+	#def unlock_process				
+
+
+	def load_info_panel(self):
+
+		self.load_info()
+		self.apply_button.show()
+		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+		if self.load_epi_conf[0]["status"]=="installed":
+			self.epiBox.terminal_label.set_name("MSG_LABEL")
+			self.epiBox.terminal_label.show()
+			msg_code=0
+			msg=self.get_msg_text(msg_code)
+			self.epiBox.terminal_label.set_text(msg)
+		self.show_apply_uninstall_buttons()
+		self.stack.set_visible_child_name("epiBox")	
+
+	#def load_info_panel
+		
 	def check_remove_script(self):
 
 		remove=False
@@ -999,6 +1148,18 @@ class MainWindow:
 			msg=_("Uninstalled process ending with errors")
 		elif code==18:
 			msg=_("Application epi file it is not a valid json")
+		elif code==19:
+			msg=_("The system is being updated. Wait a few minutes and try again")
+		elif code==20:
+			msg=_("Apt or Dpkg are being executed. Checking if they have finished")		
+		elif code==21:	
+			msg=_("Apt or Dpkg are being executed. Wait a few minutes and try again")		
+		elif code==22:
+			msg=_("Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem")	
+		elif code==23:
+			msg=_("Executing the unlocking process. Wait a moment...")	
+		elif code==24:
+			msg=_("The unlocking process has failed")		
 
 		return msg	
 

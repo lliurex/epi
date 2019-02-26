@@ -2,10 +2,11 @@
 
 import os
 import subprocess
+import multiprocessing
 import sys
 import html2text
 import syslog
-
+import time
 import epi.epimanager as EpiManager
 import signal
 signal.signal(signal.SIGINT,signal.SIG_IGN)
@@ -89,7 +90,7 @@ class EPIC(object):
 
 	#def showInfo	
 
-	def checking_system(self,action=None):
+	def checking_system(self,mode,action=None):
 
 		check=True
 		print ('  [EPIC]: Checking system...')
@@ -101,6 +102,9 @@ class EPIC(object):
 			self.epicore.get_pkg_info()
 			self.required_root=self.epicore.required_root()
 			self.required_x=self.check_required_x()
+			self.lock_info=self.epicore.check_locks()
+			msg_log="Lock info :"+str(self.lock_info)
+			self.write_log(msg_log)
 			if self.required_root:
 				msg_log="You need root privileges to " + action + " the application"
 				print ('  [EPIC]: '+msg_log)
@@ -132,7 +136,86 @@ class EPIC(object):
 		else:
 			return False	
 
-	#def check_required_x		
+	#def check_required_x	
+
+
+	def manage_unlock_info(self,mode,action):
+
+		if "Lliurex-Up" in self.lock_info:
+			msg_log="The system is being updated"
+			print ('  [EPIC]: '+msg_log+'. Wait a moment and try again')
+			self.write_log(msg_log)
+			return 0
+
+		else:
+			if self.lock_info["wait"]:
+				msg_loc="Apt or Dpks is being updated"
+				print ('  [EPIC]: '+msg_log+'. Wait a moment and try again')
+				self.write_log(msg_log)
+				return 0
+			else:
+				if mode:
+					msg_log="Apt or Dpkg are blocked"
+					print ('  [EPIC]: '+msg_log+'. Wait a moment and try again')
+					self.write_log(msg_log)	
+					return 0
+				else:
+					response=input('  [EPIC]: Apt or Dpkg seems blocked by a failed previous execution. You want to try to unlock it (yes/no)?').lower()	
+					if response.startswith('y'):
+						self.pulsate_unlocking_process(mode,action)
+					else:
+						msg_log="Unlocking process not executed"
+						print ('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
+						return 0	
+
+	#def manage_unlock_info					
+
+
+	def pulsate_unlocking_process(self,mode,action):
+
+		self.endProcess=False
+		
+		result_queue=multiprocessing.Queue()
+		self.unlocking_t=multiprocessing.Process(target=self.unlocking_process,args=(result_queue,))
+		self.unlocking_t.start()
+		
+
+		progressbar= ["[    ]","[=   ]","[==  ]","[=== ]","[====]","[ ===]","[  ==]","[   =]","[    ]","[   =]","[  ==]","[ ===]","[====]","[=== ]","[==  ]","[=   ]"]
+		i=1
+		while self.unlocking_t.is_alive():
+			time.sleep(0.5)
+			per=i%16
+			print("  [EPIC]: The unlocking process is running. Wait a moment " + progressbar[per],end='\r')
+			#sys.stdout.flush()
+			#sys.stdout.write("\r\33[2K")
+			i+=1
+
+		result=result_queue.get()
+		
+		if result ==0:
+			sys.stdout.flush()
+			msg_log="The unlocking process finished successfully"
+			self.write_log(msg_log)
+			print ('  [EPIC]: '+msg_log)
+			if action=='install':
+				self.install_process(mode)
+			else:
+				self.uninstall_process(mode)	
+		else:
+			msg_log="The unlocking process has failed"
+			print ('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
+			return 1
+
+	#def pulsate_unlocking_process	
+
+
+	def unlocking_process(self,result_queue):
+
+		result_queue.put(self.epicore.unlock_process())
+
+	#def unlocking_process		
 
 	def add_repository_keys(self,order):
 
@@ -273,85 +356,93 @@ class EPIC(object):
 
 	#def postinstall_app			
 
+	def install_process(self,mode):
+
+		self.showInfo(True)
+		error=False
+		if not mode:
+			response=input('  [EPIC]: Do you want to install the application (yes/no)): ').lower()
+		else:
+			response='yes'	
+
+		if response.startswith('y'):
+			msg_log='Installing application by CLI'
+			self.write_log(msg_log)
+			order=len(self.epicore.epiFiles)
+			if order>1:
+				print ('****************************************************************')
+				print ('*********************** INSTALLING DEPENDS *********************')
+				print ('****************************************************************')
+
+			for item in self.epicore.epiFiles:
+				order=order-1
+				self.epicore.zerocenter_feedback(order,'init')
+				if order==0:
+					print ('****************************************************************')
+					print ('******************** INSTALLING APPLICATION ********************')
+					print ('****************************************************************')
+
+				result=self.add_repository_keys(order)
+				if result:
+					result=self.download_app()
+					if result:
+						result=self.preinstall_app()
+						if result:
+							result=self.install_app()
+							if result:
+								result=self.postinstall_app()
+								if result:
+									self.epicore.zerocenter_feedback(order,'install',result)
+								else:
+									error=True	
+
+							else:
+								error=True
+						else:
+							error=True
+								
+					else:
+						error=True
+				else:
+					error=True
+
+				if error:
+					self.epicore.zerocenter_feedback(order,'install',result)
+					self.epicore.remove_repo_keys()
+					return 1
+
+			msg_log='Installation completed successfully'
+			print('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
+			self.epicore.remove_repo_keys()
+			return 0
+
+		else:
+			msg_log='Installation cancelled'
+			print ('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
+			self.epicore.remove_repo_keys()
+			return 0
+
+	#def install_process		
 
 	def install(self,mode):
 
-		checksystem=self.checking_system('install')
-		error=False
-
+		msg_log="Action to execute: Install"
+		self.write_log(msg_log)
+		checksystem=self.checking_system(mode,'install')
 		if checksystem:
-			self.showInfo(True)
-			if not mode:
-				response=input('  [EPIC]: Do you want to install the application (yes/no)): ').lower()
+			if len(self.lock_info)>0:
+				return self.manage_unlock_info(mode,'install')
 			else:
-				response='yes'	
-
-			if response.startswith('y'):
-				msg_log='Installing application by CLI'
-				self.write_log(msg_log)
-				order=len(self.epicore.epiFiles)
-				if order>1:
-					print ('****************************************************************')
-					print ('*********************** INSTALLING DEPENDS *********************')
-					print ('****************************************************************')
-
-				for item in self.epicore.epiFiles:
-					order=order-1
-					self.epicore.zerocenter_feedback(order,'init')
-					if order==0:
-						print ('****************************************************************')
-						print ('******************** INSTALLING APPLICATION ********************')
-						print ('****************************************************************')
-
-					result=self.add_repository_keys(order)
-					if result:
-						result=self.download_app()
-						if result:
-							result=self.preinstall_app()
-							if result:
-								result=self.install_app()
-								if result:
-									result=self.postinstall_app()
-									if result:
-										self.epicore.zerocenter_feedback(order,'install',result)
-									else:
-										error=True	
-
-								else:
-									error=True
-							else:
-								error=True
-								
-						else:
-							error=True
-					else:
-						error=True
-
-					if error:
-						self.epicore.zerocenter_feedback(order,'install',result)
-						self.epicore.remove_repo_keys()
-						return 1
-
-				msg_log='Installation completed successfully'
-				print('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				self.epicore.remove_repo_keys()
-
-
-			else:
-				msg_log='Installation cancelled'
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				self.epicore.remove_repo_keys()
-				return 0
+				return self.install_process(mode)
 
 		else:
 			return 1	
 
 	#def install		
 
-
-	def uninstall_process(self):
+	def uninstall_app(self):
 
 		cmd=self.epicore.uninstall_app(0)
 
@@ -377,50 +468,63 @@ class EPIC(object):
 		else:
 			return True	
 
+
+	#def uninstall_app 	
+
+	def uninstall_process(self,mode):
+
+		self.showInfo(True)
+
+		if self.uninstall=='Yes':
+			if not mode:
+				response=input('  [EPIC]: Do you want to uninstall the application (yes/no)): ').lower()
+			else:
+				response='yes'
+
+			if response.startswith('y'):
+
+				msg_log='Uninstall application by CLI'
+				self.write_log(msg_log)
+
+				result=self.uninstall_app()
+				if result:
+					self.epicore.zerocenter_feedback(0,'uninstall',result)
+					msg_log='Application successfully uninstalled'
+					print('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)
+					return 0
+				else:
+					self.epicore.zerocenter_feedback(0,'uninstall',result)
+					return 1
+			else:
+				msg_log='Uninstall process canceled'
+				print ('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				return 0
+
+		else:
+			msg_log='Uninstall process not availabled'
+			print ('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
+			return 0
+
+					
 	#def uninstall_process				
 
 	def uninstall(self,mode):
 	
-		checksystem=self.checking_system('uninstall')
-		error=False
+		msg_log="Action to execute: Uninstall"
+		self.write_log(msg_log)
+		checksystem=self.checking_system(mode,'uninstall')
 
 		if checksystem:
-			self.showInfo(True)
-			if self.uninstall=='Yes':
-				if not mode:
-					response=input('  [EPIC]: Do you want to uninstall the application (yes/no)): ').lower()
-				else:
-					response='yes'
-
-				if response.startswith('y'):
-
-					msg_log='Uninstall application by CLI'
-					self.write_log(msg_log)
-
-					result=self.uninstall_process()
-					if result:
-						self.epicore.zerocenter_feedback(0,'uninstall',result)
-						msg_log='Application successfully uninstalled'
-						print('  [EPIC]: '+msg_log)
-						self.write_log(msg_log)
-						return 0
-					else:
-						self.epicore.zerocenter_feedback(0,'uninstall',result)
-						return 1
-				else:
-					msg_log='Uninstall process canceled'
-					print ('  [EPIC]: '+msg_log)
-					self.write_log(msg_log)
-					return 0
-		
+			if len(self.lock_info)>0:
+				return self.manage_unlock_info(mode,'uninstall')
 			else:
-				msg_log='Uninstall process not availabled'
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				return 0
- 
+				return self.uninstall_process(mode)
 		else:
-			return 1
+			return 1		
+
 
 	#def uninstall									
 
