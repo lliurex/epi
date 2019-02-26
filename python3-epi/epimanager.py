@@ -12,6 +12,7 @@ import datetime
 import urllib.request
 
 import lliurexstore.storeManager as StoreManager
+import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 
 
 class EpiManager:
@@ -19,7 +20,8 @@ class EpiManager:
 	def __init__(self):
 
 
-		self.storeManager=StoreManager.StoreManager()
+		self.storeManager=StoreManager.StoreManager(autostart=False)
+		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
 		self.epi_sources=os.path.join(self.reposPath,self.sources_list)
@@ -218,7 +220,58 @@ class EpiManager:
 				
 		return "available"	
 
-	#def check_pkg_status					
+	#def check_pkg_status	
+
+
+	def check_locks(self):
+
+		'''
+		0:Detect correct block. Must waiting
+		1:Detect wrong lock. Can be unlock
+		'''
+
+		locks_detect={}
+		locks_info=self.dpkgUnlocker.checkingLocks()
+		cont_unlock=0
+		cont_wait=0
+
+		if locks_info["Lliurex-Up"]==1:
+			locks_detect["Lliurex-Up"]=True
+
+		if locks_info["Dpkg"]!=0:
+			if locks_info["Dpkg"]==2:
+				cont_unlock+=1
+				locks_detect["Dpkg"]=1
+			else:
+				locks_detect["Dpkg"]=0
+				cont_wait+=1	
+
+		if locks_info["Apt"]!=0:
+			if locks_info["Apt"]==2:
+				locks_detect["Apt"]=1
+				cont_unlock+=1
+			else:
+				locks_detect["Apt"]=0
+				cont_wait+=1
+
+		if len(locks_detect)>0:
+			if cont_wait>0:
+				locks_detect["wait"]=True
+			else:
+				locks_detect["wait"]=False
+								
+
+		return locks_detect
+
+	#def check_locks	
+		 				
+	def unlock_process(self):
+	
+		cmd="/usr/sbin/dpkg-unlocker-cli unlock -u"
+		result=subprocess.call(cmd,shell=True,stdout=subprocess.PIPE)
+		return result
+
+	#def unlock_process					
 		
 	def check_root(self):
 
