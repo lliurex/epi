@@ -1,4 +1,4 @@
-[net.lliurex.dpkg-unlocker-cli]
+[net.lliurex.epic]
 Identity=unix-group:sudo;unix-groups:admins
 Action=net.lliurex.epic.pkexec.epic
 ResultAny=auth_self_keep
