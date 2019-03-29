@@ -116,6 +116,7 @@ class MainWindow:
 		self.final_row=0
 		self.time_out=5
 		self.retry=0
+		self.lock_quit=False
 
 		if self.epi_file!=None:
 			self.init_process()
@@ -142,6 +143,7 @@ class MainWindow:
 	def connect_signals(self):
 		
 		self.main_window.connect("destroy",self.quit)
+		self.main_window.connect("delete-event",self.unable_quit)
 		self.apply_button.connect("clicked",self.apply_button_clicked)
 		self.uninstall_button.connect("clicked",self.uninstall_process)
 		self.return_button.connect("clicked",self.go_back)
@@ -569,6 +571,7 @@ class MainWindow:
 
 	def apply_button_clicked(self,widget):
 
+		self.lock_quit=True
 		if self.eula_accepted:
 			self.install_process()
 		else:
@@ -705,6 +708,7 @@ class MainWindow:
 																GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
 															else:
+																self.lock_quit=False
 																msg=self.get_msg_text(9)
 																self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
 																self.epiBox.terminal_label.set_text(msg)
@@ -739,6 +743,7 @@ class MainWindow:
 										
 
 		if error:
+			self.lock_quit=False
 			self.epiBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
 			self.epiBox.terminal_label.set_name("MSG_ERROR_LABEL")
@@ -933,6 +938,7 @@ class MainWindow:
 		
 
 		if response==Gtk.ResponseType.YES:
+			self.lock_quit=True
 			self.epiBox.manage_vterminal(True,False)
 			self.sp_cont=0
 			self.epiBox.terminal_scrolled.show()
@@ -968,6 +974,7 @@ class MainWindow:
 				self.check_remove()
 			
 			if self.check_remove_done:
+				self.lock_quit=False
 				self.epiBox.manage_vterminal(False,True)
 				
 				if self.remove:
@@ -1205,6 +1212,15 @@ class MainWindow:
 		Gtk.main_quit()	
 
 	#def quit	
+
+	def unable_quit(self,widget,event):
+
+		if self.lock_quit:
+			return True
+		else:	
+			return False
+			
+	#def unable_quit	
 
 	def write_log_terminal(self,action):
 
