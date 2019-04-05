@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-26 10:37+0100\n"
-"PO-Revision-Date: 2019-02-26 10:41+0100\n"
+"PO-Revision-Date: 2019-04-05 10:30+0200\n"
 "Last-Translator: lliurex <lliurex16@gmail.com>\n"
 "Language-Team: LliureX Team\n"
 "Language: es\n"
@@ -116,28 +116,32 @@ msgstr "El fitxer .epi de l'aplicació no és un json vàlid"
 #: epi-gtk/python3-epigtk/MainWindow.py:1152
 msgid "The system is being updated. Wait a few minutes and try again"
 msgstr ""
+"S'està actualitzant el sistema. Espereu uns minuts i torneu-ho a intentar"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1154
 msgid "Apt or Dpkg are being executed. Checking if they have finished"
-msgstr ""
+msgstr "S'està executant Apt o Dpkg. S'està comprovant si ha finalitzat "
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1156
 msgid "Apt or Dpkg are being executed. Wait a few minutes and try again"
 msgstr ""
+"S'està executant Apt o Dpkg. Espereu uns minuts i torneu a intentar-ho"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1158
 msgid ""
 "Apt or Dpkg seems blocked by a failed previous execution\n"
 "Click on Unlock to try to solve the problem"
 msgstr ""
+"Apt o Dpkg semblen bloquejats per una execució anterior que ha fallat\n"
+"Feu clic o desbloquegeu per a intentar resoldre el problema"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1160
 msgid "Executing the unlocking process. Wait a moment..."
-msgstr ""
+msgstr "S'està executant al procés de desbloqueig. Espereu un moment..."
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1162
 msgid "The unlocking process has failed"
-msgstr ""
+msgstr "El procés de desbloqueig ha fallat"
 
 #: epi-gtk/python3-epigtk/EpiBox.py:159
 msgid "Press to view application information"
@@ -177,7 +181,7 @@ msgstr "S'està comprovant el sistema..."
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:581
 msgid "Unlock"
-msgstr ""
+msgstr "Desbloqueig"
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:599
 msgid "Uninstall"
