@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Service
+X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/vnd.debian.binary-package
+Actions=installPackage
+
+[Desktop Action installPackage]
+Name=Install package
+Name[ca_ES.UTF-8@valencia]=Instal·lar paquet
+Name[ca_ES@valencia]=Instal·lar paquet
+Name[ca]=Instal·lar paquet
+Name[es]Instalar paquete
+Exec=pkexec epi-package-installer %u
+Icon=epi-gtk
