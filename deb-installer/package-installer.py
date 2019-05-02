@@ -48,7 +48,13 @@ def _get_deb_info(deb):
 		f.close()
 
 		for line in f_lines:
-			debInfo[line.split(":")[0]]=" ".join(line.split(" ")[1:]).rstrip()
+			print(line)
+			if line.startswith(" "):
+				if oldInfo in debInfo.keys():
+					debInfo[oldInfo]=("%s%s"%(debInfo[oldInfo],line)).rstrip()
+			else:
+				debInfo[line.split(":")[0]]=" ".join(line.split(" ")[1:]).rstrip()
+				oldInfo=line.split(":")[0]
 	return (debInfo)
 #def _get_deb_info
 
@@ -80,18 +86,29 @@ def _generate_epi_script(debInfo,deb):
 	tmpDir=os.path.dirname(deb)
 	depends=[]
 	for dep in debInfo['Depends'].split(', '):
-		print(dep)
 		depends.append(dep.split(' ')[0])
 
 	with open("%s/install_script.sh"%tmpDir,'w') as f:
 		f.write("#!/bin/bash\n")
-		f.write("echo Instalando dependencias\n")
 		f.write("case $ACTION in\n")
 		f.write("\tpreinstall)\n")
 		f.write("\t\tapt-get install %s\n"%','.join(depends))
 		f.write("\t\t;;\n")
+		f.write("\tgetinfo)\n")
+		f.write("\t\techo \"%s\"\n"%debInfo['Description'])
+		f.write("\t\t;;\n")
+		f.write("\ttestinstall)\n")
+		f.write("\t\tUNINSTALLABLE=\"\"\n")
+		f.write("\t\tfor pkg in %s\n"%(' '.join(depends)))
+		f.write("\t\tdo\n")
+		f.write("\t\t\tif [ $(apt-cache search --names-only $pkg | wc -l) -eq 0 ]\n")
+		f.write("\t\t\tthen\n")
+		f.write("\t\t\t\tUNINSTALLABLE=$UNINSTALLABLE\",\"$pkg\n")
+		f.write("\t\t\tfi\n")
+		f.write("\t\tdone\n")
+		f.write("\t\techo \"${UNINSTALLABLE/,/}\"\n")
+		f.write("\t\t;;\n")
 		f.write("esac\n")
-		f.write("echo Instaladas\n")
 		f.write("exit 0\n")
 	os.chmod("%s/install_script.sh"%tmpDir,0o755)
 
@@ -120,11 +137,6 @@ def _generate_epi_file(deb):
 				subprocess.run(['sudo','epi-gtk',epiJson])
 		epi_dict={}
 		epi_dict["type"]="localdeb"
-		
-
-
-
-
 #def generate_epi_file
 
 def install_package(epi):
