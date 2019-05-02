@@ -31,3 +31,8 @@ Recommends: epi-cli (= ${binary:Version})
 Description:Easy package installer (EPI). GUI tool
   Provides the graphic version (EPI-gtk) of EPI
 
+Package: epi-local-installer
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk (= ${binary:Version})
+Description:Local package installer for EPI
+
