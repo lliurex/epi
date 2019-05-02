@@ -38,7 +38,8 @@ class EpiManager:
 					"script": {},
 					"depends":"",
 					"zomando":"",
-					"required_root":False
+					"required_root":False,
+					"required_dconf":False
 					}
 
 		#self.read_conf(epi_file)
@@ -460,8 +461,7 @@ class EpiManager:
 		cmd=""
 
 		self.type=self.epi_conf["type"]
-		if self.type !='apt':
-
+		if self.type !='apt' and self.type !='localdeb':
 			self.token_result_download=tempfile.mkstemp("_result_download")
 			
 			if self.type=="file":
@@ -509,7 +509,7 @@ class EpiManager:
 		
 		result=True
 
-		if self.type !='apt':
+		if self.type !='apt' and self.type !='localdeb':
 
 			
 			if os.path.exists(self.token_result_download[1]):
@@ -601,7 +601,13 @@ class EpiManager:
 				pkg=self.download_folder["name"]
 				cmd=cmd+pkg +" "
 
-			
+		elif self.type=="localdeb":
+			cmd="dpkg -i "
+			for item in self.epi_conf["pkg_list"]:
+				name=item["version"]["all"]
+				pkg=os.path.join(item["url_download"],name)
+				cmd=cmd+pkg+ " "
+
 		elif self.type=="file":
 			self.token_result_install=tempfile.mkstemp("_result")
 			script=self.epi_conf["script"]["name"]
