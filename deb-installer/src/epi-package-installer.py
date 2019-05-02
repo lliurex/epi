@@ -56,11 +56,15 @@ def _get_deb_info(deb):
 
 		for line in f_lines:
 			if line.startswith(" "):
-				if oldInfo in debInfo.keys():
-					debInfo[oldInfo]=("%s%s"%(debInfo[oldInfo],line)).rstrip()
+				if oldKey in debInfo.keys():
+					debInfo[oldKey]=("%s%s"%(debInfo[oldKey],line)).rstrip()
 			else:
-				debInfo[line.split(":")[0]]=" ".join(line.split(" ")[1:]).rstrip()
-				oldInfo=line.split(":")[0]
+				key=line.split(":")[0]
+				data=" ".join(line.split(" ")[1:]).rstrip()
+				if key=='Description':
+					data=data+"||"
+				debInfo[key]=data
+				oldKey=key
 	return (debInfo)
 #def _get_deb_info
 
@@ -110,6 +114,11 @@ def _generate_epi_script(debInfo,deb):
 			f.write("case $ACTION in\n")
 			f.write("\tpreInstall)\n")
 			f.write("\t\tapt-get install %s\n"%','.join(depends))
+			f.write("\t\tif [ $? -ne 0 ]\n")
+			f.write("\t\tthen\n")
+			f.write("\t\t\techo Failed to install dependencies\n")
+			f.write("\t\t\texit 1\n")
+			f.write("\t\tfi\n")
 			f.write("\t\t;;\n")
 			f.write("\tgetInfo)\n")
 			f.write("\t\techo \"%s\"\n"%debInfo['Description'])
@@ -166,11 +175,11 @@ def _generate_epi_file(deb):
 				_debug("Launching %s"%epiJson)
 				subprocess.run(['epi-gtk',epiJson])
 			else:
-				subprocess.run(['epi-gtk',"-e"])
+				subprocess.run(['epi-gtk',"--error"])
 		else:
-			subprocess.run(['epi-gtk',"-e"])
+			subprocess.run(['epi-gtk',"--error"])
 	elif retCode:
-		subprocess.run(['epi-gtk',"-e"])
+		subprocess.run(['epi-gtk',"--error"])
 #def generate_epi_file
 
 installFile=sys.argv[1]
