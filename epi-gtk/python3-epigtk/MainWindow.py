@@ -80,11 +80,13 @@ class MainWindow:
 		self.return_button=builder.get_object("return_button")
 		self.chooserBox=self.core.chooserBox
 		self.loadingBox=self.core.loadingBox
+		self.dependsBox=self.core.dependsBox
 		self.epiBox=self.core.epiBox
 		self.infoBox=self.core.infoBox
 
 		self.stack.add_titled(self.chooserBox,"chooserBox","ChooserBox")
 		self.stack.add_titled(self.loadingBox,"loadingBox","LoadingBox")
+		self.stack.add_titled(self.dependsBox,"dependsBox","DependsBox")
 		self.stack.add_titled(self.epiBox,"epiBox", "EpiBox")
 		self.stack.add_titled(self.infoBox,"infoBox","InfoBox")
 
@@ -118,12 +120,17 @@ class MainWindow:
 		self.retry=0
 		self.lock_quit=False
 
+		
 		if self.epi_file!=None:
-			self.init_process()
+			if self.epi_file!="--error":
+				self.init_process()
+				
+			else:	
+				self.deb_error()
 		else:
 			self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-			self.stack.set_visible_child_name("chooserBox")	
-
+			self.stack.set_visible_child_name("chooserBox")
+			
 		
 		
 	#def load_gui
@@ -160,6 +167,21 @@ class MainWindow:
 		self.init_process()
 
 	#def go_forward	
+
+	def deb_error(self):
+
+		msg_log='APP conf file loaded by EPI-GTK: ' + self.epi_file
+		self.write_log(msg_log)
+		msg_log="Error preparing deb processing"
+		self.write_log(msg_log)
+		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+		self.stack.set_visible_child_name("loadingBox")
+		self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")	
+		msg_error=self.get_msg_text(25)
+		self.loadingBox.loading_label.set_text(msg_error)
+
+	#def deb_error	
+
 
 	def init_process(self):
 
@@ -223,10 +245,19 @@ class MainWindow:
 					if not self.required_root:
 						if len (self.lock_info)>0:
 							self.load_unlock_panel()
+							return False
 													
 						else:
-							self.load_info_panel()
-						return False
+							if len(self.test_install)>0:
+								if self.test_install[0]=='1':
+									error=True
+									msg_code=25
+								else:
+									self.load_depends_panel()
+									return False
+							else:		
+								self.load_info_panel()
+								return False
 					else:
 						error=True
 						msg_code=2	
@@ -242,7 +273,7 @@ class MainWindow:
 				msg_code=3
 				aditional_info=self.connection[1]
 								
-
+		
 		if error:
 			self.loadingBox.loading_spinner.stop()
 			self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")	
@@ -279,6 +310,7 @@ class MainWindow:
 				if len(self.required_eula)>0:
 					self.eula_accepted=False
 				self.lock_info=self.core.epiManager.check_locks()	
+				self.test_install=self.core.epiManager.test_install()
 				self.write_log("Locks info: "+ str(self.lock_info))
 				self.checking_system_t.done=True
 				self.load_epi_conf=self.core.epiManager.epiFiles
@@ -433,6 +465,16 @@ class MainWindow:
 		self.stack.set_visible_child_name("epiBox")	
 
 	#def load_info_panel
+
+	def load_depends_panel(self):
+
+		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+		self.dependsBox.deb_depends_label.set_name("MSG_ERROR_LABEL")
+		self.dependsBox.depends_label.set_text(self.test_install)
+		self.stack.set_visible_child_name("dependsBox")
+		self.write_log("Unable to install package. Problems with depends:"+self.test_install)
+
+	#def load_depends_panel
 		
 	def check_remove_script(self):
 
@@ -1171,8 +1213,9 @@ class MainWindow:
 		elif code==23:
 			msg=_("Executing the unlocking process. Wait a moment...")	
 		elif code==24:
-			msg=_("The unlocking process has failed")		
-
+			msg=_("The unlocking process has failed")
+		elif code==25:
+			msg=_("Unable to install the package")
 		return msg	
 
 	#def get_msg_text

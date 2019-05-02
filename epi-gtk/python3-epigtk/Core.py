@@ -7,6 +7,7 @@ from . import IconsManager
 from . import MainWindow
 from . import ChooserBox
 from . import LoadingBox
+from . import DependsBox
 from . import EpiBox
 from . import InfoBox
 from . import EulaBox
@@ -44,6 +45,7 @@ class Core:
 
 		self.chooserBox=ChooserBox.ChooserBox()
 		self.loadingBox=LoadingBox.LoadingBox()
+		self.dependsBox=DependsBox.DependsBox()
 		self.epiBox=EpiBox.EpiBox()
 		self.infoBox=InfoBox.InfoBox()
 		self.eulaBox=EulaBox.EulaBox()

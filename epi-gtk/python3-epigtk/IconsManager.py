@@ -27,8 +27,9 @@ class IconsManager:
 		
 		
 		self.icon_db=Gtk.IconTheme()
-		self.icon_db.set_custom_theme("Vibrancy-Dark-Orange")
-		self.package_icon=self.icon_db.lookup_icon("package",64,Gtk.IconLookupFlags.FORCE_SVG ).get_filename()
+		#self.icon_db.set_custom_theme("Vibrancy-Dark-Orange")
+		#self.package_icon=self.icon_db.lookup_icon("package",64,Gtk.IconLookupFlags.FORCE_SVG ).get_filename()
+		self.package_icon="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.svg"
 		
 	#def init
 
@@ -43,11 +44,11 @@ class IconsManager:
 		
 		ret_icon=self.icon_db.lookup_icon(debian_name,64,Gtk.IconLookupFlags.FORCE_SVG)
 		if ret_icon!=None:
+			
 			return ret_icon.get_filename()
 			
-		
 		if len(icon)>0:
-		
+			
 			for dist in self.dists:
 				# "64x64/" is included in pkg_info["icon"]
 				if "64x64/" not in icon:

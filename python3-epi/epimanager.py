@@ -94,12 +94,12 @@ class EpiManager:
 		pkg_list=[]
 		self.pkg_info={}
 		tmp_list=self.epiFiles.copy()
-
+				
 		for item in tmp_list:
 			pkg_list=[]
 			pkg_list=tmp_list[item]["pkg_list"]
-			
-			info=self.get_store_info(pkg_list,item)
+			type_epi=tmp_list[item]["type"]
+			info=self.get_store_info(pkg_list,item,type_epi)
 
 			cont=0
 
@@ -122,7 +122,7 @@ class EpiManager:
 	#def get_pkg_info				
 							
 
-	def get_store_info(self,pkg_list,order):			
+	def get_store_info(self,pkg_list,order,type_epi):			
 
 			self.getStatus_byscript=False
 			pkg_info={}
@@ -136,40 +136,48 @@ class EpiManager:
 				icon=""
 				debian_name=""
 				component=""
-				try:
-					pkg=item["key_store"]
-					action="info"
-					self.storeManager.execute_action(action,pkg)
-					while self.storeManager.is_action_running(action):
-						time.sleep(0.2)
+				if type_epi!="localdeb":
+					try:
+						pkg=item["key_store"]
+						action="info"
+						self.storeManager.execute_action(action,pkg)
+						while self.storeManager.is_action_running(action):
+							time.sleep(0.2)
 
-					ret=self.storeManager.get_status(action)
+						ret=self.storeManager.get_status(action)
 
-					if ret["status"]==0:
-						data=self.storeManager.get_result(action)
+						if ret["status"]==0:
+							data=self.storeManager.get_result(action)
 
-						if len(data)>0:
+							if len(data)>0:
 
-							description=data["info"][0]["description"]
-							icon=data["info"][0]["icon"]
-							name=data["info"][0]["name"]
-							summary=data["info"][0]["summary"]
-							debian_name=data["info"][0]["package"]
-							component=data["info"][0]["component"]
+								description=data["info"][0]["description"]
+								icon=data["info"][0]["icon"]
+								name=data["info"][0]["name"]
+								summary=data["info"][0]["summary"]
+								debian_name=data["info"][0]["package"]
+								component=data["info"][0]["component"]
 
-							status=self.check_pkg_status(app,order)
-							if not self.getStatus_byscript and status!="installed":
-								if (data["info"][0]["state"]) !="":
-									status=data["info"][0]["state"]
+								status=self.check_pkg_status(app,order)
+								if not self.getStatus_byscript and status!="installed":
+									if (data["info"][0]["state"]) !="":
+										status=data["info"][0]["state"]
 
+							else:
+								status=self.check_pkg_status(app,order)		
 						else:
-							status=self.check_pkg_status(app,order)		
-					else:
+							status=self.check_pkg_status(app,order)	
+					
+					except:
 						status=self.check_pkg_status(app,order)	
-				
-				except:
-					status=self.check_pkg_status(app,order)	
-							
+				else:
+					data=self.get_localdeb_info(app,order)	
+					print(data)	
+					summary=data[0]
+					description=data[1]
+					status=data[2]
+					name=item["name"]
+					debian_name=item["version"]["all"]		
 				
 				pkg_info[app]={}
 				pkg_info[app]["debian_name"]=debian_name
@@ -222,6 +230,38 @@ class EpiManager:
 		return "available"	
 
 	#def check_pkg_status	
+
+	def get_localdeb_info(self,pkg,order):
+
+		summary=""
+		status=""
+		try:
+			script=self.epiFiles[order]["script"]["name"]
+			if os.path.exists(script):
+				cmd=script +' getInfo ' + pkg;
+				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+				poutput=p.communicate()
+				if len(poutput)>0:
+					summary=poutput[0].decode("utf-8").split("\n")[0].split("||")[0]
+					description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
+
+		except:
+			pass
+
+		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		poutput,perror=p.communicate()
+
+		if len(poutput)>0:
+			status="installed"	
+		else:
+			status="available"	
+
+		data=[summary,description,status]
+		
+		return data					
+	
+	#def get_localdeb_info 	
 
 
 	def check_locks(self):
@@ -337,6 +377,25 @@ class EpiManager:
 
 	#def required_eula	
 	
+	def test_install(self):
+
+		test=""
+		try:
+			script=self.epiFiles[0]["script"]["name"]
+			if os.path.exists(script):
+				cmd=script +' testInstall ';
+				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+				poutput=p.communicate()
+				print(len(poutput))
+				if len(poutput)>0:
+					test=poutput[0].decode("utf-8").split("\n")[0]
+		except:
+			pass
+
+		return test	
+
+	#def test_install	
+
 	def check_update_repos(self):
 		
 		#Only update repos if needed
