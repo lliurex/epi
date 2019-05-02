@@ -91,13 +91,13 @@ def _generate_epi_script(debInfo,deb):
 	with open("%s/install_script.sh"%tmpDir,'w') as f:
 		f.write("#!/bin/bash\n")
 		f.write("case $ACTION in\n")
-		f.write("\tpreinstall)\n")
+		f.write("\tpreInstall)\n")
 		f.write("\t\tapt-get install %s\n"%','.join(depends))
 		f.write("\t\t;;\n")
-		f.write("\tgetinfo)\n")
+		f.write("\tgetInfo)\n")
 		f.write("\t\techo \"%s\"\n"%debInfo['Description'])
 		f.write("\t\t;;\n")
-		f.write("\ttestinstall)\n")
+		f.write("\ttestInstall)\n")
 		f.write("\t\tUNINSTALLABLE=\"\"\n")
 		f.write("\t\tfor pkg in %s\n"%(' '.join(depends)))
 		f.write("\t\tdo\n")
@@ -134,7 +134,7 @@ def _generate_epi_file(deb):
 			if epiJson:
 				print(epiJson)
 				_debug("Launching %s"%epiJson)
-				subprocess.run(['sudo','epi-gtk',epiJson])
+				subprocess.run(['epi-gtk',epiJson])
 		epi_dict={}
 		epi_dict["type"]="localdeb"
 #def generate_epi_file
