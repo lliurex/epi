@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Package installer
+Name[ca_ES.UTF-8@valencia]=Instal·la paquets
+Name[ca_ES@valencia]=Instal·la paquets
+Name[ca]=Instal·la paquets
+Name[es]=Instala paquetess
+Comment=Package installer
+Exec=/usr/share/epi/bin/package-installer.py %U
+Terminal=false
+MimeType=application/vnd.debian.binary-package;
+Type=Application
+Icon=package-easy-package-installer.png
+NoDisplay=true
+Comment=
+Categories=

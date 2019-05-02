@@ -301,6 +301,10 @@ class EPIC(object):
 		cmd=self.epicore.install_app()
 
 		if cmd !="":
+			if not self.epicore.epiFiles[0]["required_dconf"]:
+				cmd="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "+cmd
+			else:
+				cmd="LANG=C LANGUAGE=en "+cmd
 			print('  [EPIC]: Installing application...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
