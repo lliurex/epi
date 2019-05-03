@@ -89,9 +89,10 @@ def _generate_epi_json(debInfo,deb):
 		epiJson="%s/%s.epi"%(tmpDir,debInfo['Package'].replace(" ","_"))
 		epiFile={}
 		epiFile["type"]="localdeb"
-		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName},'remove':True}]
-		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir}
+		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
+		epiFile["script"]={"name":"%s/install_script.sh,'remove':True"%tmpDir}
 		epiFile["required_root"]=True
+		epiFile["required_dconf"]=True
 
 		try:
 			with open(epiJson,'w') as f:
