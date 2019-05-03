@@ -127,6 +127,9 @@ def _generate_epi_script(debInfo,deb):
 				f.write("\t\tRES=1\"\"\n")
 			f.write("\t\techo \"${RES}\"\n")
 			f.write("\t\t;;\n")
+			f.write("\tgetInfo)\n")
+			f.write("\t\techo \"%s\"\n"%debInfo['Description'])
+			f.write("\t\t;;\n")
 			f.write("esac\n")
 			f.write("exit 0\n")
 	except Exception as e:
