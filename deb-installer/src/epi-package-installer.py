@@ -90,7 +90,7 @@ def _generate_epi_json(debInfo,deb):
 		epiFile={}
 		epiFile["type"]="localdeb"
 		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
-		epiFile["script"]={"name":"%s/install_script.sh,'remove':True"%tmpDir}
+		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir,'remove':True}
 		epiFile["required_root"]=True
 		epiFile["required_dconf"]=True
 
@@ -109,7 +109,7 @@ def _generate_epi_script(debInfo,deb):
 	try:
 		with open("%s/install_script.sh"%tmpDir,'w') as f:
 			f.write("#!/bin/bash\n")
-			f.write("ACTION=$1\n")
+			f.write("ACTION=\"$1\"\n")
 			f.write("case $ACTION in\n")
 			f.write("\tremove)\n")
 			f.write("\t\tapt-get remove -y %s\n"%debInfo['Package'])
@@ -152,7 +152,7 @@ def _generate_epi_script2(debInfo,deb):
 	try:
 		with open("%s/install_script.sh"%tmpDir,'w') as f:
 			f.write("#!/bin/bash\n")
-			f.write("ACTION=$1\n")
+			f.write("ACTION=\"$1\"\n")
 			f.write("PKGLIST=\"%s\"\n"%' '.join(depends))
 			f.write("case $ACTION in\n")
 			f.write("\tpreInstall)\n")
