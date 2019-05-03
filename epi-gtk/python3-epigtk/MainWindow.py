@@ -248,7 +248,7 @@ class MainWindow:
 							return False
 													
 						else:
-							if len(self.test_install)>0:
+							if self.test_install[0]!='':
 								if self.test_install[0]=='1':
 									error=True
 									msg_code=25
@@ -470,9 +470,14 @@ class MainWindow:
 
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		self.dependsBox.deb_depends_label.set_name("MSG_ERROR_LABEL")
-		self.dependsBox.depends_label.set_text(self.test_install)
+		if self.test_install[1]!="":
+			msg=self.get_msg_text(26)
+			msg_error=msg+" "+str(self.test_install[1])
+		else:
+			msg_error=str(self.test_install[0])
+		self.dependsBox.depends_label.set_text(msg_error)
 		self.stack.set_visible_child_name("dependsBox")
-		self.write_log("Unable to install package. Problems with depends:"+self.test_install)
+		self.write_log("Unable to install package. Problems with depends:"+str(self.test_install))
 
 	#def load_depends_panel
 		
@@ -1216,6 +1221,8 @@ class MainWindow:
 			msg=_("The unlocking process has failed")
 		elif code==25:
 			msg=_("Unable to install the package")
+		elif code==26:
+			msg=_("Problems with the following dependencies: ")	
 		return msg	
 
 	#def get_msg_text
