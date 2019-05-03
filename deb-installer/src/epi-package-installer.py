@@ -106,15 +106,25 @@ def _generate_epi_script(debInfo,deb):
 	global retCode
 	tmpDir=os.path.dirname(deb)
 	depends=[]
+	altDepends=[]
 	for dep in debInfo['Depends'].split(', '):
-		depends.append(dep.split(' ')[0])
+		if ('|') in dep:
+			altdeps=dep.split('|')
+			altdep=''
+			for alt in altdeps:
+				alt=alt.lstrip(' ')
+				altdep=altdep+','+alt.split(' ')[0]
+			altDepends.append(altdep.lstrip(','))
+		else:
+			depends.append(dep.split(' ')[0])
 	try:
 		with open("%s/install_script.sh"%tmpDir,'w') as f:
 			f.write("#!/bin/bash\n")
 			f.write("ACTION=$1\n")
+			f.write("PKGLIST=\"%s\"\n"%' '.join(depends))
 			f.write("case $ACTION in\n")
 			f.write("\tpreInstall)\n")
-			f.write("\t\tapt-get install -y %s\n"%' '.join(depends))
+			f.write("\t\tapt-get install -y $PKGLIST\n")
 			f.write("\t\tif [ $? -ne 0 ]\n")
 			f.write("\t\tthen\n")
 			f.write("\t\t\techo Failed to install dependencies\n")
@@ -128,8 +138,31 @@ def _generate_epi_script(debInfo,deb):
 			#retCode controls the return code of the previous operations 
 			if not retCode:
 				f.write("\t\tapt-get update>/dev/null\"\"\n")
+
+				f.write("\t\tpkgList=\"%s\"\n"%(' '.join(depends)))
+				f.write("\t\tpkgAltList=\"%s\"\n"%(' '.join(altDepends)))
 				f.write("\t\tUNINSTALLABLE=\"\"\n")
-				f.write("\t\tfor pkg in %s\n"%(' '.join(depends)))
+				f.write("\t\tfor pkg in $pkgAltList\n")
+				f.write("\t\tdo\n")
+				f.write("\t\t\tIFS=','\n")
+				f.write("\t\t\tread -ra altList <<< \"$pkg\"\n")
+				f.write("\t\t\tfor altPkg in \"${altList[@]}\"\n")
+				f.write("\t\t\tdo\n")
+				f.write("\t\t\t\tMATCH=0\n")
+				f.write('\t\t\t\tif [ $(apt-cache search --names-only \"${altPkg//+/\\\\+}$\" | wc -l) -ne 0 ]\n')
+				f.write("\t\t\t\tthen\n")
+				f.write("\t\t\t\t\tPKGLIST=$PKGLIST\" \"$altPkg\n")
+				f.write("\t\t\t\t\tMATCH=1\n")
+				f.write("\t\t\t\t\tbreak\n")
+				f.write("\t\t\tfi\n")
+				f.write("\t\t\tdone\n")
+				f.write('\t\t\tif [ $MATCH -eq 0 ]\n')
+				f.write("\t\t\tthen\n")
+				f.write("\t\t\t\tUNINSTALLABLE=$UNINSTALLABLE\",\"$altPkg\n")
+				f.write("\t\t\tfi\n")
+				f.write("\t\tIFS=' '\n")
+				f.write("\t\tdone\n")
+				f.write("\t\tfor pkg in $pkgList\n")
 				f.write("\t\tdo\n")
 				f.write('\t\t\tif [ $(apt-cache search --names-only \"${pkg//+/\\\\+}\" | wc -l) -eq 0 ]\n')
 				f.write("\t\t\tthen\n")
