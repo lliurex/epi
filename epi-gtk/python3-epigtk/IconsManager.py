@@ -52,7 +52,6 @@ class IconsManager:
 			for dist in self.dists:
 				# "64x64/" is included in pkg_info["icon"]
 				if "64x64/" not in icon:
-					print("64")
 					icon="64x64/" + icon
 					if debian_name+"_"+debian_name not in icon:
 						icon=icon.replace(debian_name,debian_name+"_"+debian_name)

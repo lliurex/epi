@@ -29,7 +29,7 @@ class InfoBox(Gtk.VBox):
 		self.icon_size=64
 		self.details_max_width=30
 		self.app_max_width=30
-		self.short_description_max_width=30
+		self.short_description_max_width=60
 
 		self.main_box=builder.get_object("info_box")
 		self.icon=builder.get_object("icon")

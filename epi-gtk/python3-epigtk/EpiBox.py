@@ -213,38 +213,36 @@ class EpiBox(Gtk.VBox):
 
 	def show_info_clicked(self,button,hbox):
 
-		print("clicked")
 		app=hbox.get_children()[1].get_text()
 
-		icon=self.core.epiManager.pkg_info[app]["icon"]
-
-		#if icon!="":
-		debian_name=self.core.epiManager.pkg_info[app]["debian_name"]
-		component=self.core.epiManager.pkg_info[app]["component"]
-
-		name=self.core.epiManager.pkg_info[app]["name"]
 		summary=self.core.epiManager.pkg_info[app]["summary"]
-		description=self.core.epiManager.pkg_info[app]["description"]
 
+		if summary!="":
+			debian_name=self.core.epiManager.pkg_info[app]["debian_name"]
+			component=self.core.epiManager.pkg_info[app]["component"]
 
-		h=html2text.HTML2Text()
-		h.body_width=400
-		txt=h.handle(description)
-		txt=txt.replace("&lt;", "<")
-		txt=txt.replace("&gt;", ">")
-		txt=txt.replace("&amp;", "&")
+			name=self.core.epiManager.pkg_info[app]["name"]
+			icon=self.core.epiManager.pkg_info[app]["icon"]
+			description=self.core.epiManager.pkg_info[app]["description"]
 
-		icon=self.core.get_icons.get_icon(debian_name,icon,component)
-		
-		self.core.infoBox.icon.set_from_file(icon)
-		self.core.infoBox.name_label.set_text(name)
-		self.core.infoBox.summary_label.set_text(summary)
-		self.core.infoBox.description_label.set_text(txt)
-		self.core.mainWindow.apply_button.hide()
-		self.core.mainWindow.uninstall_button.hide()
-		self.core.mainWindow.return_button.show()
-		self.core.mainWindow.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-		self.core.mainWindow.stack.set_visible_child_name("infoBox")
+			h=html2text.HTML2Text()
+			h.body_width=400
+			txt=h.handle(description)
+			txt=txt.replace("&lt;", "<")
+			txt=txt.replace("&gt;", ">")
+			txt=txt.replace("&amp;", "&")
+
+			icon=self.core.get_icons.get_icon(debian_name,icon,component)
+			
+			self.core.infoBox.icon.set_from_file(icon)
+			self.core.infoBox.name_label.set_text(name)
+			self.core.infoBox.summary_label.set_text(summary)
+			self.core.infoBox.description_label.set_text(txt)
+			self.core.mainWindow.apply_button.hide()
+			self.core.mainWindow.uninstall_button.hide()
+			self.core.mainWindow.return_button.show()
+			self.core.mainWindow.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
+			self.core.mainWindow.stack.set_visible_child_name("infoBox")
 
 
 	#def show_info_clicked

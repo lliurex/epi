@@ -172,7 +172,6 @@ class EpiManager:
 						status=self.check_pkg_status(app,order)	
 				else:
 					data=self.get_localdeb_info(app,order)	
-					print(data)	
 					summary=data[0]
 					description=data[1]
 					status=data[2]
@@ -234,6 +233,7 @@ class EpiManager:
 	def get_localdeb_info(self,pkg,order):
 
 		summary=""
+		description=""
 		status=""
 		try:
 			script=self.epiFiles[order]["script"]["name"]
@@ -243,7 +243,8 @@ class EpiManager:
 				poutput=p.communicate()
 				if len(poutput)>0:
 					summary=poutput[0].decode("utf-8").split("\n")[0].split("||")[0]
-					description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
+					if len(poutput)>1:
+						description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
 
 		except:
 			pass
@@ -386,7 +387,6 @@ class EpiManager:
 				cmd=script +' testInstall ';
 				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 				poutput=p.communicate()
-				print(len(poutput))
 				if len(poutput)>0:
 					test=poutput[0].decode("utf-8").split("\n")[0]
 		except:
