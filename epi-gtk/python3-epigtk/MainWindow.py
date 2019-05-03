@@ -472,7 +472,7 @@ class MainWindow:
 		self.dependsBox.deb_depends_label.set_name("MSG_ERROR_LABEL")
 		if self.test_install[1]!="":
 			msg=self.get_msg_text(26)
-			msg_error=msg+" "+str(self.test_install[1])
+			msg_error=msg+"\n"+str(self.test_install[1])
 		else:
 			msg_error=str(self.test_install[0])
 		self.dependsBox.depends_label.set_text(msg_error)
