@@ -105,6 +105,37 @@ def _generate_epi_json(debInfo,deb):
 def _generate_epi_script(debInfo,deb):
 	global retCode
 	tmpDir=os.path.dirname(deb)
+	try:
+		with open("%s/install_script.sh"%tmpDir,'w') as f:
+			f.write("#!/bin/bash\n")
+			f.write("ACTION=$1\n")
+			f.write("case $ACTION in\n")
+			f.write("\tremove)\n")
+			f.write("\t\tapt-get remove -y %s\n"%debInfo['Package'])
+			f.write("\t\tTEST=$( dpkg-query -s  %s 2> /dev/null| grep Status | cut -d \" \" -f 4 )\n"%debInfo['Package'])
+			f.write("\t\tif [ \"$TEST\" == 'installed' ];then\n")
+			f.write("\t\t\texit 1\n")
+			f.write("\t\tfi\n")
+			f.write("\t\t;;\n")
+			f.write("\ttestInstall)\n")
+			if not retCode:
+				f.write("\t\tapt-get update>/dev/null\"\"\n")
+				f.write("\t\tRES=$(apt-get --simulate install %s 2>/tmp/err | awk 'BEGIN {sw=\"\"}{if ($0~\" : \") sw=1;if (sw==1) print $0}' | sed 's/.*: \(.*)\) .*/\\1/g')\n"%deb)
+				f.write("\t\t[ -s /tmp/err ] && RES=${RES//$'\\n'/||}\"||\"$(cat /tmp/err) || RES=\"\"\n")
+			else:
+				f.write("\t\tRES=1\"\"\n")
+			f.write("\t\techo \"${RES}\"\n")
+			f.write("\t\t;;\n")
+			f.write("esac\n")
+			f.write("exit 0\n")
+	except Exception as e:
+		_debug("%s"%e)
+		retCode=1
+	os.chmod("%s/install_script.sh"%tmpDir,0o755)
+
+def _generate_epi_script2(debInfo,deb):
+	global retCode
+	tmpDir=os.path.dirname(deb)
 	depends=[]
 	altDepends=[]
 	for dep in debInfo['Depends'].split(', '):
