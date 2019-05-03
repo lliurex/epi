@@ -111,9 +111,10 @@ def _generate_epi_script(debInfo,deb):
 	try:
 		with open("%s/install_script.sh"%tmpDir,'w') as f:
 			f.write("#!/bin/bash\n")
+			f.write("ACTION=$1\n")
 			f.write("case $ACTION in\n")
 			f.write("\tpreInstall)\n")
-			f.write("\t\tapt-get install %s\n"%','.join(depends))
+			f.write("\t\tapt-get install -y %s\n"%' '.join(depends))
 			f.write("\t\tif [ $? -ne 0 ]\n")
 			f.write("\t\tthen\n")
 			f.write("\t\t\techo Failed to install dependencies\n")
@@ -126,11 +127,11 @@ def _generate_epi_script(debInfo,deb):
 			f.write("\ttestInstall)\n")
 			#retCode controls the return code of the previous operations 
 			if not retCode:
-				f.write("\t\tapt-get update\"\"\n")
+				f.write("\t\tapt-get update>/dev/null\"\"\n")
 				f.write("\t\tUNINSTALLABLE=\"\"\n")
 				f.write("\t\tfor pkg in %s\n"%(' '.join(depends)))
 				f.write("\t\tdo\n")
-				f.write("\t\t\tif [ $(apt-cache search --names-only $pkg | wc -l) -eq 0 ]\n")
+				f.write('\t\t\tif [ $(apt-cache search --names-only \"${pkg//+/\\\\+}\" | wc -l) -eq 0 ]\n')
 				f.write("\t\t\tthen\n")
 				f.write("\t\t\t\tUNINSTALLABLE=$UNINSTALLABLE\",\"$pkg\n")
 				f.write("\t\t\tfi\n")
