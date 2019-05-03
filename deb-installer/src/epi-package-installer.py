@@ -89,9 +89,10 @@ def _generate_epi_json(debInfo,deb):
 		epiJson="%s/%s.epi"%(tmpDir,debInfo['Package'].replace(" ","_"))
 		epiFile={}
 		epiFile["type"]="localdeb"
-		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName},'remove':True}]
-		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir}
+		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
+		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir,'remove':True}
 		epiFile["required_root"]=True
+		epiFile["required_dconf"]=True
 
 		try:
 			with open(epiJson,'w') as f:
@@ -105,16 +106,60 @@ def _generate_epi_json(debInfo,deb):
 def _generate_epi_script(debInfo,deb):
 	global retCode
 	tmpDir=os.path.dirname(deb)
-	depends=[]
-	for dep in debInfo['Depends'].split(', '):
-		depends.append(dep.split(' ')[0])
 	try:
 		with open("%s/install_script.sh"%tmpDir,'w') as f:
 			f.write("#!/bin/bash\n")
-			f.write("ACTION=$1\n")
+			f.write("ACTION=\"$1\"\n")
+			f.write("case $ACTION in\n")
+			f.write("\tremove)\n")
+			f.write("\t\tapt-get remove -y %s\n"%debInfo['Package'])
+			f.write("\t\tTEST=$( dpkg-query -s  %s 2> /dev/null| grep Status | cut -d \" \" -f 4 )\n"%debInfo['Package'])
+			f.write("\t\tif [ \"$TEST\" == 'installed' ];then\n")
+			f.write("\t\t\texit 1\n")
+			f.write("\t\tfi\n")
+			f.write("\t\t;;\n")
+			f.write("\ttestInstall)\n")
+			if not retCode:
+				f.write("\t\tapt-get update>/dev/null\"\"\n")
+				f.write("\t\tRES=$(apt-get --simulate install %s 2>/tmp/err | awk 'BEGIN {sw=\"\"}{if ($0~\" : \") sw=1;if (sw==1) print $0}' | sed 's/.*: \(.*)\) .*/\\1/g')\n"%deb)
+				f.write("\t\t[ -s /tmp/err ] && RES=${RES//$'\\n'/||}\"||\"$(cat /tmp/err) || RES=\"\"\n")
+			else:
+				f.write("\t\tRES=1\"\"\n")
+			f.write("\t\techo \"${RES}\"\n")
+			f.write("\t\t;;\n")
+			f.write("\tgetInfo)\n")
+			f.write("\t\techo \"%s\"\n"%debInfo['Description'])
+			f.write("\t\t;;\n")
+			f.write("esac\n")
+			f.write("exit 0\n")
+	except Exception as e:
+		_debug("%s"%e)
+		retCode=1
+	os.chmod("%s/install_script.sh"%tmpDir,0o755)
+
+def _generate_epi_script2(debInfo,deb):
+	global retCode
+	tmpDir=os.path.dirname(deb)
+	depends=[]
+	altDepends=[]
+	for dep in debInfo['Depends'].split(', '):
+		if ('|') in dep:
+			altdeps=dep.split('|')
+			altdep=''
+			for alt in altdeps:
+				alt=alt.lstrip(' ')
+				altdep=altdep+','+alt.split(' ')[0]
+			altDepends.append(altdep.lstrip(','))
+		else:
+			depends.append(dep.split(' ')[0])
+	try:
+		with open("%s/install_script.sh"%tmpDir,'w') as f:
+			f.write("#!/bin/bash\n")
+			f.write("ACTION=\"$1\"\n")
+			f.write("PKGLIST=\"%s\"\n"%' '.join(depends))
 			f.write("case $ACTION in\n")
 			f.write("\tpreInstall)\n")
-			f.write("\t\tapt-get install -y %s\n"%' '.join(depends))
+			f.write("\t\tapt-get install -y $PKGLIST\n")
 			f.write("\t\tif [ $? -ne 0 ]\n")
 			f.write("\t\tthen\n")
 			f.write("\t\t\techo Failed to install dependencies\n")
@@ -128,8 +173,31 @@ def _generate_epi_script(debInfo,deb):
 			#retCode controls the return code of the previous operations 
 			if not retCode:
 				f.write("\t\tapt-get update>/dev/null\"\"\n")
+
+				f.write("\t\tpkgList=\"%s\"\n"%(' '.join(depends)))
+				f.write("\t\tpkgAltList=\"%s\"\n"%(' '.join(altDepends)))
 				f.write("\t\tUNINSTALLABLE=\"\"\n")
-				f.write("\t\tfor pkg in %s\n"%(' '.join(depends)))
+				f.write("\t\tfor pkg in $pkgAltList\n")
+				f.write("\t\tdo\n")
+				f.write("\t\t\tIFS=','\n")
+				f.write("\t\t\tread -ra altList <<< \"$pkg\"\n")
+				f.write("\t\t\tfor altPkg in \"${altList[@]}\"\n")
+				f.write("\t\t\tdo\n")
+				f.write("\t\t\t\tMATCH=0\n")
+				f.write('\t\t\t\tif [ $(apt-cache search --names-only \"${altPkg//+/\\\\+}$\" | wc -l) -ne 0 ]\n')
+				f.write("\t\t\t\tthen\n")
+				f.write("\t\t\t\t\tPKGLIST=$PKGLIST\" \"$altPkg\n")
+				f.write("\t\t\t\t\tMATCH=1\n")
+				f.write("\t\t\t\t\tbreak\n")
+				f.write("\t\t\tfi\n")
+				f.write("\t\t\tdone\n")
+				f.write('\t\t\tif [ $MATCH -eq 0 ]\n')
+				f.write("\t\t\tthen\n")
+				f.write("\t\t\t\tUNINSTALLABLE=$UNINSTALLABLE\",\"$altPkg\n")
+				f.write("\t\t\tfi\n")
+				f.write("\t\tIFS=' '\n")
+				f.write("\t\tdone\n")
+				f.write("\t\tfor pkg in $pkgList\n")
 				f.write("\t\tdo\n")
 				f.write('\t\t\tif [ $(apt-cache search --names-only \"${pkg//+/\\\\+}\" | wc -l) -eq 0 ]\n')
 				f.write("\t\t\tthen\n")

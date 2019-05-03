@@ -380,7 +380,10 @@ class EpiManager:
 	
 	def test_install(self):
 
+		result_test=[]
 		test=""
+		pkg_list=""
+
 		try:
 			script=self.epiFiles[0]["script"]["name"]
 			if os.path.exists(script):
@@ -389,10 +392,19 @@ class EpiManager:
 				poutput=p.communicate()
 				if len(poutput)>0:
 					test=poutput[0].decode("utf-8").split("\n")[0]
+					if test!="1":
+						parse_test=test.split("||")
+						if len(parse_test)>1:
+							test=parse_test.pop()
+							for item in parse_test:
+								pkg_list=pkg_list+item+" "
 		except:
 			pass
+		
+		result_test.append(test)
+		result_test.append(pkg_list)	
 
-		return test	
+		return result_test	
 
 	#def test_install	
 
@@ -645,7 +657,7 @@ class EpiManager:
 		if self.type=="apt":
 
 			update_repos=self.check_update_repos()
-			cmd=add_i386+update_repos+"LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive apt-get install --reinstall --allow-downgrades --allow-remove-essential --allow-change-held-packages --yes "
+			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
 			for item in self.epi_conf["pkg_list"]:
 				app=item["name"]
 				cmd=cmd + app +" "
@@ -661,7 +673,7 @@ class EpiManager:
 				cmd=cmd+pkg +" "
 
 		elif self.type=="localdeb":
-			cmd="dpkg -i "
+			cmd="apt-get install --reinstall --allow-downgrades --yes "
 			for item in self.epi_conf["pkg_list"]:
 				name=item["version"]["all"]
 				pkg=os.path.join(item["url_download"],name)
