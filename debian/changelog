@@ -1,3 +1,9 @@
+epi (0.3.3) bionic; urgency=medium
+
+  * Fixed control file
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 07 May 2019 09:52:36 +0200
+
 epi (0.3.2) bionic; urgency=medium
 
   * Added new translations
