@@ -1,3 +1,9 @@
+epi (0.3.2) bionic; urgency=medium
+
+  * Fix default app for mimetype debian-package
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 07 May 2019 13:22:20 +0200
+
 epi (0.3.1) bionic; urgency=medium
 
   * Fix dolphin service menu
