@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-26 10:37+0100\n"
+"POT-Creation-Date: 2019-05-07 08:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,119 +17,133 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: epi-gtk/python3-epigtk/MainWindow.py:481
+#: epi-gtk/python3-epigtk/MainWindow.py:533
 msgid "Accept Eula and Install"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:483
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:564
+#: epi-gtk/python3-epigtk/MainWindow.py:535
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:639
 msgid "Install"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:489
+#: epi-gtk/python3-epigtk/MainWindow.py:541
 msgid "Reinstall"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1114
+#: epi-gtk/python3-epigtk/MainWindow.py:1176
 msgid "Application already installed"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1116
+#: epi-gtk/python3-epigtk/MainWindow.py:1178
 msgid "Application epi file does not exist"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1118
+#: epi-gtk/python3-epigtk/MainWindow.py:1180
 msgid "You need root privileges"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1120
+#: epi-gtk/python3-epigtk/MainWindow.py:1182
 msgid "Internet connection not detected"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1122
+#: epi-gtk/python3-epigtk/MainWindow.py:1184
 msgid "Gathering Information..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1124
+#: epi-gtk/python3-epigtk/MainWindow.py:1186
 msgid "Downloading application..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1126
+#: epi-gtk/python3-epigtk/MainWindow.py:1188
 msgid "Preparing installation..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1128
+#: epi-gtk/python3-epigtk/MainWindow.py:1190
 msgid "Installing application..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1130
+#: epi-gtk/python3-epigtk/MainWindow.py:1192
 msgid "Ending the installation..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1132
+#: epi-gtk/python3-epigtk/MainWindow.py:1194
 msgid "Installation completed successfully"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1134
+#: epi-gtk/python3-epigtk/MainWindow.py:1196
 msgid "Installation aborted. Error ending installation"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1136
+#: epi-gtk/python3-epigtk/MainWindow.py:1198
 msgid "Installation aborted. Error installing application"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1138
+#: epi-gtk/python3-epigtk/MainWindow.py:1200
 msgid "Installation aborted. Error preparing system"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1140
+#: epi-gtk/python3-epigtk/MainWindow.py:1202
 msgid "Installation aborted. Unable to download package"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1142
+#: epi-gtk/python3-epigtk/MainWindow.py:1204
 msgid "Do you want uninstall the application?"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1144
+#: epi-gtk/python3-epigtk/MainWindow.py:1206
 msgid "Uninstall application..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1146
+#: epi-gtk/python3-epigtk/MainWindow.py:1208
 msgid "Application successfully uninstalled"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1148
+#: epi-gtk/python3-epigtk/MainWindow.py:1210
 msgid "Uninstalled process ending with errors"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1150
+#: epi-gtk/python3-epigtk/MainWindow.py:1212
 msgid "Application epi file it is not a valid json"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1152
+#: epi-gtk/python3-epigtk/MainWindow.py:1214
 msgid "The system is being updated. Wait a few minutes and try again"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1154
+#: epi-gtk/python3-epigtk/MainWindow.py:1216
 msgid "Apt or Dpkg are being executed. Checking if they have finished"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1156
+#: epi-gtk/python3-epigtk/MainWindow.py:1218
 msgid "Apt or Dpkg are being executed. Wait a few minutes and try again"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1158
+#: epi-gtk/python3-epigtk/MainWindow.py:1220
 msgid ""
 "Apt or Dpkg seems blocked by a failed previous execution\n"
 "Click on Unlock to try to solve the problem"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1160
+#: epi-gtk/python3-epigtk/MainWindow.py:1222
 msgid "Executing the unlocking process. Wait a moment..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/MainWindow.py:1162
+#: epi-gtk/python3-epigtk/MainWindow.py:1224
 msgid "The unlocking process has failed"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1226
+msgid ""
+"The package will not be able to be installed\n"
+"An error occurred during processing"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1228
+msgid "Problems with the following dependencies: "
+msgstr ""
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1230
+msgid "The following error has been detected: "
 msgstr ""
 
 #: epi-gtk/python3-epigtk/EpiBox.py:159
@@ -152,26 +166,30 @@ msgstr ""
 msgid "..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:105
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:109
+msgid "The package will not be able to be installed"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:177
 msgid "Application to install"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:158
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:230
 msgid "(D) Addicitional application required"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:248
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:320
 msgid "Eula for installing "
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:471
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:543
 msgid "Checking system..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:581
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:656
 msgid "Unlock"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:599
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:674
 msgid "Uninstall"
 msgstr ""
