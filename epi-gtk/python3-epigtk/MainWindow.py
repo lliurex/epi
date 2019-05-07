@@ -172,7 +172,7 @@ class MainWindow:
 
 		msg_log='APP conf file loaded by EPI-GTK: ' + self.epi_file
 		self.write_log(msg_log)
-		msg_log="Error preparing deb processing"
+		msg_log="Error preparing deb processing to generate the epi files"
 		self.write_log(msg_log)
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		self.stack.set_visible_child_name("loadingBox")
@@ -474,10 +474,13 @@ class MainWindow:
 			msg=self.get_msg_text(26)
 			msg_error=msg+"\n"+str(self.test_install[1])
 		else:
-			msg_error=str(self.test_install[0])
+			msg=self.get_msg_text(27)
+			msg_error=msg+"\n"+str(self.test_install[0])
+
+		self.write_log("Test to install local deb: Unable to install package:"+str(self.test_install))
 		self.dependsBox.depends_label.set_text(msg_error)
 		self.stack.set_visible_child_name("dependsBox")
-		self.write_log("Unable to install package. Problems with depends:"+str(self.test_install))
+		
 
 	#def load_depends_panel
 		
@@ -1220,9 +1223,11 @@ class MainWindow:
 		elif code==24:
 			msg=_("The unlocking process has failed")
 		elif code==25:
-			msg=_("Unable to install the package")
+			msg=_("The package will not be able to be installed\nAn error occurred during processing")
 		elif code==26:
 			msg=_("Problems with the following dependencies: ")	
+		elif code==27:
+			msg=_("The following error has been detected: ")	
 		return msg	
 
 	#def get_msg_text
