@@ -8,7 +8,7 @@
             {
                 "type": "group",
                 "members": [
-                    "teachers",
+                    "admins",
                     "sudo"
                 ],
                 "any": "no",

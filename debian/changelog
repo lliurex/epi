@@ -1,8 +1,21 @@
+epi (0.3.4) bionic; urgency=medium
+
+  * Fix mimetype association for debian-package
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 07 May 2019 13:23:20 +0200
+
+epi (0.3.3) bionic; urgency=medium
+
+  * Fixed control file
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 07 May 2019 09:52:36 +0200
+
 epi (0.3.2) bionic; urgency=medium
 
-  * Fix default app for mimetype debian-package
+  * Added new translations
+  * Fixed code to install local deb
 
- -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 07 May 2019 13:22:20 +0200
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 07 May 2019 09:21:32 +0200
 
 epi (0.3.1) bionic; urgency=medium
 
