@@ -9,6 +9,6 @@ Name=Install package
 Name[ca_ES.UTF-8@valencia]=Instal·lar paquet
 Name[ca_ES@valencia]=Instal·lar paquet
 Name[ca]=Instal·lar paquet
-Name[es]Instalar paquete
+Name[es]=Instalar paquete
 Exec=pkexec /usr/bin/epi-package-installer.py %u
 Icon=epi-gtk
