@@ -121,7 +121,7 @@ def _generate_epi_script(debInfo,deb):
 			f.write("\ttestInstall)\n")
 			if not retCode:
 				f.write("\t\tapt-get update>/dev/null\"\"\n")
-				f.write("\t\tRES=$(apt-get --simulate install %s 2>/tmp/err | awk 'BEGIN {sw=\"\"}{ver=0;if ($0~\" : \") sw=1; if ($0~\"[(]\") ver=1;if (sw==1 && ver==1) { print $0 } else if (sw==1) { print $1\" \"$2\" ( ) \"$3\" \"$4\" \"$5} }' | sed 's/.*: \(.*)\) .*/\\1/g')\n"%deb)
+				f.write("\t\tRES=$(apt-get --simulate install %s 2>/tmp/err | awk 'BEGIN {sw=\"\"}{ver=0;if ($0~\" : \") sw=1; if ($0~\"[(]\") ver=1;if (sw==1 && ver==1) { print $0 } else if (sw==1) { print $1\" \"$2\" ( ) \"$3\" \"$4\" \"$5} }' | sed 's/.*: \(.*)\) .*/\\1/g;s/( *)//')\n"%deb)
                                 
 				f.write("\t\t[ -s /tmp/err ] && RES=${RES//$'\\n'/||}\"||\"$(cat /tmp/err) || RES=\"\"\n")
 			else:
