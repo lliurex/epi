@@ -1,3 +1,10 @@
+epi (0.3.2) bionic; urgency=medium
+
+  * Added new translations
+  * Fixed code to install local deb
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 07 May 2019 09:21:32 +0200
+
 epi (0.3.1) bionic; urgency=medium
 
   * Fix dolphin service menu
