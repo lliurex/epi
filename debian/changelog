@@ -1,3 +1,9 @@
+epi (0.3.4-1lliurex) bionic; urgency=medium
+
+  * Fix package depends
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Thu, 06 Jun 2019 12:08:04 +0200
+
 epi (0.3.4) bionic; urgency=medium
 
   * Fix mimetype association for debian-package

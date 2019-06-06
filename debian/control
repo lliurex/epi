@@ -34,6 +34,6 @@ Description:Easy package installer (EPI). GUI tool
 
 Package: epi-local-installer
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk(= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk(= ${binary:Version}),python3-magic
 Description:Local package installer for EPI
 
