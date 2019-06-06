@@ -164,7 +164,7 @@ def _generate_epi_file(deb):
 		else:
 			subprocess.run(['epi-gtk',"--error"])
 		#Remove tmp dir
-		shutils.rmtree(installDir)
+		shutil.rmtree(installDir)
 	elif retCode:
 		subprocess.run(['epi-gtk',"--error"])
 #def generate_epi_file
