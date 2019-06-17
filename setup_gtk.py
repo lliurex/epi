@@ -45,8 +45,7 @@ if __name__ == '__main__':
 		packages = ['epigtk'],
 		package_dir = {'epigtk':'epi-gtk/python3-epigtk'},
 		package_data = {'epigtk':['rsrc/*']},
-		data_files = [('share/applications',['epi-gtk/data_files/epi-gtk.desktop']),
-			      ('share/mime/packages',['epi-gtk/data_files/epi.xml']),
+		data_files = [('share/mime/packages',['epi-gtk/data_files/epi.xml']),
 			      ('share/icons/hicolor/scalable/mimetypes',['epi-gtk/data_files/application-easy-package-installer.svg']),
 			      ('sbin',['epi-gtk/epi-gtk'])
 			     ] + polist ,
