@@ -1,0 +1,200 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-05-07 08:50+0200\n"
+"PO-Revision-Date: 2019-05-07 08:53+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:533
+msgid "Accept Eula and Install"
+msgstr "Aceptar Licencia e Instalar"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:535
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:639
+msgid "Install"
+msgstr "Instalar"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:541
+msgid "Reinstall"
+msgstr "Reinstalar"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1176
+msgid "Application already installed"
+msgstr "La aplicación ya esta instalada"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1178
+msgid "Application epi file does not exist"
+msgstr "El fichero .epi de la aplicación no existe"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1180
+msgid "You need root privileges"
+msgstr "Necesita permisos de administrador"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1182
+msgid "Internet connection not detected"
+msgstr "No detectada conexión a Internet"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1184
+msgid "Gathering Information..."
+msgstr "Recopilando información..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1186
+msgid "Downloading application..."
+msgstr "Descargando la aplicación..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1188
+msgid "Preparing installation..."
+msgstr "Preparando la instalación..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1190
+msgid "Installing application..."
+msgstr "Instalando la aplicación..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1192
+msgid "Ending the installation..."
+msgstr "Finalizando la instalación..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1194
+msgid "Installation completed successfully"
+msgstr "Instalación completada correctamente"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1196
+msgid "Installation aborted. Error ending installation"
+msgstr "Instalación cancelada. Error finalizando la instalación"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1198
+msgid "Installation aborted. Error installing application"
+msgstr "Instalación cancelada. Error instalando la aplicación"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1200
+msgid "Installation aborted. Error preparing system"
+msgstr "Instalación cancelada. Error preparando el sistema"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1202
+msgid "Installation aborted. Unable to download package"
+msgstr "Instalación cancelada. Imposible descargar la aplicación"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1204
+msgid "Do you want uninstall the application?"
+msgstr "¿Desea desinstalar la aplicación?"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1206
+msgid "Uninstall application..."
+msgstr "Desinstalando la aplicación..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1208
+msgid "Application successfully uninstalled"
+msgstr "Aplicación desinstalada correctamente"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1210
+msgid "Uninstalled process ending with errors"
+msgstr "El proceso de desinstalación ha finalizado con errores"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1212
+msgid "Application epi file it is not a valid json"
+msgstr "El fichero .epi de la aplicación no es un json válido"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1214
+msgid "The system is being updated. Wait a few minutes and try again"
+msgstr "El sistema esta siendo actualizado. Espere unos minutos y vuelva a intentarlo"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1216
+msgid "Apt or Dpkg are being executed. Checking if they have finished"
+msgstr "Apt o Dpkg están siendo ejecutados. Comprobando si han finalizado..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1218
+msgid "Apt or Dpkg are being executed. Wait a few minutes and try again"
+msgstr "Apt o Dpkg están siendo ejecutados. Espere unos minutos y vuelva a intentarlo"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1220
+msgid ""
+"Apt or Dpkg seems blocked by a failed previous execution\n"
+"Click on Unlock to try to solve the problem"
+msgstr ""
+"Apt o Dpkg parecen bloqueados por una ejecución previa fallida\n"
+"Haga clic sobre Desbloquear para intentar solucionar el problema"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1222
+msgid "Executing the unlocking process. Wait a moment..."
+msgstr "Ejecutando el proceso de desbloqueo. Espere un momento..."
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1224
+msgid "The unlocking process has failed"
+msgstr "El proceso de desbloqueo ha fallado"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1226
+msgid ""
+"The package will not be able to be installed\n"
+"An error occurred during processing"
+msgstr ""
+"El paquete no va a poder ser instalado\n"
+"Se ha producido un error durante su procesamiento"
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1228
+msgid "Problems with the following dependencies: "
+msgstr "Problemas con las siguientes dependencias: "
+
+#: epi-gtk/python3-epigtk/MainWindow.py:1230
+msgid "The following error has been detected: "
+msgstr "Se ha detectado el siguiente error: "
+
+#: epi-gtk/python3-epigtk/EpiBox.py:159
+msgid "Press to view application information"
+msgstr "Haga clic para ver la información de la aplicación"
+
+#: epi-gtk/python3-epigtk/EpiBox.py:161
+msgid "Info not availabled"
+msgstr "Información no disponible"
+
+#: epi-gtk/python3-epigtk/ChooserBox.py:75
+msgid "Please choose a epi file"
+msgstr "Seleccione un fichero epi"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:21
+msgid "Choose epi file to install/uninstall the application:"
+msgstr "Seleccione un fichero epi para instalar/desinstalar la aplicación:"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:72
+msgid "..."
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:109
+msgid "The package will not be able to be installed"
+msgstr "El paquete no va a poder ser instalado"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:177
+msgid "Application to install"
+msgstr "Aplicación para instalar"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:230
+msgid "(D) Addicitional application required"
+msgstr "(D) Aplicación adicional requerida"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:320
+msgid "Eula for installing "
+msgstr "Acuerdo de licencia de usuario final para instalar "
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:543
+msgid "Checking system..."
+msgstr "Comprobando el sistema..."
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:656
+msgid "Unlock"
+msgstr "Desbloquear"
+
+#: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:674
+msgid "Uninstall"
+msgstr "Desinstalar"
