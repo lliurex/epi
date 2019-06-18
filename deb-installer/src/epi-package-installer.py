@@ -20,6 +20,7 @@ def _generate_install_dir():
 	installDir=''
 	try:
 		installDir=tempfile.mkdtemp()
+		os.chmod(installDir,0o777)
 	except:
 		_debug("Couldn't create temp dir")
 		retCode=1
@@ -89,7 +90,8 @@ def _generate_epi_json(debInfo,deb):
 		epiJson="%s/%s.epi"%(tmpDir,debInfo['Package'].replace(" ","_"))
 		epiFile={}
 		epiFile["type"]="localdeb"
-		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
+#		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
+		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':tmpDir,'version':{'all':debName}}]
 		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir,'remove':True}
 		epiFile["required_root"]=True
 		epiFile["required_dconf"]=True
