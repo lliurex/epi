@@ -1,3 +1,9 @@
+epi (0.3.7) bionic; urgency=medium
+
+  * Fix tmp dir permissions for deb install
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 18 Jun 2019 12:47:23 +0200
+
 epi (0.3.6) bionic; urgency=medium
 
   * Fixed valencian translations
