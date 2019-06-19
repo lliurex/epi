@@ -1,3 +1,9 @@
+epi (0.3.7.1) bionic; urgency=medium
+
+  * tmpdir now belongs to apt user
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Wed, 19 Jun 2019 08:38:41 +0200
+
 epi (0.3.7) bionic; urgency=medium
 
   * Fix tmp dir permissions for deb install
