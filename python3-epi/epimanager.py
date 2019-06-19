@@ -13,6 +13,7 @@ import urllib.request
 
 import lliurexstore.storeManager as StoreManager
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
+import shutil
 
 
 class EpiManager:
@@ -25,7 +26,9 @@ class EpiManager:
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
 		self.epi_sources=os.path.join(self.reposPath,self.sources_list)
-		self.epi_keyring="/tmp/epi_keyring"
+		self.epi_keyring_file="epi_keyring"
+		self.epi_keyring_path=os.path.join("/tmp",self.epi_keyring_file)
+		self.keyring_path="/etc/apt/trusted.gpg.d/"
 						
 		self.order=0
 		self.epiFiles={}
@@ -646,6 +649,8 @@ class EpiManager:
 
 	def install_app(self):
 	
+		self._copy_epi_keyring()
+
 		add_i386=""
 		
 		if not self.arquitecture:
@@ -690,6 +695,16 @@ class EpiManager:
 
 	#def install_app	
 
+	def _copy_epi_keyring(self):
+
+		if os.path.exists(self.epi_keyring_path):
+			if not os.path.exists(os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")):
+				dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")
+				shutil.copy(self.epi_keyring_path,dest_path)
+
+		return
+		
+	#def _copy_epi_keyring			
 
 	def check_install_remove(self,action):
 
@@ -797,8 +812,12 @@ class EpiManager:
 		if os.path.exists(self.epi_sources):
 			os.remove(self.epi_sources)	
 
-		if os.path.exists(self.epi_keyring):
-			os.remove(self.epi_keyring)	
+		if os.path.exists(self.epi_keyring_path):
+			os.remove(self.epi_keyring_path)	
+
+		dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")	
+		if os.path.exists(dest_path):
+			os.remove(dest_path)	
 
 	#def remove_repo_keys	
 
