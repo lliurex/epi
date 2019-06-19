@@ -6,8 +6,9 @@ import magic
 import tempfile
 import json
 import subprocess
+import grp,pwd
 
-dbg=True
+dbg=False
 retCode=0
 
 def _debug(msg):
@@ -20,7 +21,7 @@ def _generate_install_dir():
 	installDir=''
 	try:
 		installDir=tempfile.mkdtemp()
-		os.chmod(installDir,0o777)
+		os.chown(installDir,pwd.getpwnam('_apt').pw_uid,grp.getgrnam('admins').gr_gid)
 	except:
 		_debug("Couldn't create temp dir")
 		retCode=1
@@ -170,7 +171,6 @@ def _generate_epi_file(deb):
 	elif retCode:
 		subprocess.run(['epi-gtk',"--error"])
 #def generate_epi_file
-
 installFile=sys.argv[1]
 _begin_install_package(installFile)
 
