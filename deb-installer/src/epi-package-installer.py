@@ -21,10 +21,10 @@ def _generate_install_dir():
 	installDir=''
 	try:
 		installDir=tempfile.mkdtemp()
-		os.chown(installDir,pwd.getpwnam('_apt').pw_uid,grp.getgrnam('admins').gr_gid)
 	except:
 		_debug("Couldn't create temp dir")
 		retCode=1
+	os.chown(installDir,pwd.getpwnam('_apt').pw_uid,grp.getgrnam('nogroup').gr_gid)
 	return (installDir)
 #def _generate_install_dir
 
