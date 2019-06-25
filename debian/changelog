@@ -1,3 +1,9 @@
+epi (0.3.7.2.1) bionic; urgency=medium
+
+  * tmpdir assigned to group nogroup in deb package installer
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 25 Jun 2019 09:57:20 +0200
+
 epi (0.3.7.2) bionic; urgency=medium
 
   * Fixed keyring manage
