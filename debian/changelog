@@ -1,3 +1,9 @@
+epi (0.3.7.2.2) bionic; urgency=medium
+
+  * Fix desktop launcher for package installer
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Mon, 15 Jul 2019 12:24:42 +0200
+
 epi (0.3.7.2.1) bionic; urgency=medium
 
   * tmpdir assigned to group nogroup in deb package installer
