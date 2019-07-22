@@ -333,6 +333,8 @@ class EpiManager:
 				os.mkdir(os.path.expanduser("~/.cache/epi-downloads/"))
 			self.download_path=os.path.expanduser("~/.cache/epi-downloads/")
 
+		return self.root	
+
 	#def check_root		
 
 
