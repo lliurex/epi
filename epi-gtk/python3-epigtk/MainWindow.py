@@ -303,13 +303,18 @@ class MainWindow:
 			epi_loaded=self.core.epiManager.epiFiles
 			order=len(epi_loaded)
 			if order>0:
-				self.core.epiManager.check_root()
+				check_root=self.core.epiManager.check_root()
 				self.core.epiManager.get_pkg_info()
 				self.required_root=self.core.epiManager.required_root()
 				self.required_eula=self.core.epiManager.required_eula()
 				if len(self.required_eula)>0:
 					self.eula_accepted=False
-				self.lock_info=self.core.epiManager.check_locks()	
+				if check_root:	
+					self.lock_info=self.core.epiManager.check_locks()
+					self.write_log("Locks info: "+ str(self.lock_info))
+				else:
+					self.lock_info={}
+					self.write_log("Locks info: Not checked. User is not root")
 				self.test_install=self.core.epiManager.test_install()
 				self.write_log("Locks info: "+ str(self.lock_info))
 				self.checking_system_t.done=True

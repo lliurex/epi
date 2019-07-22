@@ -98,12 +98,16 @@ class EPIC(object):
 		self.connection=self.epicore.check_connection()
 
 		if self.connection[0]:
-			self.epicore.check_root()
+			check_root=self.epicore.check_root()
 			self.epicore.get_pkg_info()
 			self.required_root=self.epicore.required_root()
 			self.required_x=self.check_required_x()
-			self.lock_info=self.epicore.check_locks()
-			msg_log="Lock info :"+str(self.lock_info)
+			if check_root:
+				self.lock_info=self.epicore.check_locks()
+				msg_log="Lock info :"+str(self.lock_info)
+			else:
+				self.lock_info={}
+				msg_log="Locks info: Not checked. User is not root"	
 			self.write_log(msg_log)
 			if self.required_root:
 				msg_log="You need root privileges to " + action + " the application"
