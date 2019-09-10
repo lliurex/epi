@@ -59,9 +59,13 @@ class EpiManager:
 			result.append(True)
 			
 		except Exception as e:
-			result.append(False)
-			result.append(str(e))
-			
+			try:
+				res=urllib.request.urlopen("https://github.com")
+				result.append(True)
+			except Exception as e:
+				result.append(False)
+				result.append(str(e))
+						
 		return result	
 
 	#def check_connection	
