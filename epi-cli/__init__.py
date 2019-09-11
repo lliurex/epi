@@ -34,18 +34,6 @@ class EPIC(object):
 
 	#def __init__
 
-	def init_threads(self):
-
-		self.checking_url1_t=threading.Thread(target=self.checking_url1)
-		self.checking_url2_t=threading.Thread(target=self.checking_url2)
-		self.checking_url1_t.daemon=True
-		self.checking_url2_t.daemon=True
-		self.checking_url1_t.launched=False
-		self.checking_url2_t.launched=False
-		
-
-	#def init_threads			
-
 	def get_info(self):
 
 
