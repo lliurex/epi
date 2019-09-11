@@ -192,17 +192,30 @@ class MainWindow:
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		self.stack.set_visible_child_name("loadingBox")	
 		self.stack.set_transition_duration(1000)
-		GLib.timeout_add(100,self.pulsate_checksystem)
+		#GLib.timeout_add(100,self.pulsate_checksystem)
+		self.init_threads()
+		self.checking_url1_t.start()
+		self.checking_url1_t.launched=True
+		self.checking_url2_t.start()
+		self.checking_url2_t.launched=True
+		GLib.timeout_add(100,self.pulsate_check_url)
+
 	
 	#def init_process
 
 	def init_threads(self):
 
+		self.checking_url1_t=threading.Thread(target=self.checking_url1)
+		self.checking_url2_t=threading.Thread(target=self.checking_url2)
 		self.checking_system_t=threading.Thread(target=self.checking_system)
 		self.unlock_process_t=threading.Thread(target=self.unlock_process)
+		self.checking_url1_t.daemon=True
+		self.checking_url2_t.daemon=True
 		self.checking_system_t.daemon=True
 		self.unlock_process_t.daemon=True
 		self.checking_system_t.launched=False
+		self.checking_url1_t.launched=False
+		self.checking_url2_t.launched=False
 		self.unlock_process_t.launched=False
 		self.checking_system_t.done=False
 		self.unlock_process_t.done=False
@@ -228,6 +241,55 @@ class MainWindow:
 	
 	#def load_info
 
+	def pulsate_check_url(self):
+
+		end_check=False
+
+
+		if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
+			return True
+
+		else:
+			if not self.connection[0]:
+				if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
+					return True
+				else:
+					end_check=True
+
+			else:
+				end_check=True
+
+
+		if end_check:		
+		
+			if self.connection[0]:
+			 	GLib.timeout_add(100,self.pulsate_checksystem)
+			 	return False
+			else:
+				msg_code=3
+				self.loadingBox.loading_spinner.stop()
+				self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
+				msg_error=self.get_msg_text(msg_code)
+				self.write_log(msg_error+":"+self.connection[1])
+				self.loadingBox.loading_label.set_text(msg_error)
+				return False
+		
+		return True	 
+
+	#def pulsate_check_url
+			 
+	def checking_url1(self):
+
+		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck1)
+
+	#def checking_url1	
+
+	def checking_url2(self):
+
+		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck2)
+
+ 	#def checking_url2
+
 	def pulsate_checksystem(self):
 
 		error=False
@@ -240,39 +302,39 @@ class MainWindow:
 
 		if self.checking_system_t.done:
 
-			if self.connection[0]:
-				if self.order>0:
-					if not self.required_root:
-						if len (self.lock_info)>0:
-							self.load_unlock_panel()
-							return False
+			#if self.connection[0]:
+			if self.order>0:
+				if not self.required_root:
+					if len (self.lock_info)>0:
+						self.load_unlock_panel()
+						return False
 													
-						else:
-							if self.test_install[0]!='':
-								if self.test_install[0]=='1':
-									error=True
-									msg_code=25
-								else:
-									self.load_depends_panel()
-									return False
-							else:		
-								self.load_info_panel()
-								return False
 					else:
-						error=True
-						msg_code=2	
+						if self.test_install[0]!='':
+							if self.test_install[0]=='1':
+								error=True
+								msg_code=25
+							else:
+								self.load_depends_panel()
+								return False
+						else:		
+							self.load_info_panel()
+							return False
 				else:
 					error=True
-					if self.valid_json:
-						msg_code=1
-					else:
-						msg_code=18	
-					
+					msg_code=2	
+			else:
+				error=True
+				if self.valid_json:
+					msg_code=1
+				else:
+					msg_code=18	
+			'''		
 			else:
 				error=True
 				msg_code=3
 				aditional_info=self.connection[1]
-								
+			'''					
 		
 		if error:
 			self.loadingBox.loading_spinner.stop()
@@ -295,37 +357,37 @@ class MainWindow:
 	
 	def checking_system(self):
 	
-		time.sleep(1)
-		self.connection=self.core.epiManager.check_connection()
+		#time.sleep(1)
+		#self.connection=self.core.epiManager.check_connection()
 		
-		if self.connection[0]:
-			self.valid_json=self.core.epiManager.read_conf(self.epi_file)
-			epi_loaded=self.core.epiManager.epiFiles
-			order=len(epi_loaded)
-			if order>0:
-				check_root=self.core.epiManager.check_root()
-				self.core.epiManager.get_pkg_info()
-				self.required_root=self.core.epiManager.required_root()
-				self.required_eula=self.core.epiManager.required_eula()
-				if len(self.required_eula)>0:
-					self.eula_accepted=False
-				if check_root:	
-					self.lock_info=self.core.epiManager.check_locks()
-					self.write_log("Locks info: "+ str(self.lock_info))
-				else:
-					self.lock_info={}
-					self.write_log("Locks info: Not checked. User is not root")
-				self.test_install=self.core.epiManager.test_install()
+		#if self.connection[0]:
+		self.valid_json=self.core.epiManager.read_conf(self.epi_file)
+		epi_loaded=self.core.epiManager.epiFiles
+		order=len(epi_loaded)
+		if order>0:
+			check_root=self.core.epiManager.check_root()
+			self.core.epiManager.get_pkg_info()
+			self.required_root=self.core.epiManager.required_root()
+			self.required_eula=self.core.epiManager.required_eula()
+			if len(self.required_eula)>0:
+				self.eula_accepted=False
+			if check_root:	
+				self.lock_info=self.core.epiManager.check_locks()
 				self.write_log("Locks info: "+ str(self.lock_info))
-				self.checking_system_t.done=True
-				self.load_epi_conf=self.core.epiManager.epiFiles
-				self.order=len(self.load_epi_conf)
 			else:
-				self.load_epi_conf=epi_loaded
-				self.order=order
+				self.lock_info={}
+				self.write_log("Locks info: Not checked. User is not root")
+			self.test_install=self.core.epiManager.test_install()
+			self.write_log("Locks info: "+ str(self.lock_info))
+			self.checking_system_t.done=True
+			self.load_epi_conf=self.core.epiManager.epiFiles
+			self.order=len(self.load_epi_conf)
+		else:
+			self.load_epi_conf=epi_loaded
+			self.order=order
 			
 
-		self.checking_system_t.done=True	
+		#self.checking_system_t.done=True	
 
 	#def checking_system	
 
