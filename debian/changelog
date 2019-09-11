@@ -1,3 +1,9 @@
+epi (0.3.7.3) bionic; urgency=medium
+
+  * Improved internet connection checking
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 11 Sep 2019 12:13:22 +0200
+
 epi (0.3.7.2.4) bionic; urgency=medium
 
   * Added ca@valencia po file
