@@ -29,7 +29,10 @@ class EpiManager:
 		self.epi_keyring_file="epi_keyring"
 		self.epi_keyring_path=os.path.join("/tmp",self.epi_keyring_file)
 		self.keyring_path="/etc/apt/trusted.gpg.d/"
-						
+		
+		self.urltocheck1="http://lliurex.net"
+		self.urltocheck2="https://github.com/lliurex"
+
 		self.order=0
 		self.epiFiles={}
 		self.arquitecture=False
@@ -51,20 +54,16 @@ class EpiManager:
 	#def __init__	
 
 	
-	def check_connection(self):
-	
+	def check_connection(self,url):
+		
 		result=[]
 		try:
-			res=urllib.request.urlopen("http://lliurex.net")
+			res=urllib.request.urlopen(url)
 			result.append(True)
 			
 		except Exception as e:
-			try:
-				res=urllib.request.urlopen("https://github.com")
-				result.append(True)
-			except Exception as e:
-				result.append(False)
-				result.append(str(e))
+			result.append(False)
+			result.append(str(e))
 						
 		return result	
 

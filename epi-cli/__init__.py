@@ -32,7 +32,19 @@ class EPIC(object):
 			self.write_log(msg_log)	
 
 
-	#def __init__		
+	#def __init__
+
+	def init_threads(self):
+
+		self.checking_url1_t=threading.Thread(target=self.checking_url1)
+		self.checking_url2_t=threading.Thread(target=self.checking_url2)
+		self.checking_url1_t.daemon=True
+		self.checking_url2_t.daemon=True
+		self.checking_url1_t.launched=False
+		self.checking_url2_t.launched=False
+		
+
+	#def init_threads			
 
 	def get_info(self):
 
@@ -95,9 +107,11 @@ class EPIC(object):
 		check=True
 		print ('  [EPIC]: Checking system...')
 
-		self.connection=self.epicore.check_connection()
-
-		if self.connection[0]:
+		#self.connection=self.epicore.check_connection()
+		
+		connection=self.pulsate_check_connection()
+		
+		if connection[0]:
 			check_root=self.epicore.check_root()
 			self.epicore.get_pkg_info()
 			self.required_root=self.epicore.required_root()
@@ -120,14 +134,62 @@ class EPIC(object):
 				self.write_log(msg_log)
 				check=False
 		else:
-			msg_log="Internet connection not detected: "+self.connection[1] 
+			msg_log="Internet connection not detected: "+connection[1] 
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
 			check=False
 
 		return check
+		
 
 	#def checking_system
+
+	def pulsate_check_connection(self):
+
+		end_check=False
+		
+		result=""
+		result_queue=multiprocessing.Queue()
+		
+		self.checking_url1_t=multiprocessing.Process(target=self.checking_url1,args=(result_queue,))
+		self.checking_url2_t=multiprocessing.Process(target=self.checking_url2,args=(result_queue,))
+		self.checking_url1_t.start()
+		self.checking_url2_t.start()
+
+		while not end_check:
+
+			time.sleep(0.5)
+			if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
+				end_check=False
+
+			else:
+				if result=="":
+					result=result_queue.get()
+				if not result[0]:
+					if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
+						end_check=False
+					else:
+						result=result_queue.get()
+						end_check=True
+
+				else:
+					end_check=True
+		
+		return result			
+		
+	#def pulsate_check_connection	
+
+	def checking_url1(self,result_queue):
+
+		result_queue.put(self.epicore.check_connection(self.epicore.urltocheck1))
+
+	#def checking_url1	
+
+	def checking_url2(self,result_queue):
+
+		result_queue.put(self.epicore.check_connection(self.epicore.urltocheck2))
+
+ 	#def checking_url2
 
 	def check_required_x(self):
 
