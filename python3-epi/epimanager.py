@@ -392,22 +392,23 @@ class EpiManager:
 		test=""
 		pkg_list=""
 
-		try:
-			script=self.epiFiles[0]["script"]["name"]
-			if os.path.exists(script):
-				cmd=script +' testInstall ';
-				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-				poutput=p.communicate()
-				if len(poutput)>0:
-					test=poutput[0].decode("utf-8").split("\n")[0]
-					if test!="1":
-						parse_test=test.split("||")
-						if len(parse_test)>1:
-							test=parse_test.pop()
-							for item in parse_test:
-								pkg_list=pkg_list+"- "+item+"\n"
-		except:
-			pass
+		if self.epiFiles[0]["type"]=="localdeb":
+			try:
+				script=self.epiFiles[0]["script"]["name"]
+				if os.path.exists(script):
+					cmd=script +' testInstall ';
+					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+					poutput=p.communicate()
+					if len(poutput)>0:
+						test=poutput[0].decode("utf-8").split("\n")[0]
+						if test!="1":
+							parse_test=test.split("||")
+							if len(parse_test)>1:
+								test=parse_test.pop()
+								for item in parse_test:
+									pkg_list=pkg_list+"- "+item+"\n"
+			except:
+				pass
 		
 		result_test.append(test)
 		result_test.append(pkg_list)	
