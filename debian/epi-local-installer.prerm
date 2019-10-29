@@ -6,7 +6,7 @@ case "$1" in
 	remove|purge|abort-install|disappear)
 		dpkg-divert --package epi-local-installer --rename --quiet --remove /usr/share/applications/kde-mimeapps.list.real || true
 ;;
-	updgrade|failed-upgrade|abort-upgrade)
+	upgrade|failed-upgrade|abort-upgrade)
 	;;
 	*)
 		echo "prerm called with unknown argument $1" >&2
