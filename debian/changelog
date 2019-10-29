@@ -1,3 +1,9 @@
+epi (0.3.7.3.3) bionic; urgency=medium
+
+  * Fix typo on net.lliurex.debinstaller.desktop
+
+ -- Juanma1980 <juanma1980@gmail.com>  Tue, 29 Oct 2019 09:33:50 +0100
+
 epi (0.3.7.3.2) bionic; urgency=medium
 
   * Added check to run test_install only in localdeb epi
