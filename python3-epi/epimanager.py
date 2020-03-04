@@ -45,9 +45,11 @@ class EpiManager:
 					"depends":"",
 					"zomando":"",
 					"required_root":False,
-					"required_dconf":False
+					"required_dconf":False,
+					"available_selection":False
 					}
 
+		self.packages_selected=[]
 		#self.read_conf(epi_file)
 	
 		
@@ -122,8 +124,21 @@ class EpiManager:
 					self.epiFiles[item]["status"]="installed"
 					self.pkg_info.update(info)
 			else:
-				self.epiFiles[item]["status"]="availabled"
-				self.pkg_info.update(info)	
+				if not tmp_list[item]["available_selection"]:	
+					self.epiFiles[item]["status"]="availabled"
+					self.pkg_info.update(info)
+				else:
+					if item==0:
+						if cont>0:
+							self.epiFiles[item]["status"]="installed"
+							self.pkg_info.update(info)
+						else:
+							self.epiFiles[item]["status"]="availabled"
+							self.pkg_info.update(info)
+					else:
+						self.epiFiles[item]["status"]="availabled"
+						self.pkg_info.update(info)		
+										
 
 	#def get_pkg_info				
 							
@@ -474,7 +489,8 @@ class EpiManager:
 	def add_repository_keys(self,order):
 
 		self.epi_conf=self.epiFiles[order]
-
+		print("############33")
+		print(self.epi_conf)
 		cmd=""
 		self.type=self.epi_conf["type"]
 
@@ -669,11 +685,19 @@ class EpiManager:
 
 			update_repos=self.check_update_repos()
 			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
-			for item in self.epi_conf["pkg_list"]:
-				app=item["name"]
-				cmd=cmd + app +" "
+			
+			if self.epi_conf["available_selection"]:
 
-	
+				for item in self.epi_conf["pkg_list"]:
+				
+					if item["name"] in self.packages_selected:
+						app=item["name"]
+						cmd=cmd + app +" "
+			else:
+				for item in self.epi_conf["pkg_list"]:
+					app=item["name"]
+					cmd=cmd + app +" "			
+
 			
 		elif self.type=="deb":
 			
@@ -697,6 +721,7 @@ class EpiManager:
 				cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
 
 		cmd=cmd+";"
+		print(cmd)
 		return cmd	
 
 	#def install_app	
@@ -718,60 +743,56 @@ class EpiManager:
 		cont=0
 		token=""
 		
+
 		if action=="install":
-				
-			if self.type !="file":
+			epi_type=self.type
+			if epi_type=="file":
+				token=self.token_result_install[1]
+			else:	
 				pkgs=self.epi_conf["pkg_list"]
-			
-				for item in pkgs:
-					status=self.check_pkg_status(item["name"])
-				
-					if status=="installed":
-						cont=cont+1
-				
-					dpkg_status[item["name"]]=status
-
-				if cont==len(pkgs):
-					result=True
-		
-				else:
-					result=False
-
-			else:
-				token=self.token_result_install[1]	
-				if os.path.exists(token):
-					file=open(token)
-					content=file.readline()
-					if '0' not in content:
-						result=False
-					else:
-						result=True	
-										
-					file.close()
-					os.remove(token)
-
 		else:
-		
-			if self.epiFiles[0]["type"] !="file":
-					pkgs=self.epiFiles[0]["pkg_list"]			
-					for item in pkgs:
-						status=self.check_pkg_status(item["name"])
-						if status!="installed":
-							cont=cont+1
+			epi_type=self.epiFiles[0]["type"]
+			if epi_type=="file":
+				token=self.token_result_remove[1]
+			else:
+				pkgs=self.epiFiles[0]["pkg_list"]
+
+
+
+		if epi_type=="file":
+			if os.path.exists(token):
+				file=open(token)
+				content=file.readline()
+				if '0' not in content:
+					result=False
+				else:
+					result=True	
+							
+				file.close()
+				os.remove(token)
+		else:		
+				
+			for item in pkgs:
+				if item["name"] in self.packages_selected:
+					status=self.check_pkg_status(item["name"])
+					
+					if status!="installed":
+						cont=cont+1
 						dpkg_status[item["name"]]=status
 
-		
-			token=self.token_result_remove[1]
-			if os.path.exists(token):
-					file=open(token)
-					content=file.readline()
-					if '0' not in content:
-						result=False
+				if action=="install":
+					if cont==0:
+						result=True
+			
 					else:
-						result=True	
-							
-					file.close()
-					os.remove(token)
+						result=False
+				else:
+					if cont>0:
+						result=True
+					else:
+						result=False		
+
+		
 
 		return dpkg_status,result			
 
