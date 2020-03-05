@@ -97,8 +97,9 @@ class EpiBox(Gtk.VBox):
 	def load_info(self,info):
 		
 		show_cb=False
+		default_checked=False
 
-		if info[0]["available_selection"]:
+		if info[0]["available_selection"]["active"]:
 			self.epi_list_label.set_text(_("Select the applications to install"))
 			
 
@@ -106,11 +107,14 @@ class EpiBox(Gtk.VBox):
 			show_cb=False
 			order=item
 			#if info[item]["type"]!="file":
-			if info[item]["available_selection"]:
+			if info[item]["available_selection"]["active"]:
 				show_cb=True
+				if info[item]["available_selection"]["all_selected"]:
+					default_checked=True
+
 			for element in info[item]["pkg_list"]:
 				name=element["name"]
-				self.new_epi_box(name,order,show_cb)
+				self.new_epi_box(name,order,show_cb,default_checked)
 
 			'''	
 			else:
@@ -122,7 +126,7 @@ class EpiBox(Gtk.VBox):
 	#def load_info				
 
 	
-	def new_epi_box(self,name,order,show_cb):
+	def new_epi_box(self,name,order,show_cb,default_checked):
 		
 		hbox=Gtk.HBox()
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
@@ -203,6 +207,8 @@ class EpiBox(Gtk.VBox):
 		hbox.show_all()
 		if show_cb:
 			application_cb.set_visible(True)
+			if default_checked:
+				application_cb.set_active(True)
 		else:
 			application_cb.set_visible(False)
 			self.core.epiManager.packages_selected.append(application_cb.id)	
@@ -290,6 +296,14 @@ class EpiBox(Gtk.VBox):
 		self.vterminal.set_sensitive(sensitive)	
 
 	#def manage_vterminal		
+
+	def manage_application_cb(self,active):
+
+		for item in self.epi_list_box.get_children():
+			item.get_children()[0].set_sensitive(active)
+
+	#def manage_application_cb		
+
 
 #class EpiBox
 

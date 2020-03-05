@@ -46,7 +46,7 @@ class EpiManager:
 					"zomando":"",
 					"required_root":False,
 					"required_dconf":False,
-					"available_selection":False
+					"available_selection":{"active":False,"all_selected":False}
 					}
 
 		self.packages_selected=[]
@@ -124,7 +124,7 @@ class EpiManager:
 					self.epiFiles[item]["status"]="installed"
 					self.pkg_info.update(info)
 			else:
-				if not tmp_list[item]["available_selection"]:	
+				if not tmp_list[item]["available_selection"]["active"]:	
 					self.epiFiles[item]["status"]="availabled"
 					self.pkg_info.update(info)
 				else:
@@ -489,8 +489,6 @@ class EpiManager:
 	def add_repository_keys(self,order):
 
 		self.epi_conf=self.epiFiles[order]
-		print("############33")
-		print(self.epi_conf)
 		cmd=""
 		self.type=self.epi_conf["type"]
 
@@ -553,7 +551,7 @@ class EpiManager:
 	def download_app(self):
 
 		self.manage_download=True
-		self.download_folder={}
+		self.download_folder=[]
 		cmd=""
 
 		self.type=self.epi_conf["type"]
@@ -574,23 +572,25 @@ class EpiManager:
 			if self.manage_download:
 
 				for item in self.epi_conf["pkg_list"]:
-					version=self.get_app_version(item)
-					if self.type=="deb":
-						name=item["name"]+".deb"
-						tmp_file=os.path.join(self.download_path,name)
-					elif self.type=="file":
-						try:
-							tmp_file=os.path.join(self.download_path,item["alias_download"])
-						except Exception as e:	
-							#name=item["name"]
-							tmp_file=os.path.join(self.download_path,version)
+					if item["name"] in self.packages_selected:
+						tmp_file=""
+						version=self.get_app_version(item)
+						if self.type=="deb":
+							name=item["name"]+".deb"
+							tmp_file=os.path.join(self.download_path,name)
+						elif self.type=="file":
+							try:
+								tmp_file=os.path.join(self.download_path,item["alias_download"])
+							except Exception as e:	
+								#name=item["name"]
+								tmp_file=os.path.join(self.download_path,version)
 				
-					url=item["url_download"]
+						url=item["url_download"]
 					
-					if os.path.exists(tmp_file):
-						cmd=cmd+'rm -f '+ tmp_file +';'
-					self.download_folder["name"]=tmp_file
-					cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
+						if os.path.exists(tmp_file):
+							cmd=cmd+'rm -f '+ tmp_file +';'
+						self.download_folder.append(tmp_file)
+						cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
 
 				cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 			
@@ -622,7 +622,7 @@ class EpiManager:
 						cont=0
 
 						for item in self.download_folder:
-							if os.path.exists(self.download_folder[item]):
+							if os.path.exists(item):
 								cont=cont+1
 
 						if cont != pkgs_todownload:
@@ -641,7 +641,10 @@ class EpiManager:
 			self.token_result_preinstall=tempfile.mkstemp("_result_preinstall")
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
-				cmd=script +' preInstall; echo $? >' + self.token_result_preinstall[1] +';'
+				cmd=script + " preInstall "
+				for pkg in self.packages_selected:
+					cmd+="%s "%pkg
+				cmd+='; echo $? >' + self.token_result_preinstall[1] +';'
 
 		return cmd		
 
@@ -685,27 +688,25 @@ class EpiManager:
 
 			update_repos=self.check_update_repos()
 			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
-			
-			if self.epi_conf["available_selection"]:
-
-				for item in self.epi_conf["pkg_list"]:
-				
-					if item["name"] in self.packages_selected:
-						app=item["name"]
-						cmd=cmd + app +" "
-			else:
-				for item in self.epi_conf["pkg_list"]:
+						
+			for item in self.epi_conf["pkg_list"]:
+				if item["name"] in self.packages_selected:
 					app=item["name"]
-					cmd=cmd + app +" "			
-
+					cmd=cmd + app +" "
+			
 			
 		elif self.type=="deb":
-			
+			pkg=""
 			cmd="dpkg -i "
+			'''
 			for item in self.epi_conf["pkg_list"]:
-				name=item["name"]+".deb"
-				pkg=self.download_folder["name"]
-				cmd=cmd+pkg +" "
+				if item["name"] in self.packages_selected:
+					name=item["name"]+".deb"
+			'''
+			for item in self.download_folder:
+				pkg=pkg+' '+item
+			
+			cmd=cmd+pkg	
 
 		elif self.type=="localdeb":
 			cmd="apt-get install --reinstall --allow-downgrades --yes "
@@ -771,8 +772,8 @@ class EpiManager:
 				file.close()
 				os.remove(token)
 		else:		
-				
 			for item in pkgs:
+				print(item["name"])
 				if item["name"] in self.packages_selected:
 					status=self.check_pkg_status(item["name"])
 					
@@ -809,7 +810,11 @@ class EpiManager:
 			self.token_result_postinstall=tempfile.mkstemp("_result_postinstall")
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
-				cmd=script + ' postInstall; echo $? >' + self.token_result_postinstall[1] +';'
+				cmd=script + " postInstall "
+				for pkg in self.packages_selected:
+					cmd+="%s "%pkg
+
+				cmd+='; echo $? >' + self.token_result_postinstall[1] +';'
 
 		return cmd	
 
@@ -856,7 +861,13 @@ class EpiManager:
 			self.token_result_remove=tempfile.mkstemp("_result_remove")
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
-				cmd=script + ' remove; echo $? >' + self.token_result_remove[1] + ';'
+				cmd=script + " remove "
+
+				for pkg in self.packages_selected:
+					cmd+="%s "%pkg
+
+				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
+				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
 
 		return cmd
 
