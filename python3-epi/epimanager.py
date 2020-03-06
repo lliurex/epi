@@ -46,7 +46,7 @@ class EpiManager:
 					"zomando":"",
 					"required_root":False,
 					"required_dconf":False,
-					"available_selection":{"active":False,"all_selected":False}
+					"selection_enabled":{"active":False,"all_selected":False}
 					}
 
 		self.packages_selected=[]
@@ -124,7 +124,7 @@ class EpiManager:
 					self.epiFiles[item]["status"]="installed"
 					self.pkg_info.update(info)
 			else:
-				if not tmp_list[item]["available_selection"]["active"]:	
+				if not tmp_list[item]["selection_enabled"]["active"]:	
 					self.epiFiles[item]["status"]="availabled"
 					self.pkg_info.update(info)
 				else:

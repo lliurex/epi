@@ -99,7 +99,7 @@ class EpiBox(Gtk.VBox):
 		show_cb=False
 		default_checked=False
 
-		if info[0]["available_selection"]["active"]:
+		if info[0]["selection_enabled"]["active"]:
 			self.epi_list_label.set_text(_("Select the applications to install"))
 			
 
@@ -107,9 +107,9 @@ class EpiBox(Gtk.VBox):
 			show_cb=False
 			order=item
 			#if info[item]["type"]!="file":
-			if info[item]["available_selection"]["active"]:
+			if info[item]["selection_enabled"]["active"]:
 				show_cb=True
-				if info[item]["available_selection"]["all_selected"]:
+				if info[item]["selection_enabled"]["all_selected"]:
 					default_checked=True
 
 			for element in info[item]["pkg_list"]:
@@ -121,7 +121,7 @@ class EpiBox(Gtk.VBox):
 				name=info[item]["name"]
 				self.new_epi_box(name,order)
 			'''
-		self.get_icon_toupdate()	
+		#self.get_icon_toupdate()	
 
 	#def load_info				
 

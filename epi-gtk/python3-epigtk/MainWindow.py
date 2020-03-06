@@ -691,7 +691,7 @@ class MainWindow:
 		pkgs_not_selected=False
 		eula=True
 
-		if self.load_epi_conf[0]["available_selection"]["active"]:
+		if self.load_epi_conf[0]["selection_enabled"]["active"]:
 			count=0
 			for item in self.load_epi_conf[0]["pkg_list"]:
 				if item["name"] in self.core.epiManager.packages_selected:
@@ -1088,7 +1088,7 @@ class MainWindow:
 		show_uninstall_question=False
 		pkgs_not_selected=False
 
-		if self.load_epi_conf[0]["available_selection"]["active"]:
+		if self.load_epi_conf[0]["selection_enabled"]["active"]:
 			count=0
 			for item in self.load_epi_conf[0]["pkg_list"]:
 				if item["name"] in self.core.epiManager.packages_selected:
