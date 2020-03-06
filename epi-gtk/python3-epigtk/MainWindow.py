@@ -386,7 +386,6 @@ class MainWindow:
 			self.load_epi_conf=epi_loaded
 			self.order=order
 			
-
 		#self.checking_system_t.done=True	
 
 	#def checking_system	
@@ -600,8 +599,13 @@ class MainWindow:
 				self.apply_button.set_label(_("Accept Eula and Install"))
 			else:	
 				self.apply_button.set_label(_("Install"))
+			
 			self.apply_button.set_sensitive(True)
-			self.uninstall_button.hide()
+			if self.core.epiManager.partial_installed:
+				self.uninstall_button.show()
+				self.uninstall_button.set_sensitive(True)
+			else:	
+				self.uninstall_button.hide()
 
 		else:
 			self.eula_accepted=True
@@ -1099,7 +1103,7 @@ class MainWindow:
 			if pkgs_not_selected:		
 	
 				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI-GTK")
-				msg=self.get_msg_text(28)
+				msg=self.get_msg_text(29)
 				dialog.format_secondary_text(msg)
 				response=dialog.run()
 				dialog.destroy()
@@ -1361,7 +1365,9 @@ class MainWindow:
 		elif code==27:
 			msg=_("The following error has been detected: ")
 		elif code==28:
-			msg=_("There is no package selected to be installed")			
+			msg=_("There is no package selected to be installed")
+		elif code==29:
+			msg=_("There is no package selected to be uninstalled")				
 		return msg	
 
 	#def get_msg_text

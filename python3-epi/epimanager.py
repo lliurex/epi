@@ -50,6 +50,7 @@ class EpiManager:
 					}
 
 		self.packages_selected=[]
+		self.partial_installed=False
 		#self.read_conf(epi_file)
 	
 		
@@ -124,9 +125,13 @@ class EpiManager:
 					self.epiFiles[item]["status"]="installed"
 					self.pkg_info.update(info)
 			else:
-				if not tmp_list[item]["selection_enabled"]["active"]:	
-					self.epiFiles[item]["status"]="availabled"
-					self.pkg_info.update(info)
+				if item==0:
+					if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
+						self.partial_installed=True	
+
+				self.epiFiles[item]["status"]="availabled"
+				self.pkg_info.update(info)
+				'''
 				else:
 					if item==0:
 						if cont>0:
@@ -138,7 +143,7 @@ class EpiManager:
 					else:
 						self.epiFiles[item]["status"]="availabled"
 						self.pkg_info.update(info)		
-										
+				'''						
 
 	#def get_pkg_info				
 							
@@ -740,9 +745,10 @@ class EpiManager:
 	def check_install_remove(self,action):
 
 		dpkg_status={}
-		cont=0
+		count=0
+		pkgs_installed=0
 		token=""
-		
+		pkgs_ref=[]
 
 		if action=="install":
 			epi_type=self.type
@@ -756,7 +762,11 @@ class EpiManager:
 				token=self.token_result_remove[1]
 			else:
 				pkgs=self.epiFiles[0]["pkg_list"]
-
+				print(pkgs)
+				for item in pkgs:
+					print(item)
+					if item["name"] in self.packages_selected:
+						pkgs_ref.append(item["name"])
 
 
 		if epi_type=="file":
@@ -772,28 +782,37 @@ class EpiManager:
 				os.remove(token)
 		else:		
 			for item in pkgs:
-				print(item["name"])
+				status=self.check_pkg_status(item["name"])
 				if item["name"] in self.packages_selected:
-					status=self.check_pkg_status(item["name"])
-					
+					dpkg_status[item["name"]]=status
 					if status!="installed":
-						cont=cont+1
-						dpkg_status[item["name"]]=status
+						count+=1
+				else:
+					if status=="installed":
+						pkgs_installed+=1		
+					
 
-				if action=="install":
-					if cont==0:
-						result=True
+			if action=="install":
+				if count==0:
+					result=True
 			
+				else:
+					result=False
+			else:
+				if count>0:
+					if count==len(pkgs_ref):
+						result=True
 					else:
 						result=False
 				else:
-					if cont>0:
-						result=True
-					else:
-						result=False		
+					resul=False
+				
 
+				if pkgs_installed>0:
+					self.partial_installed=True
+				else:
+					self.partial_installed=False			
 		
-
 		return dpkg_status,result			
 
 	
