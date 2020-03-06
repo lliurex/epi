@@ -722,7 +722,6 @@ class EpiManager:
 				cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
 
 		cmd=cmd+";"
-		print(cmd)
 		return cmd	
 
 	#def install_app	
