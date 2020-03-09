@@ -569,7 +569,11 @@ class EpiManager:
 						if self.epi_conf["script"]["download"]:
 							script=self.epi_conf["script"]["name"]
 							if os.path.exists(script):
-								cmd=script +' download; echo $? >' + self.token_result_download[1] +';'
+								cmd=script + " download "
+								for pkg in self.packages_selected:
+									cmd+="%s "%pkg
+								cmd+='; echo $? >' + self.token_result_download[1] +';'
+								#cmd=script +' download; echo $? >' + self.token_result_download[1] +';'
 								self.manage_download=False
 					except:
 						pass			
@@ -599,7 +603,7 @@ class EpiManager:
 
 				cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 			
-
+				
 		return cmd			
 					
 	#def download_app		
@@ -723,8 +727,13 @@ class EpiManager:
 		elif self.type=="file":
 			self.token_result_install=tempfile.mkstemp("_result")
 			script=self.epi_conf["script"]["name"]
+
 			if os.path.exists(script):
-				cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
+				cmd=script + " installPackage "
+				for pkg in self.packages_selected:
+					cmd+="%s "%pkg
+				cmd+='; echo $? >' + self.token_result_install[1]
+				#cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
 
 		cmd=cmd+";"
 		return cmd	
@@ -762,9 +771,7 @@ class EpiManager:
 				token=self.token_result_remove[1]
 			else:
 				pkgs=self.epiFiles[0]["pkg_list"]
-				print(pkgs)
 				for item in pkgs:
-					print(item)
 					if item["name"] in self.packages_selected:
 						pkgs_ref.append(item["name"])
 

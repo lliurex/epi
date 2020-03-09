@@ -47,6 +47,8 @@ class EpiBox(Gtk.VBox):
 		self.scrolledwindow=builder.get_object("scrolledwindow")
 		self.epi_list_box=builder.get_object("epi_list_box")
 		self.epi_list_vp=builder.get_object("epi_list_viewport")
+		self.select_pkg_btn=builder.get_object("select_pkg_btn")
+		self.select_pkg_btn.connect("clicked",self.select_all_pkg)
 		self.epi_depend_label=builder.get_object("epi_depend_label")
 
 		self.terminal_box=builder.get_object("terminal_box")
@@ -71,7 +73,6 @@ class EpiBox(Gtk.VBox):
 		self.terminal_scrolled.add(self.vterminal)
 		self.pbar_label=builder.get_object("pbar_label")
 		self.pbar=builder.get_object("pbar")
-
 
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
@@ -108,9 +109,18 @@ class EpiBox(Gtk.VBox):
 			order=item
 			#if info[item]["type"]!="file":
 			if info[item]["selection_enabled"]["active"]:
+				self.select_pkg_btn.set_visible(True)
 				show_cb=True
 				if info[item]["selection_enabled"]["all_selected"]:
 					default_checked=True
+					self.select_all=True
+					self.select_pkg_btn.set_label(_("Uncheck all packages"))
+				else:
+					self.select_all=False
+					self.select_pkg_btn.set_label(_("Check all packages"))
+			else:
+				self.select_pkg_btn.set_visible(False)
+		
 
 			for element in info[item]["pkg_list"]:
 				name=element["name"]
@@ -303,6 +313,24 @@ class EpiBox(Gtk.VBox):
 			item.get_children()[0].set_sensitive(active)
 
 	#def manage_application_cb		
+
+	def select_all_pkg(self,widget):
+
+		if self.select_all:
+			active=False
+			self.select_pkg_btn.set_label(_(_("Check all packages")))
+			self.select_all=False
+		else:
+			active=True
+			self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
+			self.select_all=True
+
+		for item in self.epi_list_box.get_children():
+			item.get_children()[0].set_active(active)
+
+		
+	#def select_all_pkg	
+			
 
 
 #class EpiBox

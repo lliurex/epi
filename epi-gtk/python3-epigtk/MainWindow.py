@@ -746,6 +746,7 @@ class MainWindow:
 	def install_process(self):
 
 		self.epiBox.manage_application_cb(False)
+		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
 		self.epiBox.get_icon_toupdate()
 		self.lock_quit=True
@@ -861,6 +862,7 @@ class MainWindow:
 
 															else:
 																self.epiBox.manage_application_cb(True)
+																self.epiBox.select_pkg_btn.set_sensitive(True)
 																self.lock_quit=False
 																msg=self.get_msg_text(9)
 																self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
@@ -897,6 +899,7 @@ class MainWindow:
 
 		if error:
 			self.epiBox.manage_application_cb(True)
+			self.epiBox.select_pkg_btn.set_sensitive(True)
 			self.lock_quit=False
 			self.epiBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
@@ -1127,6 +1130,7 @@ class MainWindow:
 			if response==Gtk.ResponseType.YES:
 				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
 				self.epiBox.manage_application_cb(False)
+				self.epiBox.select_pkg_btn.set_sensitive(False)
 				self.epiBox.get_icon_toupdate()
 				self.lock_quit=True
 				self.epiBox.manage_vterminal(True,False)
@@ -1168,6 +1172,8 @@ class MainWindow:
 				self.lock_quit=False
 				self.epiBox.manage_vterminal(False,True)
 				self.epiBox.manage_application_cb(True)
+				self.epiBox.select_pkg_btn.set_sensitive(True)
+
 				if self.remove:
 					msg=self.get_msg_text(16)
 					self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
