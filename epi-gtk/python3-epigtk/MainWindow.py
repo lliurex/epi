@@ -110,6 +110,7 @@ class MainWindow:
 		self.epiBox.terminal_label.hide()
 		self.epiBox.terminal_scrolled.hide()
 		self.epiBox.viewport.hide()
+		self.epiBox.select_pkg_btn.set_visible(False)
 		
 		self.eulaBox=self.core.eulaBox
 		self.install_dep=True

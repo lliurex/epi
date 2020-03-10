@@ -73,6 +73,7 @@ class EpiBox(Gtk.VBox):
 		self.terminal_scrolled.add(self.vterminal)
 		self.pbar_label=builder.get_object("pbar_label")
 		self.pbar=builder.get_object("pbar")
+		self.monitoring=True
 
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
@@ -108,18 +109,19 @@ class EpiBox(Gtk.VBox):
 			show_cb=False
 			order=item
 			#if info[item]["type"]!="file":
-			if info[item]["selection_enabled"]["active"]:
-				self.select_pkg_btn.set_visible(True)
-				show_cb=True
-				if info[item]["selection_enabled"]["all_selected"]:
-					default_checked=True
-					self.select_all=True
-					self.select_pkg_btn.set_label(_("Uncheck all packages"))
+			if order==0:
+				if info[item]["selection_enabled"]["active"]:
+					self.select_pkg_btn.set_visible(True)
+					show_cb=True
+					if info[item]["selection_enabled"]["all_selected"]:
+						default_checked=True
+						self.uncheck_all=True
+						self.select_pkg_btn.set_label(_("Uncheck all packages"))
+					else:
+						self.uncheck_all=False
+						self.select_pkg_btn.set_label(_("Check all packages"))
 				else:
-					self.select_all=False
-					self.select_pkg_btn.set_label(_("Check all packages"))
-			else:
-				self.select_pkg_btn.set_visible(False)
+					self.select_pkg_btn.set_visible(False)
 		
 
 			for element in info[item]["pkg_list"]:
@@ -238,6 +240,8 @@ class EpiBox(Gtk.VBox):
 		else:
 			self.core.epiManager.packages_selected.remove(widget.id)
 
+		self.manage_state_select_pkg_btn()
+
 	#def on_checked		
 			
 	def get_icon_toupdate(self):
@@ -316,20 +320,46 @@ class EpiBox(Gtk.VBox):
 
 	def select_all_pkg(self,widget):
 
-		if self.select_all:
+		self.monitoring=False
+
+		if self.uncheck_all:
 			active=False
 			self.select_pkg_btn.set_label(_(_("Check all packages")))
-			self.select_all=False
+			self.uncheck_all=False
 		else:
 			active=True
 			self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
-			self.select_all=True
+			self.uncheck_all=True
 
 		for item in self.epi_list_box.get_children():
 			item.get_children()[0].set_active(active)
 
-		
+		self.monitoring=True
+
 	#def select_all_pkg	
+
+	def manage_state_select_pkg_btn(self):
+		
+		if self.monitoring:
+			count_ck=0
+			count_uck=0
+			for item in self.core.mainWindow.load_epi_conf[0]["pkg_list"]:
+				if item["name"] in self.core.epiManager.packages_selected:
+					count_ck+=1
+				else:
+					count_uck+=1	
+			
+			if count_ck==len(self.core.mainWindow.load_epi_conf[0]["pkg_list"]):
+				self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
+				self.uncheck_all=True
+
+			if count_uck==len(self.core.mainWindow.load_epi_conf[0]["pkg_list"]):
+				self.select_pkg_btn.set_label(_(_("Check all packages")))
+				self.uncheck_all=False
+		
+
+	#def manage_select_pkg_btn
+
 			
 
 

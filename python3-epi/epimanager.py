@@ -603,7 +603,6 @@ class EpiManager:
 
 				cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 			
-				
 		return cmd			
 					
 	#def download_app		
@@ -613,7 +612,6 @@ class EpiManager:
 
 		
 		result=True
-
 		if self.type !='apt' and self.type !='localdeb':
 
 			
@@ -643,7 +641,6 @@ class EpiManager:
 
 	def preinstall_app(self):
 	
-
 		cmd=""
 
 		if len(self.epi_conf["script"])>0:
@@ -727,14 +724,12 @@ class EpiManager:
 		elif self.type=="file":
 			self.token_result_install=tempfile.mkstemp("_result")
 			script=self.epi_conf["script"]["name"]
-
 			if os.path.exists(script):
 				cmd=script + " installPackage "
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd+='; echo $? >' + self.token_result_install[1]
+				cmd+='; echo $? >' + self.token_result_install[1]	
 				#cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
-
 		cmd=cmd+";"
 		return cmd	
 
@@ -827,8 +822,7 @@ class EpiManager:
 	#def check_install_remove	
 
 	def postinstall_app(self):
-	
-
+		
 		cmd=""
 		
 		if len(self.epi_conf["script"])>0:
