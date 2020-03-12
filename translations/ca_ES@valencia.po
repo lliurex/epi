@@ -1,22 +1,22 @@
-# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # Pilar Embid Giner <embid_mar@gva.es>, 2017.
 # lliurex <lliurex16@gmail.com>, 2018.
+# empar <montoro_mde@gva.es>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-10 09:51+0100\n"
-"PO-Revision-Date: 2020-03-10 10:14+0100\n"
-"Last-Translator: lliurex <lliurex16@gmail.com>\n"
-"Language-Team: LliureX Team\n"
+"PO-Revision-Date: 2020-03-12 08:19+0100\n"
+"Last-Translator: empar <montoro_mde@gva.es>\n"
+"Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Lokalize 19.04.2\n"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:600
 msgid "Accept Eula and Install"
@@ -159,33 +159,30 @@ msgid "The following error has been detected: "
 msgstr "S'ha detectat el següent error: "
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1375
-#, fuzzy
 #| msgid "The package will not be able to be installed"
 msgid "There is no package selected to be installed"
-msgstr "El paquete no podrà ser instal·lat"
+msgstr "No s'ha seleccionat cap paquet per a instal·lar"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1377
-#, fuzzy
 #| msgid "The package will not be able to be installed"
 msgid "There is no package selected to be uninstalled"
-msgstr "El paquete no podrà ser instal·lat"
+msgstr "No s'ha seleccionat cap paquet per a desinstal·lar"
 
 #: epi-gtk/python3-epigtk/EpiBox.py:105
-#, fuzzy
 #| msgid "Application to install"
 msgid "Select the applications to install"
-msgstr "Aplicació per instal·lar"
+msgstr "Selecciona les aplicacions que s'han d'instal·lar"
 
 #: epi-gtk/python3-epigtk/EpiBox.py:119 epi-gtk/python3-epigtk/EpiBox.py:331
 #: epi-gtk/python3-epigtk/EpiBox.py:353
 msgid "Uncheck all packages"
-msgstr ""
+msgstr "Desmarca tots els paquets"
 
 #: epi-gtk/python3-epigtk/EpiBox.py:122 epi-gtk/python3-epigtk/EpiBox.py:327
 #: epi-gtk/python3-epigtk/EpiBox.py:357
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:232
 msgid "Check all packages"
-msgstr ""
+msgstr "Marca tots els paquets"
 
 #: epi-gtk/python3-epigtk/EpiBox.py:196
 msgid "Press to view application information"
