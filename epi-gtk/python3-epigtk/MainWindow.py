@@ -110,6 +110,7 @@ class MainWindow:
 		self.epiBox.terminal_label.hide()
 		self.epiBox.terminal_scrolled.hide()
 		self.epiBox.viewport.hide()
+		self.epiBox.select_pkg_btn.set_visible(False)
 		
 		self.eulaBox=self.core.eulaBox
 		self.install_dep=True
@@ -386,7 +387,6 @@ class MainWindow:
 			self.load_epi_conf=epi_loaded
 			self.order=order
 			
-
 		#self.checking_system_t.done=True	
 
 	#def checking_system	
@@ -600,8 +600,13 @@ class MainWindow:
 				self.apply_button.set_label(_("Accept Eula and Install"))
 			else:	
 				self.apply_button.set_label(_("Install"))
+			
 			self.apply_button.set_sensitive(True)
-			self.uninstall_button.hide()
+			if self.core.epiManager.partial_installed:
+				self.uninstall_button.show()
+				self.uninstall_button.set_sensitive(True)
+			else:	
+				self.uninstall_button.hide()
 
 		else:
 			self.eula_accepted=True
@@ -688,19 +693,47 @@ class MainWindow:
 
 	def apply_button_clicked(self,widget):
 
-		self.lock_quit=True
-		if self.eula_accepted:
-			self.install_process()
-		else:
-			self.eula_order=len(self.required_eula)-1
-			self.eulas_tocheck=self.required_eula.copy()
-			self.accept_eula()
+		pkgs_not_selected=False
+		eula=True
+
+		if self.load_epi_conf[0]["selection_enabled"]["active"]:
+			count=0
+			for item in self.load_epi_conf[0]["pkg_list"]:
+				if item["name"] in self.core.epiManager.packages_selected:
+					count=count+1
+			if count==0:
+				pkgs_not_selected=True
+
+			if pkgs_not_selected:					
+				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI-GTK")
+				msg=self.get_msg_text(28)
+				dialog.format_secondary_text(msg)
+				response=dialog.run()
+				dialog.destroy()
+				self.lock_quit=False
+				eula=False
+		
+					
+		if eula:
+					
+			if self.eula_accepted:
+
+				self.install_process()
+			#self.eula_order=len(self.required_eula)-1
+			else:
+				self.eulas_tocheck=self.required_eula.copy()
+				for item in range(len(self.eulas_tocheck)-1, -1, -1):
+					if self.eulas_tocheck[item]["pkg_name"] not in self.core.epiManager.packages_selected:
+						self.eulas_tocheck.pop(item)
+				self.eula_order=len(self.eulas_tocheck)-1
+				self.accept_eula()
 
 	#def apply_button_clicked
 	
 
 	def accept_eula(self):
 
+		
 		if len(self.eulas_tocheck)>0:
 				self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])
 		else:
@@ -713,6 +746,11 @@ class MainWindow:
 
 	def install_process(self):
 
+		self.epiBox.manage_application_cb(False)
+		self.epiBox.select_pkg_btn.set_sensitive(False)
+		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
+		self.epiBox.get_icon_toupdate()
+		self.lock_quit=True
 		self.sp_cont=0
 		self.epiBox.terminal_scrolled.show()
 		self.epiBox.viewport.show()
@@ -812,7 +850,6 @@ class MainWindow:
 														self.check_postinstall()
 
 													if self.check_postinstall_done:
-														
 														if self.postinstall_result:	
 															params=[order,True,'install',None]
 															self.update_icon(params)
@@ -825,6 +862,8 @@ class MainWindow:
 																GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
 															else:
+																self.epiBox.manage_application_cb(True)
+																self.epiBox.select_pkg_btn.set_sensitive(True)
 																self.lock_quit=False
 																msg=self.get_msg_text(9)
 																self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
@@ -860,6 +899,8 @@ class MainWindow:
 										
 
 		if error:
+			self.epiBox.manage_application_cb(True)
+			self.epiBox.select_pkg_btn.set_sensitive(True)
 			self.lock_quit=False
 			self.epiBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
@@ -1052,31 +1093,64 @@ class MainWindow:
 
 	def uninstall_process(self,widget):
 
-		dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO, "EPI-GTK")
-		msg=self.get_msg_text(14)
-		dialog.format_secondary_text(msg)
-		response=dialog.run()
-		dialog.destroy()
-		
+		show_uninstall_question=False
+		pkgs_not_selected=False
 
-		if response==Gtk.ResponseType.YES:
-			self.lock_quit=True
-			self.epiBox.manage_vterminal(True,False)
-			self.sp_cont=0
-			self.epiBox.terminal_scrolled.show()
-			self.epiBox.viewport.show()
-			self.init_uninstall_process()
-			self.apply_button.set_sensitive(False)
-			self.uninstall_button.set_sensitive(False)
-			self.epiBox.terminal_label.set_name("MSG_LABEL")
-			
-			GLib.timeout_add(100,self.pulsate_uninstall_process,0)
+		if self.load_epi_conf[0]["selection_enabled"]["active"]:
+			count=0
+			for item in self.load_epi_conf[0]["pkg_list"]:
+				if item["name"] in self.core.epiManager.packages_selected:
+						count=count+1
+			if count==0:
+				pkgs_not_selected=True
+
+			if pkgs_not_selected:		
+	
+				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI-GTK")
+				msg=self.get_msg_text(29)
+				dialog.format_secondary_text(msg)
+				response=dialog.run()
+				dialog.destroy()
+				self.lock_quit=False
+
+			else:		
+				show_uninstall_question=True
+
+		else:
+			show_uninstall_question=True
+
+		if show_uninstall_question:
+
+			dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO, "EPI-GTK")
+			msg=self.get_msg_text(14)
+			dialog.format_secondary_text(msg)
+			response=dialog.run()
+			dialog.destroy()
+				
+
+			if response==Gtk.ResponseType.YES:
+				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
+				self.epiBox.manage_application_cb(False)
+				self.epiBox.select_pkg_btn.set_sensitive(False)
+				self.epiBox.get_icon_toupdate()
+				self.lock_quit=True
+				self.epiBox.manage_vterminal(True,False)
+				self.sp_cont=0
+				self.epiBox.terminal_scrolled.show()
+				self.epiBox.viewport.show()
+				self.init_uninstall_process()
+				self.apply_button.set_sensitive(False)
+				self.uninstall_button.set_sensitive(False)
+				self.epiBox.terminal_label.set_name("MSG_LABEL")
+					
+				GLib.timeout_add(100,self.pulsate_uninstall_process,0)
 
 	#def uninstall_process		
 
 
 	def pulsate_uninstall_process(self,order):
 
+		
 		self.spinner_sync(order)
 		self.sp_cont=self.sp_cont+1
 		
@@ -1098,7 +1172,9 @@ class MainWindow:
 			if self.check_remove_done:
 				self.lock_quit=False
 				self.epiBox.manage_vterminal(False,True)
-				
+				self.epiBox.manage_application_cb(True)
+				self.epiBox.select_pkg_btn.set_sensitive(True)
+
 				if self.remove:
 					msg=self.get_msg_text(16)
 					self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
@@ -1294,7 +1370,11 @@ class MainWindow:
 		elif code==26:
 			msg=_("Problems with the following dependencies: ")	
 		elif code==27:
-			msg=_("The following error has been detected: ")	
+			msg=_("The following error has been detected: ")
+		elif code==28:
+			msg=_("There is no package selected to be installed")
+		elif code==29:
+			msg=_("There is no package selected to be uninstalled")				
 		return msg	
 
 	#def get_msg_text

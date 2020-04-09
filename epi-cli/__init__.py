@@ -49,7 +49,7 @@ class EPIC(object):
 					depends=depends+item["name"]+" "
 				else:	
 					pkgs=pkgs+item["name"] +" "
-			
+					self.epicore.packages_selected.append(item["name"])
 		return depends,pkgs	
 
 	#def get_info			

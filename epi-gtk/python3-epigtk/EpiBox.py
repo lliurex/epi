@@ -47,6 +47,8 @@ class EpiBox(Gtk.VBox):
 		self.scrolledwindow=builder.get_object("scrolledwindow")
 		self.epi_list_box=builder.get_object("epi_list_box")
 		self.epi_list_vp=builder.get_object("epi_list_viewport")
+		self.select_pkg_btn=builder.get_object("select_pkg_btn")
+		self.select_pkg_btn.connect("clicked",self.select_all_pkg)
 		self.epi_depend_label=builder.get_object("epi_depend_label")
 
 		self.terminal_box=builder.get_object("terminal_box")
@@ -71,7 +73,7 @@ class EpiBox(Gtk.VBox):
 		self.terminal_scrolled.add(self.vterminal)
 		self.pbar_label=builder.get_object("pbar_label")
 		self.pbar=builder.get_object("pbar")
-
+		self.monitoring=True
 
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
@@ -95,25 +97,48 @@ class EpiBox(Gtk.VBox):
 	#def set_css_info			
 			
 	def load_info(self,info):
+		
+		show_cb=False
+		default_checked=False
+
+		if info[0]["selection_enabled"]["active"]:
+			self.epi_list_label.set_text(_("Select the applications to install"))
+			
 
 		for item in info:
+			show_cb=False
 			order=item
 			#if info[item]["type"]!="file":
+			if order==0:
+				if info[item]["selection_enabled"]["active"]:
+					self.select_pkg_btn.set_visible(True)
+					show_cb=True
+					if info[item]["selection_enabled"]["all_selected"]:
+						default_checked=True
+						self.uncheck_all=True
+						self.select_pkg_btn.set_label(_("Uncheck all packages"))
+					else:
+						self.uncheck_all=False
+						self.select_pkg_btn.set_label(_("Check all packages"))
+				else:
+					self.select_pkg_btn.set_visible(False)
+		
+
 			for element in info[item]["pkg_list"]:
 				name=element["name"]
-				self.new_epi_box(name,order)
+				self.new_epi_box(name,order,show_cb,default_checked)
 
 			'''	
 			else:
 				name=info[item]["name"]
 				self.new_epi_box(name,order)
 			'''
-		self.get_icon_toupdate()	
+		#self.get_icon_toupdate()	
 
 	#def load_info				
 
 	
-	def new_epi_box(self,name,order):
+	def new_epi_box(self,name,order,show_cb,default_checked):
 		
 		hbox=Gtk.HBox()
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
@@ -123,6 +148,18 @@ class EpiBox(Gtk.VBox):
 				img=Gtk.Image.new_from_file(self.package_availabled)
 			else:
 				img=Gtk.Image.new_from_file(self.package_availabled_dep)
+		
+		
+
+		application_cb=Gtk.CheckButton()
+		application_cb.connect("toggled",self.on_checked)
+		application_cb.set_margin_left(10)
+		application_cb.set_halign(Gtk.Align.CENTER)		
+		application_cb.set_valign(Gtk.Align.CENTER)
+		application_cb.id=name
+		application_cb.pkg=False
+		application_cb.status=False
+		application_cb.order=order		
 		
 		application_image=img
 		application_image.set_margin_left(10)
@@ -174,11 +211,20 @@ class EpiBox(Gtk.VBox):
 		state.status=True
 		state.order=order
 		
+		hbox.pack_start(application_cb,False,False,0)
 		hbox.pack_start(application_image,False,False,0)
 		hbox.pack_start(application,False,False,0)
 		hbox.pack_end(info,False,False,10)
 		hbox.pack_end(state,False,False,10)
 		hbox.show_all()
+		if show_cb:
+			application_cb.set_visible(True)
+			if default_checked:
+				application_cb.set_active(True)
+		else:
+			application_cb.set_visible(False)
+			self.core.epiManager.packages_selected.append(application_cb.id)	
+
 		hbox.set_name("APP_BOX")
 		self.epi_list_box.pack_start(hbox,False,False,5)
 		self.epi_list_box.queue_draw()
@@ -186,7 +232,18 @@ class EpiBox(Gtk.VBox):
 		
 	#def new_epi_box
 
+	def on_checked(self,widget):
 
+		if widget.get_active():
+			self.core.epiManager.packages_selected.append(widget.id)
+
+		else:
+			self.core.epiManager.packages_selected.remove(widget.id)
+
+		self.manage_state_select_pkg_btn()
+
+	#def on_checked		
+			
 	def get_icon_toupdate(self):
 
 		self.update_icons={}
@@ -194,14 +251,14 @@ class EpiBox(Gtk.VBox):
 		for item in self.epi_list_box.get_children():
 			tmp={}			
 			for element in item.get_children():
-				
-				if element.order not in self.update_icons:
-					self.update_icons[element.order]=[]
-				if element.pkg:
-					tmp['icon_package']=element
+				if element.id in self.core.epiManager.packages_selected:
+					if element.order not in self.update_icons:
+						self.update_icons[element.order]=[]
+					if element.pkg:
+						tmp['icon_package']=element
 
-				if element.status:
-					tmp['icon_status']=element
+					if element.status:
+						tmp['icon_status']=element
 
 					
 			if len(tmp)>0:
@@ -213,7 +270,7 @@ class EpiBox(Gtk.VBox):
 
 	def show_info_clicked(self,button,hbox):
 
-		app=hbox.get_children()[1].get_text()
+		app=hbox.get_children()[2].get_text()
 
 		summary=self.core.epiManager.pkg_info[app]["summary"]
 
@@ -253,6 +310,58 @@ class EpiBox(Gtk.VBox):
 		self.vterminal.set_sensitive(sensitive)	
 
 	#def manage_vterminal		
+
+	def manage_application_cb(self,active):
+
+		for item in self.epi_list_box.get_children():
+			item.get_children()[0].set_sensitive(active)
+
+	#def manage_application_cb		
+
+	def select_all_pkg(self,widget):
+
+		self.monitoring=False
+
+		if self.uncheck_all:
+			active=False
+			self.select_pkg_btn.set_label(_(_("Check all packages")))
+			self.uncheck_all=False
+		else:
+			active=True
+			self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
+			self.uncheck_all=True
+
+		for item in self.epi_list_box.get_children():
+			item.get_children()[0].set_active(active)
+
+		self.monitoring=True
+
+	#def select_all_pkg	
+
+	def manage_state_select_pkg_btn(self):
+		
+		if self.monitoring:
+			count_ck=0
+			count_uck=0
+			for item in self.core.mainWindow.load_epi_conf[0]["pkg_list"]:
+				if item["name"] in self.core.epiManager.packages_selected:
+					count_ck+=1
+				else:
+					count_uck+=1	
+			
+			if count_ck==len(self.core.mainWindow.load_epi_conf[0]["pkg_list"]):
+				self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
+				self.uncheck_all=True
+
+			if count_uck==len(self.core.mainWindow.load_epi_conf[0]["pkg_list"]):
+				self.select_pkg_btn.set_label(_(_("Check all packages")))
+				self.uncheck_all=False
+		
+
+	#def manage_select_pkg_btn
+
+			
+
 
 #class EpiBox
 
