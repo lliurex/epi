@@ -19,14 +19,20 @@ class IconsManager:
 	def __init__(self):
 		
 		self.distro_name="lliurex"
+		
 		self.base_url="http://appstream.ubuntu.com/data/"
 		self.icons_url_file="icons-64x64.tar.gz"
 		self.icons_path="/var/lib/app-info/icons/"
-		self.dists=["xenial","xenial-updates","xenial-security"]
+		self.dists=["bionic","bionic-updates","bionic-security"]
 		self.components=["main","restricted","universe","multiverse"]
+		self.icon_dates_file="downloaded_icons.dates"
 		
+		self.distro_name="ubuntu"
 		
 		self.icon_db=Gtk.IconTheme()
+		self.icon_db.set_custom_theme("Breeze")
+		
+		
 		#self.icon_db.set_custom_theme("Vibrancy-Dark-Orange")
 		#self.package_icon=self.icon_db.lookup_icon("package",64,Gtk.IconLookupFlags.FORCE_SVG ).get_filename()
 		self.package_icon="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.svg"
@@ -37,15 +43,20 @@ class IconsManager:
 		
 		#debian_name=pkg_info["package"]
 		#icon=pkg_info["icon"]
+
 		if icon==None:
 			icon=""
 		
 		#component=pkg_info["component"]
 		
-		ret_icon=self.icon_db.lookup_icon(debian_name,64,Gtk.IconLookupFlags.FORCE_SVG)
+		ret_icon=self.icon_db.lookup_icon(debian_name,40,Gtk.IconLookupFlags.FORCE_SVG)
 		if ret_icon!=None:
-			
 			return ret_icon.get_filename()
+
+
+		ret_icon=self.icon_db.lookup_icon(icon,40,Gtk.IconLookupFlags.FORCE_SVG)
+		if ret_icon!=None:
+			return ret_icon.get_filename()	
 			
 		if len(icon)>0:
 			

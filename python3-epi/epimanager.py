@@ -46,7 +46,8 @@ class EpiManager:
 					"zomando":"",
 					"required_root":False,
 					"required_dconf":False,
-					"selection_enabled":{"active":False,"all_selected":False}
+					"selection_enabled":{"active":False,"all_selected":False},
+					"custom_icon_path":""
 					}
 
 		self.packages_selected=[]

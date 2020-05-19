@@ -3,7 +3,10 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Vte', '2.91')
-from gi.repository import Gtk, Pango, GdkPixbuf, Gdk, Gio, GObject,GLib,Vte
+gi.require_version('PangoCairo', '1.0')
+
+import cairo
+from gi.repository import Gtk, Pango, PangoCairo,GdkPixbuf, Gdk, Gio, GObject,GLib,Vte
 
 import copy
 
@@ -38,6 +41,7 @@ class EpiBox(Gtk.VBox):
 		self.package_installed_dep=self.core.rsrc_dir+"package_install_dep.svg"
 		self.info_image=self.core.rsrc_dir+"info.svg"
 		self.initial=self.core.rsrc_dir+"initial.svg"
+		self.check_image=self.core.rsrc_dir+"check.png"
 		self.terminal_config=self.core.rsrc_dir+"terminal.conf"
 
 
@@ -126,7 +130,15 @@ class EpiBox(Gtk.VBox):
 
 			for element in info[item]["pkg_list"]:
 				name=element["name"]
-				self.new_epi_box(name,order,show_cb,default_checked)
+				try:
+					custom_name=element["custom_name"]
+				except:
+					custom_name=""
+				try:
+					custom_icon=os.path.join(info[item]["custom_icon_path"],element["custom_icon"])
+				except:
+					custom_icon=""			
+				self.new_epi_box(name,order,show_cb,default_checked,custom_name,custom_icon)
 
 			'''	
 			else:
@@ -138,18 +150,31 @@ class EpiBox(Gtk.VBox):
 	#def load_info				
 
 	
-	def new_epi_box(self,name,order,show_cb,default_checked):
+	def new_epi_box(self,name,order,show_cb,default_checked,custom_name,custom_icon):
 		
 		hbox=Gtk.HBox()
+		if custom_icon=="":
+			custom=False
+			icon=self.package_availabled
+			icon_installed=self.package_installed
+		else:
+			custom=True
+			icon=custom_icon
+			icon_installed=self.create_pixbuf(custom_icon)	
+
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
-			img=Gtk.Image.new_from_file(self.package_installed)
+			
+			if not custom:
+				img=Gtk.Image.new_from_file(icon_installed)
+			else:
+				img=Gtk.Image.new_from_pixbuf(icon_installed)	
 		else:
 			if order==0:
-				img=Gtk.Image.new_from_file(self.package_availabled)
+				img=Gtk.Image.new_from_file(icon)
+				
 			else:
 				img=Gtk.Image.new_from_file(self.package_availabled_dep)
-		
-		
+			
 
 		application_cb=Gtk.CheckButton()
 		application_cb.connect("toggled",self.on_checked)
@@ -169,7 +194,15 @@ class EpiBox(Gtk.VBox):
 		application_image.pkg=True
 		application_image.status=False
 		application_image.order=order
-		application_info="<span font='Roboto'><b>"+name+"</b></span>"
+		application_image.icon=icon
+		application_image.icon_installed=icon_installed
+		application_image.custom=custom
+
+		if custom_name=='':
+			application_info="<span font='Roboto'><b>"+name+"</b></span>"
+		else:
+			application_info="<span font='Roboto'><b>"+custom_name+"</b></span>"
+	
 		application=Gtk.Label()
 		application.set_markup(application_info)
 		application.set_margin_left(10)
@@ -256,21 +289,26 @@ class EpiBox(Gtk.VBox):
 						self.update_icons[element.order]=[]
 					if element.pkg:
 						tmp['icon_package']=element
-
+						tmp['icon']=element.icon
+						tmp["icon_installed"]=element.icon_installed
+						tmp["custom"]=element.custom
 					if element.status:
 						tmp['icon_status']=element
 
 					
 			if len(tmp)>0:
-				self.update_icons[element.order].append(tmp)
 
+				self.update_icons[element.order].append(tmp)
 
 	#def get_icon_toupdate				
 
 
 	def show_info_clicked(self,button,hbox):
 
-		app=hbox.get_children()[2].get_text()
+		try:
+			app=hbox.get_children()[2].id
+		except:	
+			app=hbox.get_children()[2].get_text()
 
 		summary=self.core.epiManager.pkg_info[app]["summary"]
 
@@ -360,6 +398,35 @@ class EpiBox(Gtk.VBox):
 
 	#def manage_select_pkg_btn
 
+	def create_pixbuf(self,icon):
+
+		image=Gtk.Image.new_from_file(icon)
+		surface=cairo.ImageSurface(cairo.FORMAT_ARGB32,48,48)
+		ctx=cairo.Context(surface)
+		lg1 = cairo.LinearGradient(0.0,0.0, 0.0, 48)
+		lg1.add_color_stop_rgba(0, 255.0, 255.0, 255.0, 1)
+		lg1.add_color_stop_rgba(1, 255.0, 255.0, 255.0, 1)
+		ctx.rectangle(0, 0, 48, 48)
+		ctx.set_source(lg1)
+		ctx.fill()
+		Gdk.cairo_set_source_pixbuf(ctx,image.get_pixbuf(),0,0)
+		ctx.paint()
+
+		'''
+		ctx.set_source_rgba(255,255,255,0.7)
+		ctx.rectangle(25,30,18,18)
+		ctx.fill()
+		'''
+		img=cairo.ImageSurface.create_from_png(self.check_image)
+		ctx.set_source_surface(img,30,30)
+		ctx.fill()
+		ctx.paint()
+		
+		px=Gdk.pixbuf_get_from_surface(surface,0,0,48,48)
+
+		return px
+
+	#def create_pixbu
 			
 
 

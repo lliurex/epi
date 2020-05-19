@@ -1257,14 +1257,20 @@ class MainWindow:
 				item['icon_status'].set_from_file(self.ok_image)
 				if process=="install":
 					if order==0:
-						item['icon_package'].set_from_file(self.core.epiBox.package_installed)
+						if item["custom"]:
+							item['icon_package'].set_from_pixbuf(item['icon_installed'])
+						else:
+							#item['icon_package'].set_from_file(self.core.epiBox.package_installed)
+							item['icon_package'].set_from_file(item['icon_installed'])
+
 
 					else:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
 
 				else:
 					if order==0:
-						item['icon_package'].set_from_file(self.core.epiBox.package_availabled)
+						item['icon_package'].set_from_file(item['icon'])
+
 					else:
 						item['icon_package'].set_from_file(self.core.epiBox.package_availabled_dep)
 
@@ -1277,7 +1283,10 @@ class MainWindow:
 						if status=="installed":
 							item['icon_status'].set_from_file(self.ok_image)
 							if order==0:
-								item["icon_package"].set_from_file(self.core.epiBox.package_installed)	
+								if item["custom"]:
+									item["icon_package"].set_from_pixbuf(item["icon_installed"])	
+								else:
+									item["icon_package"].set_from_file(item["icon_installed"])	
 							else:
 								item["icon_package"].set_from_file(self.core.epiBox.package_installed_dep)	
 		
@@ -1285,7 +1294,7 @@ class MainWindow:
 							item['icon_status'].set_from_file(self.error_image)
 
 							if order==0:
-								item["icon_package"].set_from_file(self.core.epiBox.package_availabled)
+								item["icon_package"].set_from_file(item['icon'])
 							else:
 								item["icon_package"].set_from_file(self.core.epiBox.package_availabled_dep)
 
