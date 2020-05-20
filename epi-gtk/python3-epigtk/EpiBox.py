@@ -135,7 +135,10 @@ class EpiBox(Gtk.VBox):
 				except:
 					custom_name=""
 				try:
-					custom_icon=os.path.join(info[item]["custom_icon_path"],element["custom_icon"])
+					#custom_icon=os.path.join(info[item]["custom_icon_path"],element["custom_icon"])
+					debian_name=self.core.epiManager.pkg_info[name]["debian_name"]
+					component=self.core.epiManager.pkg_info[name]["component"]
+					custom_icon=self.core.iconsManager.search_icon(debian_name,info[item]["custom_icon_path"],element["custom_icon"],component)
 				except:
 					custom_icon=""			
 				self.new_epi_box(name,order,show_cb,default_checked,custom_name,custom_icon)
@@ -160,7 +163,11 @@ class EpiBox(Gtk.VBox):
 		else:
 			custom=True
 			icon=custom_icon
-			icon_installed=self.create_pixbuf(custom_icon)	
+			icon_installed=self.core.iconsManager.create_pixbuf(custom_icon)
+			if icon_installed=="":
+				custom=False
+				icon=self.package_availabled
+				icon_installed=self.package_installed
 
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
 			
@@ -209,10 +216,10 @@ class EpiBox(Gtk.VBox):
 		application.set_margin_right(15)
 		application.set_margin_top(21)
 		application.set_margin_bottom(21)
-		application.set_width_chars(25)
-		application.set_max_width_chars(25)
+		application.set_width_chars(50)
+		application.set_max_width_chars(50)
 		application.set_xalign(-1)
-		application.set_ellipsize(Pango.EllipsizeMode.END)
+		application.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
 		application.id=name
 		application.pkg=False
 		application.status=False
@@ -327,8 +334,7 @@ class EpiBox(Gtk.VBox):
 			txt=txt.replace("&gt;", ">")
 			txt=txt.replace("&amp;", "&")
 
-			icon=self.core.get_icons.get_icon(debian_name,icon,component)
-			
+			icon=self.core.iconsManager.get_icon(debian_name,icon,component)
 			self.core.infoBox.icon.set_from_file(icon)
 			self.core.infoBox.name_label.set_text(name)
 			self.core.infoBox.summary_label.set_text(summary)
@@ -397,38 +403,6 @@ class EpiBox(Gtk.VBox):
 		
 
 	#def manage_select_pkg_btn
-
-	def create_pixbuf(self,icon):
-
-		image=Gtk.Image.new_from_file(icon)
-		surface=cairo.ImageSurface(cairo.FORMAT_ARGB32,48,48)
-		ctx=cairo.Context(surface)
-		lg1 = cairo.LinearGradient(0.0,0.0, 0.0, 48)
-		lg1.add_color_stop_rgba(0, 255.0, 255.0, 255.0, 1)
-		lg1.add_color_stop_rgba(1, 255.0, 255.0, 255.0, 1)
-		ctx.rectangle(0, 0, 48, 48)
-		ctx.set_source(lg1)
-		ctx.fill()
-		Gdk.cairo_set_source_pixbuf(ctx,image.get_pixbuf(),0,0)
-		ctx.paint()
-
-		'''
-		ctx.set_source_rgba(255,255,255,0.7)
-		ctx.rectangle(25,30,18,18)
-		ctx.fill()
-		'''
-		img=cairo.ImageSurface.create_from_png(self.check_image)
-		ctx.set_source_surface(img,30,30)
-		ctx.fill()
-		ctx.paint()
-		
-		px=Gdk.pixbuf_get_from_surface(surface,0,0,48,48)
-
-		return px
-
-	#def create_pixbu
-			
-
 
 #class EpiBox
 

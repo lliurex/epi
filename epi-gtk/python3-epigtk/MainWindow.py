@@ -61,7 +61,7 @@ class MainWindow:
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		
 		self.main_window=builder.get_object("main_window")
-		self.main_window.set_title("EPI-GTK")
+		self.main_window.set_title("EPI")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
 		self.apply_button=builder.get_object("apply_button")
@@ -232,12 +232,12 @@ class MainWindow:
 		
 		if self.order>1:
 			self.epiBox.epi_depend_label.show()
-			self.epiBox.scrolledwindow.set_size_request(500,160)
+			self.epiBox.scrolledwindow.set_size_request(525,160)
 		else:
 			if len(self.load_epi_conf[0]["pkg_list"])>1:
-				self.epiBox.scrolledwindow.set_size_request(500,160)
+				self.epiBox.scrolledwindow.set_size_request(525,160)
 			else:	
-				self.epiBox.scrolledwindow.set_size_request(500,90)
+				self.epiBox.scrolledwindow.set_size_request(525,90)
 		
 	
 	#def load_info
@@ -705,7 +705,7 @@ class MainWindow:
 				pkgs_not_selected=True
 
 			if pkgs_not_selected:					
-				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI-GTK")
+				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI")
 				msg=self.get_msg_text(28)
 				dialog.format_secondary_text(msg)
 				response=dialog.run()
@@ -1106,7 +1106,7 @@ class MainWindow:
 
 			if pkgs_not_selected:		
 	
-				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI-GTK")
+				dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.ERROR, Gtk.ButtonsType.OK, "EPI")
 				msg=self.get_msg_text(29)
 				dialog.format_secondary_text(msg)
 				response=dialog.run()
@@ -1121,7 +1121,7 @@ class MainWindow:
 
 		if show_uninstall_question:
 
-			dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO, "EPI-GTK")
+			dialog = Gtk.MessageDialog(None,0,Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO, "EPI")
 			msg=self.get_msg_text(14)
 			dialog.format_secondary_text(msg)
 			response=dialog.run()

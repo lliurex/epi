@@ -38,9 +38,9 @@ class Core:
 
 		self.rsrc_dir= settings.RSRC_DIR + "/"
 		self.ui_path= settings.RSRC_DIR + "/epi-gtk.ui"
-		self.get_icons=IconsManager.IconsManager()
+		#self.get_icons=IconsManager.IconsManager()
 
-		
+		self.iconsManager=IconsManager.IconsManager()
 		self.epiManager=EpiManager.EpiManager()
 
 		self.chooserBox=ChooserBox.ChooserBox()
