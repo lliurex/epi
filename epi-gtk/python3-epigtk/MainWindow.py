@@ -62,7 +62,7 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(670,470)
+		self.main_window.resize(675,480)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
@@ -122,8 +122,8 @@ class MainWindow:
 		self.time_out=5
 		self.retry=0
 		self.lock_quit=False
+		max_height=Gdk.Display.get_default().get_monitor(0).get_geometry().height
 
-		
 		if self.epi_file!=None:
 			if self.epi_file!="--error":
 				self.init_process()
@@ -232,7 +232,7 @@ class MainWindow:
 	def load_info(self):
 
 		self.epiBox.load_info(self.load_epi_conf)
-		
+		'''
 		if self.order>1:
 			self.epiBox.epi_depend_label.show()
 			self.epiBox.scrolledwindow.set_size_request(525,160)
@@ -241,7 +241,7 @@ class MainWindow:
 				self.epiBox.scrolledwindow.set_size_request(525,160)
 			else:	
 				self.epiBox.scrolledwindow.set_size_request(525,90)
-		
+		'''
 	
 	#def load_info
 
@@ -749,7 +749,7 @@ class MainWindow:
 
 	def install_process(self):
 
-		self.main_window.resize(670,590)
+		self.main_window.resize(675,712)
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
@@ -1133,7 +1133,7 @@ class MainWindow:
 				
 
 			if response==Gtk.ResponseType.YES:
-				self.main_window.resize(670,590)
+				self.main_window.resize(675,712)
 				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
 				self.epiBox.manage_application_cb(False)
 				self.epiBox.select_pkg_btn.set_sensitive(False)

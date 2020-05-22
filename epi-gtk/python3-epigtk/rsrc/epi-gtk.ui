@@ -188,10 +188,12 @@
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow">
-            <property name="height_request">160</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="shadow_type">in</property>
+            <property name="max_content_width">0</property>
+            <property name="max_content_height">500</property>
+            <property name="propagate_natural_height">True</property>
             <child>
               <object class="GtkViewport" id="epi_list_viewport">
                 <property name="visible">True</property>
@@ -223,7 +225,7 @@
           <object class="GtkBox" id="select_btn_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_top">5</property>
+            <property name="margin_top">10</property>
             <property name="margin_bottom">5</property>
             <property name="orientation">vertical</property>
             <child>
@@ -294,10 +296,12 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkScrolledWindow" id="terminalScrolledWindow">
-                <property name="height_request">190</property>
+                <property name="height_request">170</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="shadow_type">in</property>
+                <property name="max_content_height">500</property>
+                <property name="propagate_natural_height">True</property>
                 <child>
                   <placeholder/>
                 </child>

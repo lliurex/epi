@@ -116,6 +116,8 @@ class EpiBox(Gtk.VBox):
 			if order==0:
 				if info[item]["selection_enabled"]["active"]:
 					self.select_pkg_btn.set_visible(True)
+					self.core.mainWindow.main_window.resize(675,510)
+
 					show_cb=True
 					if info[item]["selection_enabled"]["all_selected"]:
 						default_checked=True
