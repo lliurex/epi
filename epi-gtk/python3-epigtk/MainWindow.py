@@ -62,6 +62,8 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
+		self.main_window.resize(670,470)
+		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
 		self.apply_button=builder.get_object("apply_button")
@@ -144,6 +146,7 @@ class MainWindow:
 		self.style_provider.load_from_file(f)
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		self.main_window.set_name("WINDOW")
+		self.banner_box.set_name("BANNER_BOX")
 
 	#def set_css_info	
 				
@@ -746,6 +749,7 @@ class MainWindow:
 
 	def install_process(self):
 
+		self.main_window.resize(670,590)
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
@@ -1129,6 +1133,7 @@ class MainWindow:
 				
 
 			if response==Gtk.ResponseType.YES:
+				self.main_window.resize(670,590)
 				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
 				self.epiBox.manage_application_cb(False)
 				self.epiBox.select_pkg_btn.set_sensitive(False)
