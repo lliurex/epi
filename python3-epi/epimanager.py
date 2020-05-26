@@ -575,15 +575,14 @@ class EpiManager:
 			if self.type!="mix":
 				if self.type=="file":
 					if not self.manage_download:
+						cmd=cmd_file
 						for pkg in self.packages_selected:
-							cmd_file+="%s "%pkg
-						cmd_file+='; echo $? >' + self.token_result_download[1] +';'
-
+							cmd+="%s "%pkg
+						cmd+='; echo $? >' + self.token_result_download[1] +';'
 				if self.manage_download:
 					for item in self.epi_conf["pkg_list"]:
 						if item["name"] in self.packages_selected:
 							cmd=self._get_download_cmd(self.type,item,cmd)
-							
 					cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 
 			else:
@@ -602,9 +601,7 @@ class EpiManager:
 									
 				if cmd_file!="":
 					cmd_file+=";"
-			cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
-
-
+				cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
 		return cmd			
 					
 	#def download_app		

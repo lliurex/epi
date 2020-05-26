@@ -62,7 +62,7 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(675,480)
+		self.main_window.resize(675,465)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
@@ -108,8 +108,8 @@ class MainWindow:
 		self.unlock_button.hide()
 		self.uninstall_button.hide()
 		self.return_button.hide()
-		self.epiBox.epi_depend_label.hide()
-		self.epiBox.terminal_label.hide()
+		self.epiBox.epi_depend_label.set_text("")
+		self.epiBox.terminal_label.set_text("")
 		self.epiBox.terminal_scrolled.hide()
 		self.epiBox.viewport.hide()
 		self.epiBox.select_pkg_btn.set_visible(False)
@@ -232,10 +232,11 @@ class MainWindow:
 	def load_info(self):
 
 		self.epiBox.load_info(self.load_epi_conf)
-		'''
+		
 		if self.order>1:
-			self.epiBox.epi_depend_label.show()
-			self.epiBox.scrolledwindow.set_size_request(525,160)
+			self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
+			#self.epiBox.scrolledwindow.set_size_request(525,165)
+		'''
 		else:
 			if len(self.load_epi_conf[0]["pkg_list"])>1:
 				self.epiBox.scrolledwindow.set_size_request(525,160)
@@ -527,7 +528,7 @@ class MainWindow:
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
 			self.epiBox.terminal_label.set_name("MSG_LABEL")
-			self.epiBox.terminal_label.show()
+			#self.epiBox.terminal_label.show()
 			msg_code=0
 			msg=self.get_msg_text(msg_code)
 			self.epiBox.terminal_label.set_text(msg)
@@ -749,7 +750,10 @@ class MainWindow:
 
 	def install_process(self):
 
-		self.main_window.resize(675,712)
+		if self.load_epi_conf[0]["selection_enabled"]["active"]:
+			self.main_window.resize(675,735)
+		else:
+			self.main_window.resize(675,715)
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
@@ -783,7 +787,7 @@ class MainWindow:
 		error=False
 
 		if not self.add_repository_keys_launched:
-			self.epiBox.terminal_label.show()
+			#self.epiBox.terminal_label.show()
 			msg=self.get_msg_text(4)
 			self.epiBox.terminal_label.set_text(msg)
 			self.add_repository_keys_launched=True
@@ -1046,7 +1050,7 @@ class MainWindow:
 	 	length=len(command)
 	 	if length>0:
 	 		if self.load_epi_conf[0]["required_dconf"]:
-	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde '+command
+	 			command='LANG=C LANGUAGE=en '+command
 	 		else:
 	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive '+command
 
@@ -1133,7 +1137,10 @@ class MainWindow:
 				
 
 			if response==Gtk.ResponseType.YES:
-				self.main_window.resize(675,712)
+				if self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self.main_window.resize(675,735)
+				else:
+					self.main_window.resize(675,715)
 				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
 				self.epiBox.manage_application_cb(False)
 				self.epiBox.select_pkg_btn.set_sensitive(False)
@@ -1160,7 +1167,7 @@ class MainWindow:
 		self.sp_cont=self.sp_cont+1
 		
 		if not self.remove_package_launched:
-			self.epiBox.terminal_label.show()
+			#self.epiBox.terminal_label.show()
 			msg=self.get_msg_text(15)
 			self.epiBox.terminal_label.set_text(msg)
 			self.remove_package_launched=True
