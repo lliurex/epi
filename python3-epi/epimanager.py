@@ -132,19 +132,7 @@ class EpiManager:
 
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
-				'''
-				else:
-					if item==0:
-						if cont>0:
-							self.epiFiles[item]["status"]="installed"
-							self.pkg_info.update(info)
-						else:
-							self.epiFiles[item]["status"]="availabled"
-							self.pkg_info.update(info)
-					else:
-						self.epiFiles[item]["status"]="availabled"
-						self.pkg_info.update(info)		
-				'''						
+					
 
 	#def get_pkg_info				
 							
@@ -239,28 +227,30 @@ class EpiManager:
 							if poutput[0].decode("utf-8").split("\n")[0]=='0':
 								return "installed"
 							elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-								cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-								p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-								poutput,perror=p.communicate()
-								if len(poutput)>0:
-									return "installed"
+								return self._get_pkg_status(pkg)
 
 				except Exception as e:
 					self.getStatus_byscript=False
 					
 					pass
 		else:					
-			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			poutput,perror=p.communicate()
-
-			if len(poutput)>0:
-				return "installed"
+			return self._get_pkg_status(pkg)
 		
 				
 		return "available"	
 
 	#def check_pkg_status	
+
+	def _get_pkg_status(self,pkg):
+
+		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		poutput,perror=p.communicate()
+
+		if len(poutput)>0:
+			return "installed"
+
+	#def _get_pkg_status
 
 	def get_localdeb_info(self,pkg,order):
 
@@ -500,6 +490,7 @@ class EpiManager:
 	def add_repository_keys(self,order):
 
 		self.epi_conf=self.epiFiles[order]
+		self.epi_order=order
 		cmd=""
 		self.type=self.epi_conf["type"]
 
@@ -580,6 +571,7 @@ class EpiManager:
 					pass
 
 			self.token_result_download=tempfile.mkstemp("_result_download")
+			
 			if self.type!="mix":
 				if self.type=="file":
 					if not self.manage_download:
@@ -590,25 +582,8 @@ class EpiManager:
 				if self.manage_download:
 					for item in self.epi_conf["pkg_list"]:
 						if item["name"] in self.packages_selected:
-							tmp_file=""
-							version=self.get_app_version(item)
-							if self.type=="deb":
-								name=item["name"]+".deb"
-								tmp_file=os.path.join(self.download_path,name)
-							elif self.type=="file":
-								try:
-									tmp_file=os.path.join(self.download_path,item["alias_download"])
-								except Exception as e:	
-									#name=item["name"]
-									tmp_file=os.path.join(self.download_path,version)
-					
-							url=item["url_download"]
-						
-							if os.path.exists(tmp_file):
-								cmd=cmd+'rm -f '+ tmp_file +';'
-							self.download_folder.append(tmp_file)
-							cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
-
+							cmd=self._get_download_cmd(self.type,item,cmd)
+							
 					cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 
 			else:
@@ -617,47 +592,48 @@ class EpiManager:
 					if item["name"] in self.packages_selected:
 						if item["type"] in ["deb","file"]:
 							if self.manage_download:
-								tmp_file=""
-								version=self.get_app_version(item)
-								if item["type"]=="deb":
-									name=item["name"]+".deb"
-									tmp_file=os.path.join(self.download_path,name)
-								else:
-									try:
-										tmp_file=os.path.join(self.download_path,item["alias_download"])
-									except Exception as e:	
-										#name=item["name"]
-										tmp_file=os.path.join(self.download_path,version)
-							
-								url=item["url_download"]
-								if os.path.exists(tmp_file):
-									cmd=cmd+'rm -f '+ tmp_file +';'
-								self.download_folder.append(tmp_file)
-								cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '			
-
-
+								cmd=self._get_download_cmd(item["type"],item,cmd)
+								
 							else:
 								if item["type"]=="file":
 									cmd_file+="%s "%item["name"]	
 								else:
-									tmp_file=""
-									version=self.get_app_version(item)
-									name=item["name"]+".deb"
-									tmp_file=os.path.join(self.download_path,name)	
-									url=item["url_download"]
-									if os.path.exists(tmp_file):
-										cmd=cmd+'rm -f '+ tmp_file +';'
-									self.download_folder.append(tmp_file)
-									cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '			
-			
+									cmd=self._get_download_cmd(item["type"],item,cmd)
+									
 				if cmd_file!="":
 					cmd_file+=";"
 			cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
+
 
 		return cmd			
 					
 	#def download_app		
 
+	def _get_download_cmd(self,item_type,item,cmd):
+
+		tmp_file=""
+		version=self.get_app_version(item)
+		
+		if item_type=="deb": 
+			name=item["name"]+".deb"
+			tmp_file=os.path.join(self.download_path,name)
+		elif item_type=="file":
+			try:
+				tmp_file=os.path.join(self.download_path,item["alias_download"])
+			except Exception as e:	
+				tmp_file=os.path.join(self.download_path,version)
+		
+
+		url=item["url_download"]
+		if os.path.exists(tmp_file):
+			cmd=cmd+'rm -f '+ tmp_file +';'
+		
+		self.download_folder.append(tmp_file)
+		cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
+
+		return cmd
+
+	#def _get_download_cmd
 
 	def check_download(self):
 
@@ -773,7 +749,8 @@ class EpiManager:
 			pkg=""
 			cmd="dpkg -i "
 			for item in self.download_folder:
-				pkg=pkg+' '+item
+				if os.path.exists(item):
+					pkg=pkg+' '+item
 			
 			cmd=cmd+pkg	
 
@@ -792,10 +769,8 @@ class EpiManager:
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 				cmd+='; echo $? >' + self.token_result_install[1]	
-				#cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
 		
 		elif self.type=="mix":
-
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					if item["type"]=="apt":
@@ -803,10 +778,11 @@ class EpiManager:
 					
 					elif item["type"]=="deb":
 						for pkg in self.download_folder:
-							if item["name"] in pkg:
-								if cmd=="":
-									cmd="apt-get install --reinstall --allow-downgrades --yes "
-								cmd=cmd + pkg +" "
+							if os.path.exists(pkg):
+								if item["name"] in pkg:
+									if cmd=="":
+										cmd="apt-get install --reinstall --allow-downgrades --yes "
+									cmd=cmd + pkg +" "
 					
 					elif item["type"]=="file":
 						cmd_file+="%s "%item["name"]
@@ -840,7 +816,7 @@ class EpiManager:
 
 		if action=="install":
 			epi_type=self.type
-			if epi_type in ["file","mix"]:
+			if epi_type == "file":
 				if self.token_result_install!="":
 					token=self.token_result_install[1]
 			
@@ -848,21 +824,17 @@ class EpiManager:
 				pkgs=self.epi_conf["pkg_list"]
 		else:
 			epi_type=self.epiFiles[0]["type"]
-			if epi_type in ["file","mix"]:
+			if epi_type=="file":
 				token=self.token_result_remove[1]
 				
 			if epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:
-						if epi_type=="mix":
-							if item["type"] in ["apt","deb"]:
-								pkgs_ref.append(item["name"]) 
-						else:		
-							pkgs_ref.append(item["name"])
+						pkgs_ref.append(item["name"])
 
 
-		if epi_type in ["file","mix"]:
+		if epi_type=="file":
 			if os.path.exists(token):
 				file=open(token)
 				content=file.readline()
@@ -877,25 +849,22 @@ class EpiManager:
 		if epi_type !="file":
 			for item in pkgs:
 				if epi_type=="mix":
-					if item["type"] in ["apt","deb"]:
-						status=self.check_pkg_status(item["name"])
-						if item["name"] in self.packages_selected:
-							dpkg_status[item["name"]]=status
-							if status!="installed":
-								count+=1
-						else:
-							if status=="installed":
-								pkgs_installed+=1			
+					if action=="install":
+						status=self.check_pkg_status(item["name"],self.epi_order)
+					else:
+						status=self.check_pkg_status(item["name"],0)
+	
 				else:
 					status=self.check_pkg_status(item["name"])
-					if item["name"] in self.packages_selected:
-						dpkg_status[item["name"]]=status
-						if status!="installed":
-							count+=1
-					else:
-						if status=="installed":
-							pkgs_installed+=1		
-					
+	
+				if item["name"] in self.packages_selected:
+					dpkg_status[item["name"]]=status
+					if status!="installed":
+						count+=1
+				else:
+					if status=="installed":
+						pkgs_installed+=1			
+									
 
 			if action=="install":
 				if count==0:
