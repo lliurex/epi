@@ -572,7 +572,8 @@ class EpiManager:
 
 			self.token_result_download=tempfile.mkstemp("_result_download")
 			
-			if self.type!="mix":
+			if self.type in ["deb","file"]:	
+
 				if self.type=="file":
 					if not self.manage_download:
 						cmd=cmd_file
@@ -585,14 +586,13 @@ class EpiManager:
 							cmd=self._get_download_cmd(self.type,item,cmd)
 					cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 
-			else:
+			elif self.type=="mix":
 				
 				for item in self.epi_conf["pkg_list"]:
 					if item["name"] in self.packages_selected:
 						if item["type"] in ["deb","file"]:
 							if self.manage_download:
 								cmd=self._get_download_cmd(item["type"],item,cmd)
-								
 							else:
 								if item["type"]=="file":
 									cmd_file+="%s "%item["name"]	
@@ -602,6 +602,7 @@ class EpiManager:
 				if cmd_file!="":
 					cmd_file+=";"
 				cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
+		
 		return cmd			
 					
 	#def download_app		
@@ -636,8 +637,18 @@ class EpiManager:
 
 		
 		result=True
+		
+		
+
 		if self.type not in ['apt','localdeb']:
 
+			count=0
+			pkgs_todownload=len(self.download_folder)
+
+			if len(self.download_folder)>0:
+				for item in self.download_folder:
+					if os.path.exists(item):
+						count=count+1
 			
 			if os.path.exists(self.token_result_download[1]):
 				file=open(self.token_result_download[1])
@@ -649,15 +660,13 @@ class EpiManager:
 
 				if result:	
 					if self.manage_download:
-						pkgs_todownload=len(self.download_folder)
-						cont=0
-
-						for item in self.download_folder:
-							if os.path.exists(item):
-								cont=cont+1
-
-						if cont != pkgs_todownload:
-							result=False
+						if count != pkgs_todownload:
+							if not self.epi_conf["selection_enabled"]["active"]:
+								result=False
+				else:
+					if self.epi_conf["selection_enabled"]["active"]:
+						if count>0:		
+							result=True
 
 		return result
 
@@ -809,6 +818,7 @@ class EpiManager:
 		pkgs_installed=0
 		token=""
 		pkgs_ref=[]
+		result=False
 
 
 		if action=="install":
@@ -843,7 +853,7 @@ class EpiManager:
 				file.close()
 				os.remove(token)
 
-		if epi_type !="file":
+		elif epi_type !="file":
 			for item in pkgs:
 				if epi_type=="mix":
 					if action=="install":

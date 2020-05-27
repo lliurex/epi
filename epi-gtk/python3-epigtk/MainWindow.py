@@ -308,32 +308,37 @@ class MainWindow:
 		if self.checking_system_t.done:
 
 			#if self.connection[0]:
-			if self.order>0:
-				if not self.required_root:
-					if len (self.lock_info)>0:
-						self.load_unlock_panel()
-						return False
-													
-					else:
-						if self.test_install[0]!='':
-							if self.test_install[0]=='1':
-								error=True
-								msg_code=25
-							else:
-								self.load_depends_panel()
-								return False
-						else:		
-							self.load_info_panel()
+			if self.valid_json:			
+				if self.order>0:
+					if not self.required_root:
+						if len (self.lock_info)>0:
+							self.load_unlock_panel()
 							return False
+														
+						else:
+							if self.test_install[0]!='':
+								if self.test_install[0]=='1':
+									error=True
+									msg_code=25
+								else:
+									self.load_depends_panel()
+									return False
+							else:		
+								self.load_info_panel()
+								return False
+					else:
+						error=True
+						msg_code=2	
 				else:
 					error=True
-					msg_code=2	
+					if self.valid_json:
+						msg_code=1
+					else:
+						msg_code=18	
+
 			else:
 				error=True
-				if self.valid_json:
-					msg_code=1
-				else:
-					msg_code=18	
+				msg_code=18			
 			'''		
 			else:
 				error=True
@@ -367,30 +372,32 @@ class MainWindow:
 		
 		#if self.connection[0]:
 		self.valid_json=self.core.epiManager.read_conf(self.epi_file)
-		epi_loaded=self.core.epiManager.epiFiles
-		order=len(epi_loaded)
-		if order>0:
-			check_root=self.core.epiManager.check_root()
-			self.core.epiManager.get_pkg_info()
-			self.required_root=self.core.epiManager.required_root()
-			self.required_eula=self.core.epiManager.required_eula()
-			if len(self.required_eula)>0:
-				self.eula_accepted=False
-			if check_root:	
-				self.lock_info=self.core.epiManager.check_locks()
+		if self.valid_json:
+			epi_loaded=self.core.epiManager.epiFiles
+			order=len(epi_loaded)
+			if order>0:
+				check_root=self.core.epiManager.check_root()
+				self.core.epiManager.get_pkg_info()
+				self.required_root=self.core.epiManager.required_root()
+				self.required_eula=self.core.epiManager.required_eula()
+				if len(self.required_eula)>0:
+					self.eula_accepted=False
+				if check_root:	
+					self.lock_info=self.core.epiManager.check_locks()
+					self.write_log("Locks info: "+ str(self.lock_info))
+				else:
+					self.lock_info={}
+					self.write_log("Locks info: Not checked. User is not root")
+				self.test_install=self.core.epiManager.test_install()
 				self.write_log("Locks info: "+ str(self.lock_info))
+				self.checking_system_t.done=True
+				self.load_epi_conf=self.core.epiManager.epiFiles
+				self.order=len(self.load_epi_conf)
 			else:
-				self.lock_info={}
-				self.write_log("Locks info: Not checked. User is not root")
-			self.test_install=self.core.epiManager.test_install()
-			self.write_log("Locks info: "+ str(self.lock_info))
-			self.checking_system_t.done=True
-			self.load_epi_conf=self.core.epiManager.epiFiles
-			self.order=len(self.load_epi_conf)
+				self.load_epi_conf=epi_loaded
+				self.order=order
 		else:
-			self.load_epi_conf=epi_loaded
-			self.order=order
-			
+			self.checking_system_t.done=True	
 		#self.checking_system_t.done=True	
 
 	#def checking_system	
@@ -723,12 +730,13 @@ class MainWindow:
 			if self.eula_accepted:
 
 				self.install_process()
-			#self.eula_order=len(self.required_eula)-1
 			else:
 				self.eulas_tocheck=self.required_eula.copy()
+				self.eulas_canceled=self.required_eula.copy()
 				for item in range(len(self.eulas_tocheck)-1, -1, -1):
 					if self.eulas_tocheck[item]["pkg_name"] not in self.core.epiManager.packages_selected:
 						self.eulas_tocheck.pop(item)
+				self.eulas_canceled=self.eulas_tocheck.copy()
 				self.eula_order=len(self.eulas_tocheck)-1
 				self.accept_eula()
 
@@ -737,15 +745,27 @@ class MainWindow:
 
 	def accept_eula(self):
 
-		
-		if len(self.eulas_tocheck)>0:
-				self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])
-		else:
-			self.eula_accepted=True
-			self.write_log("Eula accepted")
-			self.eulaBox.eula_window.hide()
-			self.install_process()
+		if not self.load_epi_conf[0]["selection_enabled"]["active"]:
 
+			if len(self.eulas_tocheck)>0:
+					self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])
+			else:
+				self.eula_accepted=True
+				
+		else:
+			if len(self.eulas_canceled)>0:
+					self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])	
+			else:
+				self.eula_accepted=True
+				
+		if self.eula_accepted:
+			self.eulaBox.eula_window.hide()
+			if len(self.core.epiManager.packages_selected)>0:
+				self.write_log("Eula accepted")
+				self.install_process()				
+			else:
+				self.eula_accepted=False
+	
 	#def accept_eula
 
 	def install_process(self):
