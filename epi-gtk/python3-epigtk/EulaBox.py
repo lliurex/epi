@@ -112,7 +112,7 @@ class EulaBox(Gtk.VBox):
 					if element.id == self.pkg_name:
 						item.get_children()[0].set_active(False)
 
-			self.core.mainWindow.eulas_canceled.pop(self.core.mainWindow.eula_order)
+			self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
 			self.core.mainWindow.eula_order-=1
 			self.core.mainWindow.accept_eula()
 		else:
@@ -125,7 +125,7 @@ class EulaBox(Gtk.VBox):
 	def accept_eula_button_clicked(self,widget):
 
 		self.core.mainWindow.eulas_tocheck.pop(self.core.mainWindow.eula_order)
-		self.core.mainWindow.eulas_canceled.pop(self.core.mainWindow.eula_order)
+		self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
 		self.core.mainWindow.eula_order-=1
 		self.load_url("")
 		self.core.mainWindow.accept_eula()

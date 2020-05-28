@@ -716,30 +716,22 @@ class EpiManager:
 		self._copy_epi_keyring()
 		self.token_result_install=""
 		pkgs_apt=0
-		pkgs_file=0
 		add_i386=""
+		cmd=""
 		
 		if not self.arquitecture:
 			add_i386=self.check_arquitecture()
 
-
-		cmd=""
-		cmd_file=""
-		
+	
 		if self.type=="mix":
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					if item["type"]=="apt":
-						pkgs_apt+=1
-					elif item["type"]=="file":
-						pkgs_file+=1
-
-			if pkgs_file>0:
-				self.token_result_install=tempfile.mkstemp("_result")
-				script=self.epi_conf["script"]["name"]
-				if os.path.exists(script):
-					cmd_file=script + " installPackage "	
-
+			result_mix=self._check_epi_mix_content()
+			pkgs_apt=result_mix[0]
+			pkgs_deb=result_mix[1]
+			pkgs_file=result_mix[2]
+			cmd_dpkg=result_mix[3]
+			cmd_file=result_mix[4]
+			
+		
 		if self.type=="apt" or pkgs_apt>0:
 			update_repos=self.check_update_repos()
 			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
@@ -749,8 +741,7 @@ class EpiManager:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
 					cmd=cmd + app +" "
-			
-			
+				
 		elif self.type=="deb":
 			pkg=""
 			cmd="dpkg -i "
@@ -768,10 +759,8 @@ class EpiManager:
 				cmd=cmd+pkg+ " "
 
 		elif self.type=="file":
-			self.token_result_install=tempfile.mkstemp("_result")
-			script=self.epi_conf["script"]["name"]
-			if os.path.exists(script):
-				cmd=script + " installPackage "
+			cmd=self._get_install_file_cmd_base()
+			if cmd !="":
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 				cmd+='; echo $? >' + self.token_result_install[1]	
@@ -786,19 +775,69 @@ class EpiManager:
 						for pkg in self.download_folder:
 							if os.path.exists(pkg):
 								if item["name"] in pkg:
-									if cmd=="":
-										cmd="apt-get install --reinstall --allow-downgrades --yes "
-									cmd=cmd + pkg +" "
+									cmd_dpkg=cmd_dpkg + pkg +" "
 					
 					elif item["type"]=="file":
-						cmd_file+="%s "%item["name"]
-			if cmd_file!="":
-				cmd_file+='; echo $? >' + self.token_result_install[1]+';'								
+						if cmd_file!="":
+							cmd_file+="%s "%item["name"]
 
-		cmd=cmd+"; "+cmd_file
+			if cmd_dpkg!="":
+				cmd=cmd+"; "+cmd_dpkg
+
+			if cmd_file!="":
+				cmd_file+='; echo $? >' + self.token_result_install[1]
+				cmd=cmd+"; "+cmd_file	
+
+		cmd=cmd+";"
+
 		return cmd	
 
-	#def install_app	
+	#def install_app
+
+	def _check_epi_mix_content(self):
+		
+		pkgs_apt=0
+		pkgs_file=0
+		pkgs_deb=0
+		cmd_file=""
+		cmd_dpkg=""
+		result=[]
+
+		for item in self.epi_conf["pkg_list"]:
+			if item["name"] in self.packages_selected:
+				if item["type"]=="apt":
+					pkgs_apt+=1
+				
+				elif item["type"]=="deb":
+					pkgs_deb+=1
+
+				elif item["type"]=="file":
+					pkgs_file+=1	
+						
+		if pkgs_deb>0:
+			cmd_dpkg="dpkg -i "	
+
+		if pkgs_file>0:
+			cmd_file=self._get_install_file_cmd_base()	
+
+		result=[pkgs_apt,pkgs_deb,pkgs_file,cmd_dpkg,cmd_file]
+
+		return result
+
+	#def _check_epi_mix_content
+
+	def _get_install_file_cmd_base(self):
+
+		cmd_tmp=""
+		self.token_result_install=tempfile.mkstemp("_result")
+		script=self.epi_conf["script"]["name"]
+		
+		if os.path.exists(script):
+			cmd_tmp=script + " installPackage "	
+		
+		return cmd_tmp 
+
+	#def _get_install_file_cmd_base	
 
 	def _copy_epi_keyring(self):
 
@@ -827,14 +866,14 @@ class EpiManager:
 				if self.token_result_install!="":
 					token=self.token_result_install[1]
 			
-			if epi_type!="file":
+			elif epi_type!="file":
 				pkgs=self.epi_conf["pkg_list"]
 		else:
 			epi_type=self.epiFiles[0]["type"]
 			if epi_type=="file":
 				token=self.token_result_remove[1]
 				
-			if epi_type !="file":
+			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:

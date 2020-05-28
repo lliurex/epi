@@ -122,7 +122,6 @@ class MainWindow:
 		self.time_out=5
 		self.retry=0
 		self.lock_quit=False
-		max_height=Gdk.Display.get_default().get_monitor(0).get_geometry().height
 
 		if self.epi_file!=None:
 			if self.epi_file!="--error":
@@ -732,11 +731,10 @@ class MainWindow:
 				self.install_process()
 			else:
 				self.eulas_tocheck=self.required_eula.copy()
-				self.eulas_canceled=self.required_eula.copy()
 				for item in range(len(self.eulas_tocheck)-1, -1, -1):
 					if self.eulas_tocheck[item]["pkg_name"] not in self.core.epiManager.packages_selected:
 						self.eulas_tocheck.pop(item)
-				self.eulas_canceled=self.eulas_tocheck.copy()
+				self.eulas_toshow=self.eulas_tocheck.copy()
 				self.eula_order=len(self.eulas_tocheck)-1
 				self.accept_eula()
 
@@ -753,7 +751,7 @@ class MainWindow:
 				self.eula_accepted=True
 				
 		else:
-			if len(self.eulas_canceled)>0:
+			if len(self.eulas_toshow)>0:
 					self.eulaBox.load_info(self.eulas_tocheck[self.eula_order])	
 			else:
 				self.eula_accepted=True
@@ -1070,7 +1068,7 @@ class MainWindow:
 	 	length=len(command)
 	 	if length>0:
 	 		if self.load_epi_conf[0]["required_dconf"]:
-	 			command='LANG=C LANGUAGE=en '+command
+	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde '+command
 	 		else:
 	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive '+command
 
