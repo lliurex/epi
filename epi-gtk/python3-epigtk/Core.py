@@ -11,6 +11,7 @@ from . import DependsBox
 from . import EpiBox
 from . import InfoBox
 from . import EulaBox
+from . import TerminalBox
 from . import settings
 
 class Core:
@@ -49,6 +50,7 @@ class Core:
 		self.epiBox=EpiBox.EpiBox()
 		self.infoBox=InfoBox.InfoBox()
 		self.eulaBox=EulaBox.EulaBox()
+		self.terminalBox=TerminalBox.TerminalBox()
 				
 			
 			# Main window must be the last one

@@ -85,12 +85,14 @@ class MainWindow:
 		self.dependsBox=self.core.dependsBox
 		self.epiBox=self.core.epiBox
 		self.infoBox=self.core.infoBox
+		self.terminalBox=self.core.terminalBox
 
 		self.stack.add_titled(self.chooserBox,"chooserBox","ChooserBox")
 		self.stack.add_titled(self.loadingBox,"loadingBox","LoadingBox")
 		self.stack.add_titled(self.dependsBox,"dependsBox","DependsBox")
 		self.stack.add_titled(self.epiBox,"epiBox", "EpiBox")
 		self.stack.add_titled(self.infoBox,"infoBox","InfoBox")
+		self.stack.add_titled(self.terminalBox,"terminalBox","TerminalBox")
 
 		self.main_box.pack_start(self.stack,True,False,5)
 
@@ -108,10 +110,8 @@ class MainWindow:
 		self.unlock_button.hide()
 		self.uninstall_button.hide()
 		self.return_button.hide()
+		self.epiBox.view_terminal_btn.hide()
 		self.epiBox.epi_depend_label.set_text("")
-		self.epiBox.terminal_label.set_text("")
-		self.epiBox.terminal_scrolled.hide()
-		self.epiBox.viewport.hide()
 		self.epiBox.select_pkg_btn.set_visible(False)
 		
 		self.eulaBox=self.core.eulaBox
@@ -230,7 +230,7 @@ class MainWindow:
 
 	def load_info(self):
 
-		self.epiBox.load_info(self.load_epi_conf)
+		self.epiBox.load_info()
 		
 		if self.order>1:
 			self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
@@ -533,11 +533,11 @@ class MainWindow:
 		self.apply_button.show()
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
-			self.epiBox.terminal_label.set_name("MSG_LABEL")
+			self.epiBox.feedbak_label.set_name("MSG_LABEL")
 			#self.epiBox.terminal_label.show()
 			msg_code=0
 			msg=self.get_msg_text(msg_code)
-			self.epiBox.terminal_label.set_text(msg)
+			self.epiBox.feedbak_label.set_text(msg)
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
 
@@ -601,7 +601,7 @@ class MainWindow:
 
 	def show_apply_uninstall_buttons(self):
 
-		remove=self.check_remove_script()
+		self.remove_btn=self.check_remove_script()
 		status=self.load_epi_conf[0]["status"]
 
 		if status=='availabled':
@@ -611,20 +611,23 @@ class MainWindow:
 			else:	
 				self.apply_button.set_label(_("Install"))
 			
-			self.apply_button.set_sensitive(True)
+			#self.apply_button.set_sensitive(True)
+			
 			if self.core.epiManager.partial_installed:
-				self.uninstall_button.show()
-				self.uninstall_button.set_sensitive(True)
+				if not self.epiBox.show_terminal:
+					self.uninstall_button.show()
+					#self.uninstall_button.set_sensitive(True)
 			else:	
 				self.uninstall_button.hide()
 
 		else:
 			self.eula_accepted=True
 			self.apply_button.set_label(_("Reinstall"))
-			self.apply_button.set_sensitive(True)
-			if remove:
-				self.uninstall_button.show()
-				self.uninstall_button.set_sensitive(True)
+			#self.apply_button.set_sensitive(True)
+			if self.remove_btn:
+				if not self.epiBox.show_terminal:
+					self.uninstall_button.show()
+					#self.uninstall_button.set_sensitive(True)
 
 			else:
 				self.uninstall_button.hide()			
@@ -646,7 +649,13 @@ class MainWindow:
 		self.preinstall_app_done=False
 
 		self.check_preinstall_launched=False
-		self.check_preinstall_donde=False
+		self.check_preinstall_done=False
+
+		self.check_arquitecture_launched=False
+		self.check_arquitecture_done=False
+
+		self.check_update_repos_launched=False
+		self.check_update_repos_done=False
 
 		self.install_app_launched=False
 		self.install_app_done=False
@@ -768,22 +777,21 @@ class MainWindow:
 
 	def install_process(self):
 
-		if self.load_epi_conf[0]["selection_enabled"]["active"]:
-			self.main_window.resize(675,735)
-		else:
-			self.main_window.resize(675,715)
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
 		self.epiBox.get_icon_toupdate()
 		self.lock_quit=True
 		self.sp_cont=0
-		self.epiBox.terminal_scrolled.show()
-		self.epiBox.viewport.show()
-		self.epiBox.manage_vterminal(True,False)
+		self.epiBox.search_entry.set_sensitive(False)
+		self.terminalBox.manage_vterminal(True,False)
+		self.terminalBox.terminal_label.set_text(_("Installation process details"))
 		self.init_install_process()
 		self.apply_button.set_sensitive(False)
 		self.uninstall_button.set_sensitive(False)
+		self.epiBox.view_terminal_btn.show()
+		self.epiBox.view_terminal_btn.set_label(_("See installation details"))
+
 		
 		if self.install_dep:
 			if self.order>0:
@@ -791,7 +799,7 @@ class MainWindow:
 		else:
 			self.order=0
 
-		self.epiBox.terminal_label.set_name("MSG_LABEL")
+		self.epiBox.feedbak_label.set_name("MSG_LABEL")
 		self.core.epiManager.zerocenter_feedback(self.order,"init")	
 		GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
@@ -805,9 +813,8 @@ class MainWindow:
 		error=False
 
 		if not self.add_repository_keys_launched:
-			#self.epiBox.terminal_label.show()
 			msg=self.get_msg_text(4)
-			self.epiBox.terminal_label.set_text(msg)
+			self.epiBox.feedbak_label.set_text(msg)
 			self.add_repository_keys_launched=True
 			self.sp_cont=self.sp_cont+1
 			if order==0:
@@ -819,7 +826,7 @@ class MainWindow:
 		if self.add_repository_keys_done:
 			if not self.download_app_launched:
 				msg=self.get_msg_text(5)
-				self.epiBox.terminal_label.set_text(msg)
+				self.epiBox.feedbak_label.set_text(msg)
 				self.download_app_launched=True
 				self.download_app()
 
@@ -834,7 +841,7 @@ class MainWindow:
 									
 						if not self.preinstall_app_launched:
 							msg=self.get_msg_text(6)
-							self.epiBox.terminal_label.set_text(msg)
+							self.epiBox.feedbak_label.set_text(msg)
 							self.preinstall_app_launched=True
 							self.preinstall_app()
 
@@ -848,71 +855,88 @@ class MainWindow:
 								
 								
 								if self.preinstall_result:
-									if not self.install_app_launched:
-										msg=self.get_msg_text(7)
-										self.epiBox.terminal_label.set_text(msg)
-										self.install_app_launched=True
-										self.install_app()
+									if not self.check_arquitecture_launched:
+										msg=self.get_msg_text(30)
+										self.epiBox.feedbak_label.set_text(msg)
+										self.check_arquitecture_launched=True
+										self.check_arquitecture()
 
-									if self.install_app_done:
+									if self.check_arquitecture_done:
+										if not self.check_update_repos_launched:
+											msg=self.get_msg_text(31)
+											self.epiBox.feedbak_label.set_text(msg)
+											self.check_update_repos_launched=True
+											self.check_update_repos()
 
-										if not self.check_install_launched:
-											self.check_install_launched=True
-											self.check_install()
+										if self.check_update_repos_done:
+											if not self.install_app_launched:
+												msg=self.get_msg_text(7)
+												self.epiBox.feedbak_label.set_text(msg)
+												self.install_app_launched=True
+												self.install_app()
 
-											
-										if self.check_install_done:	
-											if self.installed:
-												if not self.postinstall_app_launched:
-													msg=self.get_msg_text(8)
-													self.epiBox.terminal_label.set_text(msg)
-													self.postinstall_app_launched=True
-													self.postinstall_app()	
+											if self.install_app_done:
 
-												if self.postinstall_app_done:
+												if not self.check_install_launched:
+													self.check_install_launched=True
+													self.check_install()
 
-													if not self.check_postinstall_launched:
-														self.check_postinstall_launched=True
-														self.check_postinstall()
+													
+												if self.check_install_done:	
+													if self.installed:
+														if not self.postinstall_app_launched:
+															msg=self.get_msg_text(8)
+															self.epiBox.feedbak_label.set_text(msg)
+															self.postinstall_app_launched=True
+															self.postinstall_app()	
 
-													if self.check_postinstall_done:
-														if self.postinstall_result:	
-															params=[order,True,'install',None]
-															self.update_icon(params)
-															self.core.epiManager.zerocenter_feedback(self.order,"install",True)
+														if self.postinstall_app_done:
 
-															if self.order>0:
-																self.order=self.order-1
-																self.sp_cont=0
-																self.init_install_process()
-																GLib.timeout_add(100,self.pulsate_install_package,self.order)
+															if not self.check_postinstall_launched:
+																self.check_postinstall_launched=True
+																self.check_postinstall()
 
-															else:
-																self.epiBox.manage_application_cb(True)
-																self.epiBox.select_pkg_btn.set_sensitive(True)
-																self.lock_quit=False
-																msg=self.get_msg_text(9)
-																self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
-																self.epiBox.terminal_label.set_text(msg)
-																self.epiBox.manage_vterminal(False,True)
-																self.write_log_terminal('install')
-																self.load_epi_conf[0]["status"]="installed"
-																self.write_log(msg)
-																self.show_apply_uninstall_buttons()
-																self.core.epiManager.remove_repo_keys()
+															if self.check_postinstall_done:
+																if self.postinstall_result:	
+																	params=[order,True,'install',None]
+																	self.update_icon(params)
+																	self.core.epiManager.zerocenter_feedback(self.order,"install",True)
 
-																return False
-															return False
+																	if self.order>0:
+																		self.order=self.order-1
+																		self.sp_cont=0
+																		self.init_install_process()
+																		GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
-														else:
-															error=True
-															error_code=10
-															params=[order,False,'install',None]
-											else:
-												error=True
-												error_code=11
-												params=[order,False,'install',self.dpkg_status]
-												
+																	else:
+																		self.epiBox.manage_application_cb(True)
+																		self.epiBox.select_pkg_btn.set_sensitive(True)
+																		self.epiBox.search_entry.set_sensitive(True)
+																		self.lock_quit=False
+																		msg=self.get_msg_text(9)
+																		self.epiBox.feedbak_label.set_name("MSG_CORRECT_LABEL")
+																		self.epiBox.feedbak_label.set_text(msg)
+																		self.terminalBox.manage_vterminal(False,True)
+																		self.write_log_terminal('install')
+																		self.load_epi_conf[0]["status"]="installed"
+																		self.write_log(msg)
+																		self.show_apply_uninstall_buttons()
+																		self.uninstall_button.set_sensitive(True)
+																		self.apply_button.set_sensitive(True)
+																		self.core.epiManager.remove_repo_keys()
+
+																		return False
+																	return False
+
+																else:
+																	error=True
+																	error_code=10
+																	params=[order,False,'install',None]
+													else:
+														error=True
+														error_code=11
+														params=[order,False,'install',self.dpkg_status]
+															
 								else:
 									error=True
 									error_code=12
@@ -927,11 +951,12 @@ class MainWindow:
 		if error:
 			self.epiBox.manage_application_cb(True)
 			self.epiBox.select_pkg_btn.set_sensitive(True)
+			self.epiBox.search_entry.set_sensitive(True)
 			self.lock_quit=False
-			self.epiBox.manage_vterminal(False,True)
+			self.terminalBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
-			self.epiBox.terminal_label.set_name("MSG_ERROR_LABEL")
-			self.epiBox.terminal_label.set_text(msg_error)
+			self.epiBox.feedbak_label.set_name("MSG_ERROR_LABEL")
+			self.epiBox.feedbak_label.set_text(msg_error)
 			self.update_icon(params)
 			self.core.epiManager.zerocenter_feedback(params[0],"install",False)
 			self.write_log_terminal('install')
@@ -973,10 +998,25 @@ class MainWindow:
 
 		if self.check_preinstall_launched:
 			if not self.check_preinstall_done:
-				return				
+				return	
+
+		if self.check_arquitecture_launched:
+			if not self.check_arquitecture_done:
+				if os.path.exists(self.token_arquitecture[1]):
+					return True
+				else:
+					self.check_arquitecture_done=True
+					return True	
+
+		if self.check_update_repos_launched:
+			if not self.check_update_repos_done:
+				if os.path.exists(self.token_updaterepos[1]):
+					return True
+				else:
+					self.check_update_repos_done=True
+					return True						
 
 		if self.install_app_launched:
-			
 			if 	not self.install_app_done:
 				if os.path.exists(self.token_install[1]):
 					return True
@@ -1011,7 +1051,7 @@ class MainWindow:
 		if length>0:
 			command=self.create_process_token(command,"keys")
 			length=len(command)
-			self.epiBox.vterminal.feed_child(command,length)
+			self.terminalBox.vterminal.feed_child(command,length)
 		else:
 			self.add_repository_keys_done=True
 
@@ -1024,7 +1064,7 @@ class MainWindow:
 		if length>0:
 			command=self.create_process_token(command,"download")
 			length=len(command)
-			self.epiBox.vterminal.feed_child(command,length)
+			self.terminalBox.vterminal.feed_child(command,length)
 		else:
 			self.download_app_done=True	
 
@@ -1053,13 +1093,39 @@ class MainWindow:
 		if length>0:
 			command=self.create_process_token(command,"preinstall")
 			length=len(command)
-			self.epiBox.vterminal.feed_child(command,length)
+			self.terminalBox.vterminal.feed_child(command,length)
 
 		else:
 			self.preinstall_app_done=True	 		
 
 	#def preinstall_app		
 
+	def check_arquitecture(self):
+
+		command=self.core.epiManager.check_arquitecture()
+		length=len(command)
+		if length>0:
+			command=self.create_process_token(command,"arquitecture")
+			length=len(command)
+			self.terminalBox.vterminal.feed_child(command,length)
+		else:
+			self.check_arquitecture_done=True	
+
+	#def check_arquitecture
+	
+	def check_update_repos(self):
+
+		command=self.core.epiManager.check_update_repos()
+		length=len(command)
+		if length>0:
+			command=self.create_process_token(command,"updaterepos")
+			length=len(command)
+			self.terminalBox.vterminal.feed_child(command,length)
+		else:
+			self.check_update_repos_done=True	
+
+
+	#def check_update_repos
 
 	def install_app(self):
 
@@ -1074,7 +1140,8 @@ class MainWindow:
 
 	 		command=self.create_process_token(command,"install")
 	 		length=len(command)
-	 		self.epiBox.vterminal.feed_child(command,length)
+	 		self.terminalBox.vterminal.feed_child(command,length)
+	 		self.terminalBox.vterminal.set_sensitive(True)
 	 	else:
 	 		self.install_app_done=True	
 
@@ -1094,7 +1161,7 @@ class MainWindow:
 	 	if length>0:
 	 		command=self.create_process_token(command,"postinstall")
 	 		length=len(command)
-	 		self.epiBox.vterminal.feed_child(command,length)
+	 		self.terminalBox.vterminal.feed_child(command,length)
 	 	else:
 	 		self.postinstall_app_done=True	 		
 
@@ -1155,23 +1222,22 @@ class MainWindow:
 				
 
 			if response==Gtk.ResponseType.YES:
-				if self.load_epi_conf[0]["selection_enabled"]["active"]:
-					self.main_window.resize(675,735)
-				else:
-					self.main_window.resize(675,715)
+				self.epiBox.view_terminal_btn.show()
+				self.epiBox.view_terminal_btn.set_label(_("See uninstall details"))
+				self.terminalBox.terminal_label.set_text(_("Uninstall process details"))
+
 				self.write_log("Packages selected to uninstall: %s"%self.core.epiManager.packages_selected)
 				self.epiBox.manage_application_cb(False)
 				self.epiBox.select_pkg_btn.set_sensitive(False)
+				self.epiBox.search_entry.set_sensitive(False)
 				self.epiBox.get_icon_toupdate()
 				self.lock_quit=True
-				self.epiBox.manage_vterminal(True,False)
+				self.terminalBox.manage_vterminal(True,False)
 				self.sp_cont=0
-				self.epiBox.terminal_scrolled.show()
-				self.epiBox.viewport.show()
 				self.init_uninstall_process()
 				self.apply_button.set_sensitive(False)
 				self.uninstall_button.set_sensitive(False)
-				self.epiBox.terminal_label.set_name("MSG_LABEL")
+				self.epiBox.feedbak_label.set_name("MSG_LABEL")
 					
 				GLib.timeout_add(100,self.pulsate_uninstall_process,0)
 
@@ -1185,9 +1251,8 @@ class MainWindow:
 		self.sp_cont=self.sp_cont+1
 		
 		if not self.remove_package_launched:
-			#self.epiBox.terminal_label.show()
 			msg=self.get_msg_text(15)
-			self.epiBox.terminal_label.set_text(msg)
+			self.epiBox.feedbak_label.set_text(msg)
 			self.remove_package_launched=True
 			self.sp_cont=self.sp_cont+1
 			self.uninstall_app(order)
@@ -1201,18 +1266,22 @@ class MainWindow:
 			
 			if self.check_remove_done:
 				self.lock_quit=False
-				self.epiBox.manage_vterminal(False,True)
+				self.terminalBox.manage_vterminal(False,True)
 				self.epiBox.manage_application_cb(True)
 				self.epiBox.select_pkg_btn.set_sensitive(True)
+				self.epiBox.search_entry.set_sensitive(True)
+
 
 				if self.remove:
 					msg=self.get_msg_text(16)
-					self.epiBox.terminal_label.set_name("MSG_CORRECT_LABEL")
-					self.epiBox.terminal_label.set_text(msg)
+					self.epiBox.feedbak_label.set_name("MSG_CORRECT_LABEL")
+					self.epiBox.feedbak_label.set_text(msg)
 					params=[order,True,'remove',None]
 					self.update_icon(params)
 					self.load_epi_conf[0]["status"]="availabled"
 					self.show_apply_uninstall_buttons()
+					self.uninstall_button.set_sensitive(True)
+					self.apply_button.set_sensitive(True)
 					if self.order==0:
 						self.install_dep=False
 					self.core.epiManager.zerocenter_feedback(0,"uninstall",True)
@@ -1221,8 +1290,8 @@ class MainWindow:
 					return False
 				else:
 					msg=self.get_msg_text(17)
-					self.epiBox.terminal_label.set_name("MSG_ERROR_LABEL")
-					self.epiBox.terminal_label.set_text(msg)
+					self.epiBox.feedbak_label.set_name("MSG_ERROR_LABEL")
+					self.epiBox.feedbak_label.set_text(msg)
 					params=[order,False,'remove',self.dpkg_status]
 					self.update_icon(params)
 					self.core.epiManager.zerocenter_feedback(0,"uninstall",False)
@@ -1255,7 +1324,7 @@ class MainWindow:
 		if length>0:
 			command=self.create_process_token(command,"uninstall")
 			length=len(command)
-			self.epiBox.vterminal.feed_child(command,length)
+			self.terminalBox.vterminal.feed_child(command,length)
 
 		else:
 			self.preinstall_app_done=True	
@@ -1298,6 +1367,7 @@ class MainWindow:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
 
 				else:
+
 					if order==0:
 						item['icon_package'].set_from_file(item['icon'])
 
@@ -1321,6 +1391,7 @@ class MainWindow:
 								item["icon_package"].set_from_file(self.core.epiBox.package_installed_dep)	
 		
 						else:
+							#item["error"]=True
 							item['icon_status'].set_from_file(self.error_image)
 
 							if order==0:
@@ -1332,10 +1403,12 @@ class MainWindow:
 						if status=="availabled":
 							item["icon_status"].set_from_file(self.ok_image)
 						else:
+							item["error"]=True
 							item["icon_status"].set_from_file(self.error_image)	
 
 			else:
 				for item in elements:
+					#item['error']=True
 					item['icon_status'].set_from_file(self.error_image)			
 
 
@@ -1347,6 +1420,9 @@ class MainWindow:
 		self.stack.set_visible_child_name("epiBox")		
 		self.apply_button.show()
 		self.return_button.hide()
+		
+		if self.epiBox.show_terminal:
+			self.epiBox.show_terminal=False	
 		self.show_apply_uninstall_buttons()
 
 	#def go_back	
@@ -1414,8 +1490,13 @@ class MainWindow:
 			msg=_("There is no package selected to be installed")
 		elif code==29:
 			msg=_("There is no package selected to be uninstalled")				
-		return msg	
+		elif code==30:
+			msg=_("Checking system architecture")
+		elif code==31:
+			msg=_("Checking if repositories need updating")		
 
+		return msg
+	
 	#def get_msg_text
 
 	def create_process_token(self,command,action):
@@ -1433,6 +1514,14 @@ class MainWindow:
 			self.token_preinstall=tempfile.mkstemp('_preinstall')	
 			remove_tmp=' rm -f ' + self.token_preinstall[1] + ';'+'\n'
 			
+		elif action=="arquitecture":
+			self.token_arquitecture=tempfile.mkstemp('_arquitecture')	
+			remove_tmp=' rm -f ' + self.token_arquitecture[1] + ';'+'\n'	
+
+		elif action=="updaterepos":
+			self.token_updaterepos=tempfile.mkstemp('_updaterepos')	
+			remove_tmp=' rm -f ' + self.token_updaterepos[1] + ';'+'\n'	
+		
 		elif action=="install":
 			self.token_install=tempfile.mkstemp('_install')
 			remove_tmp=' rm -f ' + self.token_install[1] +';'+'\n'
@@ -1473,8 +1562,8 @@ class MainWindow:
 		init_row=self.final_row
 		init_column=self.final_column
 
-		self.final_column,self.final_row = self.epiBox.vterminal.get_cursor_position()
-		log_text=self.epiBox.vterminal.get_text_range(init_row,init_column,self.final_row,self.final_column)[0]
+		self.final_column,self.final_row = self.terminalBox.vterminal.get_cursor_position()
+		log_text=self.terminalBox.vterminal.get_text_range(init_row,init_column,self.final_row,self.final_column)[0]
 
 		log_text=log_text.split("\n")
 

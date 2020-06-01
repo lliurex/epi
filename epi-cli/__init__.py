@@ -349,7 +349,47 @@ class EPIC(object):
 
 	#def preinstall_app		
 
+	def check_arquitecture(self):
 
+		cmd=self.epicore.check_arquitecture()
+
+		if cmd !="":
+			print('  [EPIC]: Checking architecture...')
+			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
+			output=p.communicate()
+			error=self.readErrorOutput(output[1])
+			if error:
+				msg_log='Installation aborted. Error checking architecture:' +'\n'+str(output[1])
+				print('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				return False
+			else:
+				return True
+		else:
+			return True
+
+	# def check_architecture
+
+	def check_update_repos(self):
+
+		cmd=self.epicore.check_update_repos()
+
+		if cmd !="":
+			print('  [EPIC]: Checking if repositories need updating...')
+			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
+			output=p.communicate()
+			error=self.readErrorOutput(output[1])
+			if error:
+				msg_log='Installation aborted. Error Checking if repositories need updating:' +'\n'+str(output[1])
+				print('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				return False
+			else:
+				return True
+		else:
+			return True
+
+	#def check_update_repos			
 	def install_app(self):
 	
 		cmd=self.epicore.install_app()
@@ -446,14 +486,21 @@ class EPIC(object):
 					if result:
 						result=self.preinstall_app()
 						if result:
-							result=self.install_app()
+							result=self.check_arquitecture()
 							if result:
-								result=self.postinstall_app()
+								result=self.check_update_repos()
 								if result:
-									self.epicore.zerocenter_feedback(order,'install',result)
+									result=self.install_app()
+									if result:
+										result=self.postinstall_app()
+										if result:
+											self.epicore.zerocenter_feedback(order,'install',result)
+										else:
+											error=True	
+									else:
+										error=True
 								else:
-									error=True	
-
+									error=True		
 							else:
 								error=True
 						else:

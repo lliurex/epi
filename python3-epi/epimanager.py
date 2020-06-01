@@ -442,31 +442,32 @@ class EpiManager:
 		lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
 		cmd=""
 
-		if current_date !=lastupdate or self.update:
-			cmd="LANG=C LANGUAGE=en apt-get update; "
-		else:
-			for item in self.epi_conf["pkg_list"]:
-				update_repo=False
-				app=item["name"]
-				command="LANG=C LANGUAGE=en apt-cache policy %s"%app
-				p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
-				output=p.communicate()
-				if str(output[0]) != '':
-					tmp=str(output[0]).split("\\n")
-					if len(tmp)>1:
-						if tmp[2].split(":")[1]=="":
+		if self.type in ["apt","mix"]:
+			if current_date !=lastupdate or self.update:
+				cmd="LANG=C LANGUAGE=en apt-get update; "
+			else:
+				for item in self.epi_conf["pkg_list"]:
+					update_repo=False
+					app=item["name"]
+					command="LANG=C LANGUAGE=en apt-cache policy %s"%app
+					p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
+					output=p.communicate()
+					if str(output[0]) != '':
+						tmp=str(output[0]).split("\\n")
+						if len(tmp)>1:
+							if tmp[2].split(":")[1]=="":
+								update_repo=True
+								
+						else:
 							update_repo=True
 							
+
 					else:
 						update_repo=True
-						
 
-				else:
-					update_repo=True
-
-				if update_repo:	
-					cmd="LANG=C LANGUAGE=en apt-get update; "
-					return cmd		
+					if update_repo:	
+						cmd="LANG=C LANGUAGE=en apt-get update; "
+						return cmd		
 
 		return cmd
 		
@@ -719,9 +720,10 @@ class EpiManager:
 		add_i386=""
 		cmd=""
 		
+		'''
 		if not self.arquitecture:
 			add_i386=self.check_arquitecture()
-
+		'''
 	
 		if self.type=="mix":
 			result_mix=self._check_epi_mix_content()
@@ -733,9 +735,10 @@ class EpiManager:
 			
 		
 		if self.type=="apt" or pkgs_apt>0:
-			update_repos=self.check_update_repos()
-			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
-						
+			#update_repos=self.check_update_repos()
+			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
+			cmd="apt-get install --reinstall --allow-downgrades --yes "
+			
 		if self.type=="apt":	
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
@@ -775,15 +778,22 @@ class EpiManager:
 						for pkg in self.download_folder:
 							if os.path.exists(pkg):
 								if item["name"] in pkg:
-									cmd_dpkg=cmd_dpkg + pkg +" "
+									if pkgs_apt==0:
+										if cmd=="":
+											cmd=cmd_dpkg
+										cmd=cmd + pkg +" "
+									else:
+										cmd=cmd+ pkg + " "	
 					
 					elif item["type"]=="file":
 						if cmd_file!="":
 							cmd_file+="%s "%item["name"]
 
+			
+			'''
 			if cmd_dpkg!="":
-				cmd=cmd+"; "+cmd_dpkg
-
+				cmd=cmd_dpkg
+			'''
 			if cmd_file!="":
 				cmd_file+='; echo $? >' + self.token_result_install[1]
 				cmd=cmd+"; "+cmd_file	

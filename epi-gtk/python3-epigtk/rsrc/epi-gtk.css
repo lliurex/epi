@@ -1,3 +1,8 @@
+	@define-color arc-blue #0062f5;
+	@define-color arc-blue-light #4accf5;
+	@define-color arc-blue-hover #629de2;
+	@define-color arc-blue-active #3aa3e2;
+	
 
 	GtkLabel {
 		font: 11pt Roboto;
@@ -119,4 +124,34 @@
 				
 				color-stop(1, rgba(255,255,255,1))
 			);
+	}
+
+
+	#CUSTOM-ENTRY
+	{
+		color: @default-grey;
+		border: none;
+		border-bottom: 1px solid #aaaaaa;
+		padding: 4px;
+		
+	
+	}
+
+	#CUSTOM-ENTRY:focus
+	{
+		color: @arc-blue;
+		border-bottom: 1px solid @arc-blue-light;
+		
+	
+	}
+	#CUSTOM-ENTRY:selected
+	{
+		color: white;
+	}
+
+	#CUSTOM-ENTRY:disabled
+	{
+		background-color: #bbbbbb;
+		border-bottom: 1px solid transparent;
+		color: #999999;
 	}
