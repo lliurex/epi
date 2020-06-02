@@ -368,7 +368,7 @@ class EPIC(object):
 		else:
 			return True
 
-	# def check_architecture
+	# def check_arquitecture
 
 	def check_update_repos(self):
 
@@ -389,16 +389,19 @@ class EPIC(object):
 		else:
 			return True
 
-	#def check_update_repos			
+	#def check_update_repos
+				
 	def install_app(self):
 	
-		cmd=self.epicore.install_app()
+		cmd=self.epicore.install_app("cli")
 
 		if cmd !="":
+			'''
 			if not self.epicore.epiFiles[0]["required_dconf"]:
 				cmd="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "+cmd
 			else:
 				cmd="LANG=C LANGUAGE=en "+cmd
+			'''
 			print('  [EPIC]: Installing application...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()

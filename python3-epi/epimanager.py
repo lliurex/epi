@@ -534,6 +534,7 @@ class EpiManager:
 	def get_app_version(self,item=None):
 
 		self.force32=self.epi_conf["force32"]
+		version=""
 
 		if self.force32:
 			version=item["version"]["32b"]
@@ -612,7 +613,8 @@ class EpiManager:
 
 		tmp_file=""
 		version=self.get_app_version(item)
-		
+		cmd=""
+
 		if item_type=="deb": 
 			name=item["name"]+".deb"
 			tmp_file=os.path.join(self.download_path,name)
@@ -638,8 +640,6 @@ class EpiManager:
 
 		
 		result=True
-		
-		
 
 		if self.type not in ['apt','localdeb']:
 
@@ -712,7 +712,7 @@ class EpiManager:
 
 	#def check_preinstall_app	
 
-	def install_app(self):
+	def install_app(self,calledfrom):
 	
 		self._copy_epi_keyring()
 		self.token_result_install=""
@@ -726,7 +726,7 @@ class EpiManager:
 		'''
 	
 		if self.type=="mix":
-			result_mix=self._check_epi_mix_content()
+			result_mix=self._check_epi_mix_content(calledfrom)
 			pkgs_apt=result_mix[0]
 			pkgs_deb=result_mix[1]
 			pkgs_file=result_mix[2]
@@ -737,7 +737,7 @@ class EpiManager:
 		if self.type=="apt" or pkgs_apt>0:
 			#update_repos=self.check_update_repos()
 			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
-			cmd="apt-get install --reinstall --allow-downgrades --yes "
+			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			
 		if self.type=="apt":	
 			for item in self.epi_conf["pkg_list"]:
@@ -747,7 +747,7 @@ class EpiManager:
 				
 		elif self.type=="deb":
 			pkg=""
-			cmd="dpkg -i "
+			cmd=self._get_install_cmd_base(calledfrom,"deb")
 			for item in self.download_folder:
 				if os.path.exists(item):
 					pkg=pkg+' '+item
@@ -755,7 +755,7 @@ class EpiManager:
 			cmd=cmd+pkg	
 
 		elif self.type=="localdeb":
-			cmd="apt-get install --reinstall --allow-downgrades --yes "
+			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			for item in self.epi_conf["pkg_list"]:
 				name=item["version"]["all"]
 				pkg=os.path.join(item["url_download"],name)
@@ -778,25 +778,26 @@ class EpiManager:
 						for pkg in self.download_folder:
 							if os.path.exists(pkg):
 								if item["name"] in pkg:
-									if pkgs_apt==0:
-										if cmd=="":
-											cmd=cmd_dpkg
-										cmd=cmd + pkg +" "
-									else:
-										cmd=cmd+ pkg + " "	
+									cmd_dpkg=cmd_dpkg+ pkg + " "	
 					
 					elif item["type"]=="file":
 						if cmd_file!="":
 							cmd_file+="%s "%item["name"]
 
 			
-			'''
+			
 			if cmd_dpkg!="":
-				cmd=cmd_dpkg
-			'''
+				if cmd!="":
+					cmd=cmd+"; "+cmd_dpkg
+				else:
+					cmd=cmd_dpkg	
+			
 			if cmd_file!="":
 				cmd_file+='; echo $? >' + self.token_result_install[1]
-				cmd=cmd+"; "+cmd_file	
+				if cmd!="":
+					cmd=cmd+"; "+cmd_file
+				else:
+					cmd=cmd_file		
 
 		cmd=cmd+";"
 
@@ -804,7 +805,30 @@ class EpiManager:
 
 	#def install_app
 
-	def _check_epi_mix_content(self):
+	def _get_install_cmd_base(self,calledfrom,pkg_type):
+
+		cmd_headed=""
+		apt_headed="apt-get install --reinstall --allow-downgrades --yes "
+		dpkg_headed="dpkg -i "
+
+		if self.epi_conf["required_dconf"]:
+			if calledfrom =="gui":
+				cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde "
+			else:
+				cmd_headed="LANG=C LANGUAGE=en "
+		else:
+			cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "
+
+		if pkg_type in ["apt","localdeb"]:
+			cmd_headed=cmd_headed+apt_headed
+		elif pkg_type =="deb":
+			cmd_headed=cmd_headed+dpkg_headed
+
+		return cmd_headed		
+
+	# def _check_debconf_required
+
+	def _check_epi_mix_content(self,calledfrom):
 		
 		pkgs_apt=0
 		pkgs_file=0
@@ -825,7 +849,7 @@ class EpiManager:
 					pkgs_file+=1	
 						
 		if pkgs_deb>0:
-			cmd_dpkg="dpkg -i "	
+			cmd_dpkg=self._get_install_cmd_base(calledfrom,"deb")	
 
 		if pkgs_file>0:
 			cmd_file=self._get_install_file_cmd_base()	

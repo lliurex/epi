@@ -1129,15 +1129,16 @@ class MainWindow:
 
 	def install_app(self):
 
-	 	command=self.core.epiManager.install_app()
+	 	command=self.core.epiManager.install_app("gui")
 
 	 	length=len(command)
 	 	if length>0:
+	 		'''
 	 		if self.load_epi_conf[0]["required_dconf"]:
 	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde '+command
 	 		else:
 	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive '+command
-
+			'''
 	 		command=self.create_process_token(command,"install")
 	 		length=len(command)
 	 		self.terminalBox.vterminal.feed_child(command,length)

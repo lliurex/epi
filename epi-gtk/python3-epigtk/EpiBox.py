@@ -94,7 +94,6 @@ class EpiBox(Gtk.VBox):
 		
 		self.info=copy.deepcopy(self.core.mainWindow.load_epi_conf)
 		
-
 		if self.info[0]["selection_enabled"]["active"]:
 			self.epi_list_label.set_text(_("Select the applications to install"))
 			self.epi_list_label.set_halign(Gtk.Align.START)
@@ -140,7 +139,6 @@ class EpiBox(Gtk.VBox):
 				except:
 					custom_name=""
 				try:
-					#custom_icon=os.path.join(info[item]["custom_icon_path"],element["custom_icon"])
 					debian_name=self.core.epiManager.pkg_info[name]["debian_name"]
 					component=self.core.epiManager.pkg_info[name]["component"]
 					custom_icon=self.core.iconsManager.search_icon(debian_name,info[item]["custom_icon_path"],element["custom_icon"],component)
@@ -148,7 +146,6 @@ class EpiBox(Gtk.VBox):
 					custom_icon=""			
 				
 				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon]
-				#self.new_epi_box(name,order,show_cb,default_checked,custom_name,custom_icon,search)
 				self.new_epi_box(params_to_draw)
 
 			'''	
