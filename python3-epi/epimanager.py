@@ -257,6 +257,7 @@ class EpiManager:
 		summary=""
 		description=""
 		status=""
+		
 		try:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
@@ -492,8 +493,8 @@ class EpiManager:
 
 		self.epi_conf=self.epiFiles[order]
 		self.epi_order=order
-		cmd=""
 		self.type=self.epi_conf["type"]
+		cmd=""
 
 		if self.type in ["apt","mix"]:
 
@@ -603,6 +604,7 @@ class EpiManager:
 									
 				if cmd_file!="":
 					cmd_file+=";"
+
 				cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
 		
 		return cmd			
@@ -613,7 +615,6 @@ class EpiManager:
 
 		tmp_file=""
 		version=self.get_app_version(item)
-		cmd=""
 
 		if item_type=="deb": 
 			name=item["name"]+".deb"
