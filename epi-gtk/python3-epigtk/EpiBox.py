@@ -295,7 +295,10 @@ class EpiBox(Gtk.VBox):
 			icon_installed=self.package_installed
 		else:
 			custom=True
-			icon=custom_icon
+			image=Gtk.Image.new_from_file(custom_icon)
+			pixbuf=image.get_pixbuf()
+			icon=pixbuf.scale_simple(48,48,GdkPixbuf.InterpType.BILINEAR)
+			
 			icon_installed=self.core.iconsManager.create_pixbuf(custom_icon)
 			if icon_installed=="":
 				custom=False
@@ -313,7 +316,10 @@ class EpiBox(Gtk.VBox):
 				img=Gtk.Image.new_from_pixbuf(icon_installed)	
 		else:
 			if order==0:
-				img=Gtk.Image.new_from_file(icon)
+				if not custom:
+					img=Gtk.Image.new_from_file(icon)
+				else:
+					img=Gtk.Image.new_from_pixbuf(icon)	
 			else:
 				img=Gtk.Image.new_from_file(self.package_availabled_dep)
 
