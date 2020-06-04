@@ -391,7 +391,10 @@ class EpiBox(Gtk.VBox):
 			txt=txt.replace("&amp;", "&")
 
 			icon=self.core.iconsManager.get_icon(debian_name,icon,component)
-			self.core.infoBox.icon.set_from_file(icon)
+			image=Gtk.Image.new_from_file(icon)
+			pixbuf=image.get_pixbuf()
+			pixbuf=pixbuf.scale_simple(64,64,GdkPixbuf.InterpType.BILINEAR)
+			self.core.infoBox.icon.set_from_pixbuf(pixbuf)
 			self.core.infoBox.name_label.set_text(name)
 			self.core.infoBox.summary_label.set_text(summary)
 			self.core.infoBox.description_label.set_text(txt)
