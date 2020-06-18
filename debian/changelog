@@ -1,3 +1,12 @@
+epi (0.3.8) bionic; urgency=medium
+
+  * Defined new type "mix"
+  * Added support to custom name and custom icon in package list
+  * New banner and icon
+  * New design of the application: resized, change of location of the terminal ...
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 18 Jun 2020 15:32:44 +0200
+
 epi (0.3.7.3.5) bionic; urgency=medium
 
   * Added support for epi files with list of individually selectable packages
