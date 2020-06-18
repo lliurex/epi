@@ -46,7 +46,8 @@ class EpiManager:
 					"zomando":"",
 					"required_root":False,
 					"required_dconf":False,
-					"selection_enabled":{"active":False,"all_selected":False}
+					"selection_enabled":{"active":False,"all_selected":False},
+					"custom_icon_path":""
 					}
 
 		self.packages_selected=[]
@@ -131,19 +132,7 @@ class EpiManager:
 
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
-				'''
-				else:
-					if item==0:
-						if cont>0:
-							self.epiFiles[item]["status"]="installed"
-							self.pkg_info.update(info)
-						else:
-							self.epiFiles[item]["status"]="availabled"
-							self.pkg_info.update(info)
-					else:
-						self.epiFiles[item]["status"]="availabled"
-						self.pkg_info.update(info)		
-				'''						
+					
 
 	#def get_pkg_info				
 							
@@ -219,11 +208,11 @@ class EpiManager:
 
 	def check_pkg_status(self,pkg,order=None):
 	
-
 		try:
 			if self.epiFiles[order]["script"]["getStatus"]:
 				self.getStatus_byscript=True
 		except:
+			self.getStatus_byscript=False
 			pass
 
 		if self.getStatus_byscript:
@@ -237,30 +226,38 @@ class EpiManager:
 						if len(poutput)>0:
 							if poutput[0].decode("utf-8").split("\n")[0]=='0':
 								return "installed"
-						
+							elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
+								return self._get_pkg_status(pkg)
+
 				except Exception as e:
 					self.getStatus_byscript=False
-					#print (str(e))
+					
 					pass
 		else:					
-
-			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			poutput,perror=p.communicate()
-
-			if len(poutput)>0:
-				return "installed"
+			return self._get_pkg_status(pkg)
 		
 				
 		return "available"	
 
 	#def check_pkg_status	
 
+	def _get_pkg_status(self,pkg):
+
+		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		poutput,perror=p.communicate()
+
+		if len(poutput)>0:
+			return "installed"
+
+	#def _get_pkg_status
+
 	def get_localdeb_info(self,pkg,order):
 
 		summary=""
 		description=""
 		status=""
+		
 		try:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
@@ -446,31 +443,32 @@ class EpiManager:
 		lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
 		cmd=""
 
-		if current_date !=lastupdate or self.update:
-			cmd="LANG=C LANGUAGE=en apt-get update; "
-		else:
-			for item in self.epi_conf["pkg_list"]:
-				update_repo=False
-				app=item["name"]
-				command="LANG=C LANGUAGE=en apt-cache policy %s"%app
-				p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
-				output=p.communicate()
-				if str(output[0]) != '':
-					tmp=str(output[0]).split("\\n")
-					if len(tmp)>1:
-						if tmp[2].split(":")[1]=="":
+		if self.type in ["apt","mix"]:
+			if current_date !=lastupdate or self.update:
+				cmd="LANG=C LANGUAGE=en apt-get update; "
+			else:
+				for item in self.epi_conf["pkg_list"]:
+					update_repo=False
+					app=item["name"]
+					command="LANG=C LANGUAGE=en apt-cache policy %s"%app
+					p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
+					output=p.communicate()
+					if str(output[0]) != '':
+						tmp=str(output[0]).split("\\n")
+						if len(tmp)>1:
+							if tmp[2].split(":")[1]=="":
+								update_repo=True
+								
+						else:
 							update_repo=True
 							
+
 					else:
 						update_repo=True
-						
 
-				else:
-					update_repo=True
-
-				if update_repo:	
-					cmd="LANG=C LANGUAGE=en apt-get update; "
-					return cmd		
+					if update_repo:	
+						cmd="LANG=C LANGUAGE=en apt-get update; "
+						return cmd		
 
 		return cmd
 		
@@ -494,10 +492,11 @@ class EpiManager:
 	def add_repository_keys(self,order):
 
 		self.epi_conf=self.epiFiles[order]
-		cmd=""
+		self.epi_order=order
 		self.type=self.epi_conf["type"]
+		cmd=""
 
-		if self.type=="apt":
+		if self.type in ["apt","mix"]:
 
 			repos_list=self.epi_conf["repository"]
 
@@ -536,6 +535,7 @@ class EpiManager:
 	def get_app_version(self,item=None):
 
 		self.force32=self.epi_conf["force32"]
+		version=""
 
 		if self.force32:
 			version=item["version"]["32b"]
@@ -558,62 +558,99 @@ class EpiManager:
 		self.manage_download=True
 		self.download_folder=[]
 		cmd=""
+		cmd_file=""
 
 		self.type=self.epi_conf["type"]
-		if self.type !='apt' and self.type !='localdeb':
+
+		if self.type not in ['apt','localdeb']:
+			if len(self.epi_conf["script"])>0:
+				try:
+					if self.epi_conf["script"]["download"]:
+						script=self.epi_conf["script"]["name"]
+						if os.path.exists(script):
+							self.manage_download=False
+							cmd_file=script + " download "
+				except:
+					pass
+
 			self.token_result_download=tempfile.mkstemp("_result_download")
 			
-			if self.type=="file":
-				if len(self.epi_conf["script"])>0:
-					try:
-						if self.epi_conf["script"]["download"]:
-							script=self.epi_conf["script"]["name"]
-							if os.path.exists(script):
-								cmd=script + " download "
-								for pkg in self.packages_selected:
-									cmd+="%s "%pkg
-								cmd+='; echo $? >' + self.token_result_download[1] +';'
-								#cmd=script +' download; echo $? >' + self.token_result_download[1] +';'
-								self.manage_download=False
-					except:
-						pass			
+			if self.type in ["deb","file"]:	
 
-			if self.manage_download:
+				if self.type=="file":
+					if not self.manage_download:
+						cmd=cmd_file
+						for pkg in self.packages_selected:
+							cmd+="%s "%pkg
+						cmd+='; echo $? >' + self.token_result_download[1] +';'
+				if self.manage_download:
+					for item in self.epi_conf["pkg_list"]:
+						if item["name"] in self.packages_selected:
+							cmd=self._get_download_cmd(self.type,item,cmd)
+					cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
 
+			elif self.type=="mix":
+				
 				for item in self.epi_conf["pkg_list"]:
 					if item["name"] in self.packages_selected:
-						tmp_file=""
-						version=self.get_app_version(item)
-						if self.type=="deb":
-							name=item["name"]+".deb"
-							tmp_file=os.path.join(self.download_path,name)
-						elif self.type=="file":
-							try:
-								tmp_file=os.path.join(self.download_path,item["alias_download"])
-							except Exception as e:	
-								#name=item["name"]
-								tmp_file=os.path.join(self.download_path,version)
-				
-						url=item["url_download"]
-					
-						if os.path.exists(tmp_file):
-							cmd=cmd+'rm -f '+ tmp_file +';'
-						self.download_folder.append(tmp_file)
-						cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
+						if item["type"] in ["deb","file"]:
+							if self.manage_download:
+								cmd=self._get_download_cmd(item["type"],item,cmd)
+							else:
+								if item["type"]=="file":
+									cmd_file+="%s "%item["name"]	
+								else:
+									cmd=self._get_download_cmd(item["type"],item,cmd)
+									
+				if cmd_file!="":
+					cmd_file+=";"
 
-				cmd=cmd + ' echo $? >' + self.token_result_download[1] +';'	
-			
+				cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
+		
 		return cmd			
 					
 	#def download_app		
 
+	def _get_download_cmd(self,item_type,item,cmd):
+
+		tmp_file=""
+		version=self.get_app_version(item)
+
+		if item_type=="deb": 
+			name=item["name"]+".deb"
+			tmp_file=os.path.join(self.download_path,name)
+		elif item_type=="file":
+			try:
+				tmp_file=os.path.join(self.download_path,item["alias_download"])
+			except Exception as e:	
+				tmp_file=os.path.join(self.download_path,version)
+		
+
+		url=item["url_download"]
+		if os.path.exists(tmp_file):
+			cmd=cmd+'rm -f '+ tmp_file +';'
+		
+		self.download_folder.append(tmp_file)
+		cmd=cmd+'wget ' +url+version + ' --progress=bar:force --no-check-certificate -O ' + tmp_file +'; '
+
+		return cmd
+
+	#def _get_download_cmd
 
 	def check_download(self):
 
 		
 		result=True
-		if self.type !='apt' and self.type !='localdeb':
 
+		if self.type not in ['apt','localdeb']:
+
+			count=0
+			pkgs_todownload=len(self.download_folder)
+
+			if len(self.download_folder)>0:
+				for item in self.download_folder:
+					if os.path.exists(item):
+						count=count+1
 			
 			if os.path.exists(self.token_result_download[1]):
 				file=open(self.token_result_download[1])
@@ -625,15 +662,13 @@ class EpiManager:
 
 				if result:	
 					if self.manage_download:
-						pkgs_todownload=len(self.download_folder)
-						cont=0
-
-						for item in self.download_folder:
-							if os.path.exists(item):
-								cont=cont+1
-
-						if cont != pkgs_todownload:
-							result=False
+						if count != pkgs_todownload:
+							if not self.epi_conf["selection_enabled"]["active"]:
+								result=False
+				else:
+					if self.epi_conf["selection_enabled"]["active"]:
+						if count>0:		
+							result=True
 
 		return result
 
@@ -678,62 +713,166 @@ class EpiManager:
 
 	#def check_preinstall_app	
 
-	def install_app(self):
+	def install_app(self,calledfrom):
 	
 		self._copy_epi_keyring()
-
+		self.token_result_install=""
+		pkgs_apt=0
 		add_i386=""
-		
-		if not self.arquitecture:
-			add_i386=self.check_arquitecture()
-
-
 		cmd=""
 		
-		if self.type=="apt":
-
-			update_repos=self.check_update_repos()
-			cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
-						
+		'''
+		if not self.arquitecture:
+			add_i386=self.check_arquitecture()
+		'''
+	
+		if self.type=="mix":
+			result_mix=self._check_epi_mix_content(calledfrom)
+			pkgs_apt=result_mix[0]
+			pkgs_deb=result_mix[1]
+			pkgs_file=result_mix[2]
+			cmd_dpkg=result_mix[3]
+			cmd_file=result_mix[4]
+			
+		
+		if self.type=="apt" or pkgs_apt>0:
+			#update_repos=self.check_update_repos()
+			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
+			cmd=self._get_install_cmd_base(calledfrom,"apt")
+			
+		if self.type=="apt":	
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
 					cmd=cmd + app +" "
-			
-			
+				
 		elif self.type=="deb":
 			pkg=""
-			cmd="dpkg -i "
-			'''
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					name=item["name"]+".deb"
-			'''
+			cmd=self._get_install_cmd_base(calledfrom,"deb")
 			for item in self.download_folder:
-				pkg=pkg+' '+item
+				if os.path.exists(item):
+					pkg=pkg+' '+item
 			
 			cmd=cmd+pkg	
 
 		elif self.type=="localdeb":
-			cmd="apt-get install --reinstall --allow-downgrades --yes "
+			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			for item in self.epi_conf["pkg_list"]:
 				name=item["version"]["all"]
 				pkg=os.path.join(item["url_download"],name)
 				cmd=cmd+pkg+ " "
 
 		elif self.type=="file":
-			self.token_result_install=tempfile.mkstemp("_result")
-			script=self.epi_conf["script"]["name"]
-			if os.path.exists(script):
-				cmd=script + " installPackage "
+			cmd=self._get_install_file_cmd_base()
+			if cmd !="":
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 				cmd+='; echo $? >' + self.token_result_install[1]	
-				#cmd=script + ' installPackage; echo $? >' + self.token_result_install[1]
+		
+		elif self.type=="mix":
+			for item in self.epi_conf["pkg_list"]:
+				if item["name"] in self.packages_selected:
+					if item["type"]=="apt":
+						cmd=cmd + item["name"] +" "
+					
+					elif item["type"]=="deb":
+						for pkg in self.download_folder:
+							if os.path.exists(pkg):
+								if item["name"] in pkg:
+									cmd_dpkg=cmd_dpkg+ pkg + " "	
+					
+					elif item["type"]=="file":
+						if cmd_file!="":
+							cmd_file+="%s "%item["name"]
+
+			
+			
+			if cmd_dpkg!="":
+				if cmd!="":
+					cmd=cmd+"; "+cmd_dpkg
+				else:
+					cmd=cmd_dpkg	
+			
+			if cmd_file!="":
+				cmd_file+='; echo $? >' + self.token_result_install[1]
+				if cmd!="":
+					cmd=cmd+"; "+cmd_file
+				else:
+					cmd=cmd_file		
+
 		cmd=cmd+";"
+
 		return cmd	
 
-	#def install_app	
+	#def install_app
+
+	def _get_install_cmd_base(self,calledfrom,pkg_type):
+
+		cmd_headed=""
+		apt_headed="apt-get install --reinstall --allow-downgrades --yes "
+		dpkg_headed="dpkg -i "
+
+		if self.epi_conf["required_dconf"]:
+			if calledfrom =="gui":
+				cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde "
+			else:
+				cmd_headed="LANG=C LANGUAGE=en "
+		else:
+			cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "
+
+		if pkg_type in ["apt","localdeb"]:
+			cmd_headed=cmd_headed+apt_headed
+		elif pkg_type =="deb":
+			cmd_headed=cmd_headed+dpkg_headed
+
+		return cmd_headed		
+
+	# def _check_debconf_required
+
+	def _check_epi_mix_content(self,calledfrom):
+		
+		pkgs_apt=0
+		pkgs_file=0
+		pkgs_deb=0
+		cmd_file=""
+		cmd_dpkg=""
+		result=[]
+
+		for item in self.epi_conf["pkg_list"]:
+			if item["name"] in self.packages_selected:
+				if item["type"]=="apt":
+					pkgs_apt+=1
+				
+				elif item["type"]=="deb":
+					pkgs_deb+=1
+
+				elif item["type"]=="file":
+					pkgs_file+=1	
+						
+		if pkgs_deb>0:
+			cmd_dpkg=self._get_install_cmd_base(calledfrom,"deb")	
+
+		if pkgs_file>0:
+			cmd_file=self._get_install_file_cmd_base()	
+
+		result=[pkgs_apt,pkgs_deb,pkgs_file,cmd_dpkg,cmd_file]
+
+		return result
+
+	#def _check_epi_mix_content
+
+	def _get_install_file_cmd_base(self):
+
+		cmd_tmp=""
+		self.token_result_install=tempfile.mkstemp("_result")
+		script=self.epi_conf["script"]["name"]
+		
+		if os.path.exists(script):
+			cmd_tmp=script + " installPackage "	
+		
+		return cmd_tmp 
+
+	#def _get_install_file_cmd_base	
 
 	def _copy_epi_keyring(self):
 
@@ -753,18 +892,23 @@ class EpiManager:
 		pkgs_installed=0
 		token=""
 		pkgs_ref=[]
+		result=False
+
 
 		if action=="install":
 			epi_type=self.type
-			if epi_type=="file":
-				token=self.token_result_install[1]
-			else:	
+			if epi_type == "file":
+				if self.token_result_install!="":
+					token=self.token_result_install[1]
+			
+			elif epi_type!="file":
 				pkgs=self.epi_conf["pkg_list"]
 		else:
 			epi_type=self.epiFiles[0]["type"]
 			if epi_type=="file":
 				token=self.token_result_remove[1]
-			else:
+				
+			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:
@@ -782,17 +926,26 @@ class EpiManager:
 							
 				file.close()
 				os.remove(token)
-		else:		
+
+		elif epi_type !="file":
 			for item in pkgs:
-				status=self.check_pkg_status(item["name"])
+				if epi_type=="mix":
+					if action=="install":
+						status=self.check_pkg_status(item["name"],self.epi_order)
+					else:
+						status=self.check_pkg_status(item["name"],0)
+	
+				else:
+					status=self.check_pkg_status(item["name"])
+	
 				if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
 				else:
 					if status=="installed":
-						pkgs_installed+=1		
-					
+						pkgs_installed+=1			
+									
 
 			if action=="install":
 				if count==0:
@@ -887,7 +1040,6 @@ class EpiManager:
 
 				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
 				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
-
 		return cmd
 
 	#def uninstall_app	

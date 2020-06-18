@@ -88,7 +88,8 @@ class EulaBox(Gtk.VBox):
 			self.scrolled_window.add(self.webview)
 			self.webkit_box.pack_start(self.scrolled_window,True,True,0)
 
-		self.eula_pkg_name.set_text(info["pkg_name"])
+		self.pkg_name=info["pkg_name"]
+		self.eula_pkg_name.set_text(self.pkg_name)
 		self.load_url(info["eula"])
 		self.eula_window.show_all()
 
@@ -102,14 +103,29 @@ class EulaBox(Gtk.VBox):
 
 	def cancel_eula_button_clicked(self,widget):
 
-		self.eula_window.hide()
 		self.load_url("")
+		
+		if self.core.mainWindow.load_epi_conf[0]["selection_enabled"]["active"]:
+
+			for item in self.core.epiBox.epi_list_box.get_children():
+				for element in item.get_children():
+					if element.id == self.pkg_name:
+						item.get_children()[0].set_active(False)
+
+			self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
+			self.core.mainWindow.eula_order-=1
+			self.core.mainWindow.accept_eula()
+		else:
+			self.eula_window.hide()
+		
+
 
 	#def cancel_eula_button_clicked
 	
 	def accept_eula_button_clicked(self,widget):
 
 		self.core.mainWindow.eulas_tocheck.pop(self.core.mainWindow.eula_order)
+		self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
 		self.core.mainWindow.eula_order-=1
 		self.load_url("")
 		self.core.mainWindow.accept_eula()
