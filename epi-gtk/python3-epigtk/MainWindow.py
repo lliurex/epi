@@ -62,7 +62,7 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(675,465)
+		self.main_window.resize(675,445)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
