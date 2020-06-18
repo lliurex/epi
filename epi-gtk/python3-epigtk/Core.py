@@ -11,6 +11,7 @@ from . import DependsBox
 from . import EpiBox
 from . import InfoBox
 from . import EulaBox
+from . import TerminalBox
 from . import settings
 
 class Core:
@@ -38,9 +39,9 @@ class Core:
 
 		self.rsrc_dir= settings.RSRC_DIR + "/"
 		self.ui_path= settings.RSRC_DIR + "/epi-gtk.ui"
-		self.get_icons=IconsManager.IconsManager()
+		#self.get_icons=IconsManager.IconsManager()
 
-		
+		self.iconsManager=IconsManager.IconsManager()
 		self.epiManager=EpiManager.EpiManager()
 
 		self.chooserBox=ChooserBox.ChooserBox()
@@ -49,6 +50,7 @@ class Core:
 		self.epiBox=EpiBox.EpiBox()
 		self.infoBox=InfoBox.InfoBox()
 		self.eulaBox=EulaBox.EulaBox()
+		self.terminalBox=TerminalBox.TerminalBox()
 				
 			
 			# Main window must be the last one

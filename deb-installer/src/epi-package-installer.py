@@ -65,6 +65,8 @@ def _get_deb_info(deb):
 				data=" ".join(line.split(" ")[1:]).rstrip()
 				if key=='Description':
 					data=data+"||"
+				elif key=='Package':
+					data=data.lower()	
 				debInfo[key]=data
 				oldKey=key
 	return (debInfo)
