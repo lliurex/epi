@@ -395,6 +395,7 @@ class MainWindow:
 			else:
 				self.load_epi_conf=epi_loaded
 				self.order=order
+				self.checking_system_t.done=True
 		else:
 			self.checking_system_t.done=True	
 		#self.checking_system_t.done=True	
