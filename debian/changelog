@@ -1,3 +1,9 @@
+epi (0.3.8.1) bionic; urgency=medium
+
+  * Fixed bug when epi file doesn't exist
+ 
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 22 Jun 2020 09:37:58 +0200
+
 epi (0.3.8) bionic; urgency=medium
 
   * Defined new type "mix"
