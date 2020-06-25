@@ -62,7 +62,7 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(675,445)
+		self.main_window.resize(675,450)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.next_button=builder.get_object("next_button")
@@ -778,6 +778,9 @@ class MainWindow:
 
 	def install_process(self):
 
+		if not self.load_epi_conf[0]["selection_enabled"]["active"]:
+			self.main_window.resize(675,465)
+	
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
@@ -1224,6 +1227,9 @@ class MainWindow:
 				
 
 			if response==Gtk.ResponseType.YES:
+				if not self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self.main_window.resize(675,465)
+				
 				self.epiBox.view_terminal_btn.show()
 				self.epiBox.view_terminal_btn.set_label(_("See uninstall details"))
 				self.terminalBox.terminal_label.set_text(_("Uninstall process details"))
