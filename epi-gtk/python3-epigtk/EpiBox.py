@@ -109,7 +109,7 @@ class EpiBox(Gtk.VBox):
 		info=self.info			
 
 		for item in info:
-
+			pkg_order=0
 			show_cb=False
 			order=item
 			#if info[item]["type"]!="file":
@@ -134,10 +134,13 @@ class EpiBox(Gtk.VBox):
 			for element in info[item]["pkg_list"]:
 				params_to_draw=[]
 				name=element["name"]
-				try:
-					custom_name=element["custom_name"]
-				except:
-					custom_name=""
+				if order!=0:
+					custom_name=_("Previous actions: executing ")+info[item]["zomando"]
+				else:
+					try:
+						custom_name=element["custom_name"]
+					except:
+						custom_name=""
 				try:
 					debian_name=self.core.epiManager.pkg_info[name]["debian_name"]
 					component=self.core.epiManager.pkg_info[name]["component"]
@@ -145,8 +148,9 @@ class EpiBox(Gtk.VBox):
 				except:
 					custom_icon=""			
 				
-				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon]
+				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order]
 				self.new_epi_box(params_to_draw)
+				pkg_order+=1
 
 			'''	
 			else:
@@ -164,9 +168,21 @@ class EpiBox(Gtk.VBox):
 				if element.id in self.search_list:
 					item.hide()
 				else:
-					item.show()
+					if element.order==0:
+						item.show()
+					else:
+						item.hide()	
 	
-	#def hide_non_search				
+	#def hide_non_search	
+
+	def show_depend_box(self):
+
+		for item in self.epi_list_box.get_children():
+			for element in item.get_children():
+				if element.order!=0 and element.pkg_order==0:
+					item.show()
+
+	#def show_depend_box			
 
 	def new_epi_box(self,params_to_draw):
 
@@ -176,6 +192,8 @@ class EpiBox(Gtk.VBox):
 		default_checked=params_to_draw[3]
 		custom_name=params_to_draw[4]
 		custom_icon=params_to_draw[5]
+		pkg_order=params_to_draw[6]
+
 		#search=params_to_draw[6]
 		
 		hbox=Gtk.HBox()
@@ -196,7 +214,8 @@ class EpiBox(Gtk.VBox):
 		application_cb.id=name
 		application_cb.pkg=False
 		application_cb.status=False
-		application_cb.order=order		
+		application_cb.order=order
+		application_cb.pkg_order=pkg_order		
 		
 		application_image=img
 		application_image.set_margin_left(10)
@@ -209,12 +228,19 @@ class EpiBox(Gtk.VBox):
 		application_image.icon=icon
 		application_image.icon_installed=icon_installed
 		application_image.custom=custom
+		application_image.pkg_order=pkg_order
 		#application_image.installed=installed
 
 		if custom_name=='':
 			application_info="<span font='Roboto'><b>"+name+"</b></span>"
 		else:
-			application_info="<span font='Roboto'><b>"+custom_name+"</b></span>"
+			if order==0:
+				application_info="<span font='Roboto'><b>"+custom_name+"</b></span>"
+			else:
+				if pkg_order==0:
+					application_info="<span font='Roboto'><b>"+custom_name+"</b></span>"
+				else:
+					application_info="<span font='Roboto'><b>"+name+"</b></span>"
 	
 		application=Gtk.Label()
 		application.set_markup(application_info)
@@ -230,6 +256,7 @@ class EpiBox(Gtk.VBox):
 		application.pkg=False
 		application.status=False
 		application.order=order
+		application.pkg_order=pkg_order
 		
 		info=Gtk.Button()
 		info_image=Gtk.Image.new_from_file(self.info_image)
@@ -247,6 +274,7 @@ class EpiBox(Gtk.VBox):
 		info.pkg=False
 		info.order=order
 		info.status=False
+		info.pkg_order=pkg_order
 		
 		#state=Gtk.Image()
 		state=img_state
@@ -256,6 +284,7 @@ class EpiBox(Gtk.VBox):
 		state.pkg=False
 		state.status=True
 		state.order=order
+		state.pkg_order=pkg_order
 		
 		hbox.pack_start(application_cb,False,False,0)
 		hbox.pack_start(application_image,False,False,0)
@@ -282,6 +311,8 @@ class EpiBox(Gtk.VBox):
 		self.epi_list_box.queue_draw()
 		self.epi_list_box.set_valign(Gtk.Align.FILL)
 		hbox.queue_draw()
+		if order!=0:
+			hbox.hide()
 		
 	#def new_epi_box
 
@@ -434,7 +465,8 @@ class EpiBox(Gtk.VBox):
 			self.uncheck_all=True
 
 		for item in self.epi_list_box.get_children():
-			item.get_children()[0].set_active(active)
+			if item.get_children()[0].order==0:
+				item.get_children()[0].set_active(active)
 
 		self.monitoring=True
 

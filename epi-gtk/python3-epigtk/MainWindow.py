@@ -122,6 +122,8 @@ class MainWindow:
 		self.time_out=5
 		self.retry=0
 		self.lock_quit=False
+		self.show_depends=False
+
 
 		if self.epi_file!=None:
 			if self.epi_file!="--error":
@@ -232,8 +234,10 @@ class MainWindow:
 
 		self.epiBox.load_info()
 		
+		
 		if self.order>1:
-			self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
+			self.show_depends=True
+			#self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
 			#self.epiBox.scrolledwindow.set_size_request(525,165)
 		'''
 		else:
@@ -798,6 +802,9 @@ class MainWindow:
 
 		
 		if self.install_dep:
+			if self.show_depends:
+				self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
+				self.epiBox.show_depend_box()
 			if self.order>0:
 				self.order=self.order-1
 		else:
