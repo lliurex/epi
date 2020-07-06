@@ -78,12 +78,17 @@ class IconsManager:
 					ret_icon=self.icons_path+"%s/%s"%(component,icon)
 					if os.path.exists(ret_icon):
 						return ret_icon
-				else:
-					for item in self.components:
-						tmp_path=self.distro_name+"-"+dist+"-"+item
+				
+				for item in self.components:
+					tmp_path=self.distro_name+"-"+dist+"-"+item
+					ret_icon=self.icons_path+"%s/%s"%(tmp_path,icon)
+					if os.path.exists(ret_icon):
+						return ret_icon
+					else:
+						tmp_path="ubuntu"+"-"+dist+"-"+item
 						ret_icon=self.icons_path+"%s/%s"%(tmp_path,icon)
 						if os.path.exists(ret_icon):
-							return ret_icon	
+							return ret_icon		
 			
 		
 		ret_icon=self.package_icon
