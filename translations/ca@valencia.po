@@ -33,7 +33,7 @@ msgstr "Reinstal·la"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:796
 msgid "Installation process details"
-msgstr "La instal·lació s'ha completat correctament."
+msgstr "Detalls del procés d'instal·lació"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:801
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:285
@@ -51,7 +51,7 @@ msgstr "Veure detalls de la desinstal·lació"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1242
 msgid "Uninstall process details"
-msgstr "El procés de desinstal·lació ha finalitzat amb errors."
+msgstr "Detalls del procés de desinstal·lació"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1452
 msgid "Application already installed"
