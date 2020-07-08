@@ -1,3 +1,9 @@
+epi (0.3.8.6) bionic; urgency=medium
+
+  * Fixed valencian translation
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 08 Jul 2020 14:48:28 +0200
+
 epi (0.3.8.5) bionic; urgency=medium
 
   * Improved function to get app icon.
