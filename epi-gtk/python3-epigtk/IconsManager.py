@@ -70,7 +70,7 @@ class IconsManager:
 					if "64x64/" not in icon:
 						icon="64x64/" + icon
 						if debian_name!="":
-							if debian_name+"_"+debian_name not in icon:
+							if debian_name+"_" not in icon:
 								icon=icon.replace(debian_name,debian_name+"_"+debian_name)
 										
 				if component!="":
