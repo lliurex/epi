@@ -1,3 +1,9 @@
+epi (0.3.8.7) bionic; urgency=medium
+
+  * Fixed bug in function to get icon when install/uninstall process end
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Sun, 12 Jul 2020 16:47:34 +0200
+
 epi (0.3.8.6) bionic; urgency=medium
 
   * Fixed valencian translation
