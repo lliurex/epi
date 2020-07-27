@@ -20,7 +20,7 @@ class EPIC(object):
 		signal.signal(signal.SIGINT,self.handler_signal)
 
 		if len(self.epicore.epiFiles)==0:
-			if self.valid_json:
+			if self.valid_json["error"]=="path":
 				msg_log='APP epi file not exist'
 			else:
 				msg_log='APP epi file it is not a valid json'	
@@ -28,6 +28,16 @@ class EPIC(object):
 			self.write_log(msg_log)
 			sys.exit(1)
 		else:
+			valid_script=self.epicore.check_script_file()
+			if not valid_script["status"]:
+				if valid_script["error"]=="path":
+					msg_log='Associated script does not exist or its path is invalid'
+				else:
+					msg_log='Associated script does not have execute permissions'
+				print ('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)	
+				sys.exit(1)
+
 			msg_log='APP epi file loaded by EPIC: ' + app
 			self.write_log(msg_log)	
 

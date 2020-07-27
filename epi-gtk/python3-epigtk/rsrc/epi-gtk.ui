@@ -349,6 +349,7 @@
   </object>
   <object class="GtkWindow" id="eula_window">
     <property name="can_focus">False</property>
+    <property name="title" translatable="yes">EPI</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="icon_name">EPI</property>

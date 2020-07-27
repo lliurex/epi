@@ -311,13 +311,14 @@ class MainWindow:
 		if self.checking_system_t.done:
 
 			#if self.connection[0]:
-			if self.valid_json:			
-				if self.order>0:
+			if self.valid_json["status"]:	
+				if self.valid_script["status"]:		
+					
 					if not self.required_root:
 						if len (self.lock_info)>0:
 							self.load_unlock_panel()
 							return False
-														
+															
 						else:
 							if self.test_install[0]!='':
 								if self.test_install[0]=='1':
@@ -332,16 +333,19 @@ class MainWindow:
 					else:
 						error=True
 						msg_code=2	
+					
 				else:
 					error=True
-					if self.valid_json:
-						msg_code=1
+					if self.valid_script["error"]=="path":
+						msg_code=32
 					else:
-						msg_code=18	
-
+						msg_code=33				
 			else:
 				error=True
-				msg_code=18			
+				if self.valid_json["error"]=="path":
+					msg_code=1
+				else:
+					msg_code=18			
 			'''		
 			else:
 				error=True
@@ -375,31 +379,35 @@ class MainWindow:
 		
 		#if self.connection[0]:
 		self.valid_json=self.core.epiManager.read_conf(self.epi_file)
-		if self.valid_json:
-			epi_loaded=self.core.epiManager.epiFiles
-			order=len(epi_loaded)
-			if order>0:
-				check_root=self.core.epiManager.check_root()
-				self.core.epiManager.get_pkg_info()
-				self.required_root=self.core.epiManager.required_root()
-				self.required_eula=self.core.epiManager.required_eula()
-				if len(self.required_eula)>0:
-					self.eula_accepted=False
-				if check_root:	
-					self.lock_info=self.core.epiManager.check_locks()
+		if self.valid_json["status"]:
+			self.valid_script=self.core.epiManager.check_script_file()
+			if self.valid_script["status"]:
+				epi_loaded=self.core.epiManager.epiFiles
+				order=len(epi_loaded)
+				if order>0:
+					check_root=self.core.epiManager.check_root()
+					self.core.epiManager.get_pkg_info()
+					self.required_root=self.core.epiManager.required_root()
+					self.required_eula=self.core.epiManager.required_eula()
+					if len(self.required_eula)>0:
+						self.eula_accepted=False
+					if check_root:	
+						self.lock_info=self.core.epiManager.check_locks()
+						self.write_log("Locks info: "+ str(self.lock_info))
+					else:
+						self.lock_info={}
+						self.write_log("Locks info: Not checked. User is not root")
+					self.test_install=self.core.epiManager.test_install()
 					self.write_log("Locks info: "+ str(self.lock_info))
+					self.checking_system_t.done=True
+					self.load_epi_conf=self.core.epiManager.epiFiles
+					self.order=len(self.load_epi_conf)
 				else:
-					self.lock_info={}
-					self.write_log("Locks info: Not checked. User is not root")
-				self.test_install=self.core.epiManager.test_install()
-				self.write_log("Locks info: "+ str(self.lock_info))
-				self.checking_system_t.done=True
-				self.load_epi_conf=self.core.epiManager.epiFiles
-				self.order=len(self.load_epi_conf)
+					self.load_epi_conf=epi_loaded
+					self.order=order
+					self.checking_system_t.done=True
 			else:
-				self.load_epi_conf=epi_loaded
-				self.order=order
-				self.checking_system_t.done=True
+				self.checking_system_t.done=True		
 		else:
 			self.checking_system_t.done=True	
 		#self.checking_system_t.done=True	
@@ -1515,7 +1523,10 @@ class MainWindow:
 			msg=_("Checking system architecture")
 		elif code==31:
 			msg=_("Checking if repositories need updating")		
-
+		elif code==32:
+			msg=_("Associated script does not exist or its path is invalid")
+		elif code==33:
+			msg=_("Associated script does not have execute permissions")	
 		return msg
 	
 	#def get_msg_text

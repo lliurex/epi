@@ -92,12 +92,29 @@ class EpiManager:
 				except :
 					pass
 			except:
-				return False
+				return {"status":False,"error":"json"}
 
-		return True			
+		else:
+			return {"status":False,"error":"path"}
+
+		return {"status":True,"error":""}		
 
 	#def read_conf		
 
+	def check_script_file(self):
+
+		script=self.epiFiles[0]["script"]
+
+		if len(script)>0:
+			if os.path.exists(script["name"]):
+				if not os.access(script["name"],os.X_OK):
+					return {"status":False,"error":"permissions"}
+			else:
+				return {"status":False,"error":"path"}
+
+		return {"status":True,"error":""}
+	
+	#def check_script_file
 
 	def get_pkg_info(self):
 
