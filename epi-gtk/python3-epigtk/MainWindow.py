@@ -344,8 +344,10 @@ class MainWindow:
 				error=True
 				if self.valid_json["error"]=="path":
 					msg_code=1
+				elif self.valid_json["error"]=="json":
+					msg_code=18
 				else:
-					msg_code=18			
+					msg_code=34			
 			'''		
 			else:
 				error=True
@@ -1527,7 +1529,10 @@ class MainWindow:
 			msg=_("Associated script does not exist or its path is invalid")
 		elif code==33:
 			msg=_("Associated script does not have execute permissions")	
+		elif code==34:
+			msg=_("Application epi file is empty")
 		return msg
+
 	
 	#def get_msg_text
 

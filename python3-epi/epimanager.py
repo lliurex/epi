@@ -82,15 +82,20 @@ class EpiManager:
 				epi_load=json.load(f)
 				epi_conf=self.epi_base.copy()
 				f.close()
-				epi_conf.update(epi_load)
-				self.epiFiles[self.order]=epi_conf
-				self.zomando_name[self.order]=epi_conf["zomando"]
-				try:
-					if epi_conf["depends"]!="":
-						self.order=self.order+1
-						self.read_conf(epi_conf["depends"])
-				except :
-					pass
+				if len(epi_load)>0:
+					epi_conf.update(epi_load)
+					self.epiFiles[self.order]=epi_conf
+					self.zomando_name[self.order]=epi_conf["zomando"]
+					try:
+						if epi_conf["depends"]!="":
+							self.order=self.order+1
+							self.read_conf(epi_conf["depends"])
+					except :
+						pass
+				else:
+					return {"status":False,"error":"empty"}
+		
+
 			except:
 				return {"status":False,"error":"json"}
 
