@@ -22,7 +22,9 @@ class EPIC(object):
 		if len(self.epicore.epiFiles)==0:
 			if self.valid_json["error"]=="path":
 				msg_log='APP epi file not exist'
-			else:
+			elif self.valid_json["error"]=="empty":
+				msg_log='APP epi file is empty'
+			else:	
 				msg_log='APP epi file it is not a valid json'	
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
