@@ -1379,8 +1379,15 @@ class MainWindow:
 		if result:
 			for item in elements:
 				item['icon_status'].set_from_file(self.ok_image)
+				
 				if process=="install":
+					
 					if order==0:
+						try:
+							item["icon_run"].show()
+							item['icon_info'].hide()
+						except:
+							pass	
 						if item["custom"]:
 							item['icon_package'].set_from_pixbuf(item['icon_installed'])
 						else:
@@ -1392,8 +1399,13 @@ class MainWindow:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
 
 				else:
-
+					
 					if order==0:
+						try:
+							item['icon_info'].show()
+							item["icon_run"].hide()
+						except:
+							pass	
 						if item["custom"]:
 							item['icon_package'].set_from_pixbuf(item['icon'])
 						else:
@@ -1574,14 +1586,14 @@ class MainWindow:
 		cmd=command+remove_tmp
 		return cmd
 
-	#def create_process_token			
+	#def create_process_token	
 
 	def quit(self,widget):
 
 		msg_log='Quit'
 		self.write_log(msg_log)
 		self.core.epiManager.remove_repo_keys()
-		Gtk.main_quit()	
+		Gtk.main_quit()		
 
 	#def quit	
 

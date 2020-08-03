@@ -76,6 +76,24 @@
 		box-shadow: -0.5px 3px 3px #aaaaaa;
 	}	
 
+	#RUN_APP_BUTTON {
+			border-width: 5px;
+			border-radius: 0px;
+			padding: 0px 0px;
+			box-shadow: none;
+			border-color: #4784ed;
+			
+			color: white;
+			background-image:-gtk-gradient (linear,	left top, left bottom, from (#4784ed),  to (#4784ed));
+			text-shadow: none;
+			
+	}
+		
+	#RUN_APP_BUTTON:hover {
+		border-color: #7ea8f2;
+		background-image:-gtk-gradient (linear,	left top, left bottom, from (#7ea8f2),  to (#7ea8f2));
+		box-shadow: -0.5px 3px 3px #aaaaaa;
+	}
 		
 	#APP_BOX {
 		background-color: #ffffff	;
