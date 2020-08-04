@@ -622,9 +622,11 @@ class MainWindow:
 		if status=='availabled':
 
 			if not self.eula_accepted:
-				self.apply_button.set_label(_("Accept Eula and Install"))
+				if not self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self._get_label_install_button("eula")
 			else:	
-				self.apply_button.set_label(_("Install"))
+				self._get_label_install_button("install")
+
 			
 			#self.apply_button.set_sensitive(True)
 			
@@ -637,7 +639,7 @@ class MainWindow:
 
 		else:
 			self.eula_accepted=True
-			self.apply_button.set_label(_("Reinstall"))
+			self._get_label_install_button("reinstall")
 			#self.apply_button.set_sensitive(True)
 			if self.remove_btn:
 				if not self.epiBox.show_terminal:
@@ -648,6 +650,17 @@ class MainWindow:
 				self.uninstall_button.hide()			
 
 	#def show_apply_uninstall_buttons			
+
+	def _get_label_install_button(self,action):
+
+		if action=="eula":
+			self.apply_button.set_label(_("Accept Eula and Install"))
+		elif action=="install":
+			self.apply_button.set_label(_("Install"))
+		elif action=="reinstall":
+			self.apply_button.set_label(_("Reinstall"))
+
+	#def _get_label_install_button
 
 	def init_install_process(self):
 

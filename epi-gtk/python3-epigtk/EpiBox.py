@@ -300,6 +300,7 @@ class EpiBox(Gtk.VBox):
 			run.set_halign(Gtk.Align.CENTER)
 			run.set_valign(Gtk.Align.CENTER)
 			run.set_name("RUN_APP_BUTTON")
+			run.connect("clicked",self.show_info_clicked,hbox)
 			run.set_tooltip_text(_("Click to launch the application"))
 			run.connect("clicked",self.run_app,entrypoint)
 		
@@ -519,11 +520,16 @@ class EpiBox(Gtk.VBox):
 		if self.uncheck_all:
 			active=False
 			self.select_pkg_btn.set_label(_(_("Check all packages")))
+			self.core.mainWindow._get_label_install_button("install")	
 			self.uncheck_all=False
 		else:
 			active=True
 			self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
 			self.uncheck_all=True
+			if len(self.core.mainWindow.required_eula)>0:
+				self.core.mainWindow._get_label_install_button("eula")	
+			else:
+				self.core.mainWindow._get_label_install_button("install")	
 
 		for item in self.epi_list_box.get_children():
 			if item.get_children()[0].order==0:
@@ -538,12 +544,19 @@ class EpiBox(Gtk.VBox):
 		if self.monitoring:
 			count_ck=0
 			count_uck=0
+			count_eula=0
+
 			for item in self.core.mainWindow.load_epi_conf[0]["pkg_list"]:
 				if item["name"] in self.core.epiManager.packages_selected:
 					count_ck+=1
+
 				else:
 					count_uck+=1	
 			
+			for item in self.core.mainWindow.required_eula:
+				if item["pkg_name"] in self.core.epiManager.packages_selected:
+					count_eula+=1
+
 			if count_ck==len(self.core.mainWindow.load_epi_conf[0]["pkg_list"]):
 				self.select_pkg_btn.set_label(_(_("Uncheck all packages")))
 				self.uncheck_all=True
@@ -552,7 +565,11 @@ class EpiBox(Gtk.VBox):
 				self.select_pkg_btn.set_label(_(_("Check all packages")))
 				self.uncheck_all=False
 		
-
+			if count_eula>0:
+				self.core.mainWindow._get_label_install_button("eula")	
+			else:
+				self.core.mainWindow._get_label_install_button("install")	
+	
 	#def manage_select_pkg_btn
 
 	def search_entry_changed(self,widget):
