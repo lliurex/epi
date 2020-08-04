@@ -300,7 +300,6 @@ class EpiBox(Gtk.VBox):
 			run.set_halign(Gtk.Align.CENTER)
 			run.set_valign(Gtk.Align.CENTER)
 			run.set_name("RUN_APP_BUTTON")
-			run.connect("clicked",self.show_info_clicked,hbox)
 			run.set_tooltip_text(_("Click to launch the application"))
 			run.connect("clicked",self.run_app,entrypoint)
 		
