@@ -1,3 +1,11 @@
+epi (0.3.9) bionic; urgency=medium
+
+  * Added new key in epi file to launch app when itImproved is installed.
+  * Added debug mode
+  * Improved management of eulas in epi with selectable packages list 
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 06 Aug 2020 11:52:50 +0200
+
 epi (0.3.8.7) bionic; urgency=medium
 
   * Fixed bug in function to get icon when install/uninstall process end
