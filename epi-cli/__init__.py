@@ -13,9 +13,9 @@ signal.signal(signal.SIGINT,signal.SIG_IGN)
 
 class EPIC(object):
 
-	def __init__(self,app):
+	def __init__(self,app,debug=None):
 
-		self.epicore=EpiManager.EpiManager()
+		self.epicore=EpiManager.EpiManager(debug)
 		self.valid_json=self.epicore.read_conf(app)
 		signal.signal(signal.SIGINT,self.handler_signal)
 

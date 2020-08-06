@@ -40,9 +40,18 @@ class Core:
 		self.rsrc_dir= settings.RSRC_DIR + "/"
 		self.ui_path= settings.RSRC_DIR + "/epi-gtk.ui"
 		#self.get_icons=IconsManager.IconsManager()
+		debug=False
+		if len(sys.argv)>2:
+			if '-d' or '--debug' in sys.argv[2]:
+				debug=True
+		
+		if len(sys.argv)>1:
+			epi_file=sys.argv[1]
+		else:
+			epi_file=None		
 
 		self.iconsManager=IconsManager.IconsManager()
-		self.epiManager=EpiManager.EpiManager()
+		self.epiManager=EpiManager.EpiManager(debug)
 
 		self.chooserBox=ChooserBox.ChooserBox()
 		self.loadingBox=LoadingBox.LoadingBox()

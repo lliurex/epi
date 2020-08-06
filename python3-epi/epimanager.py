@@ -18,10 +18,13 @@ import shutil
 
 class EpiManager:
 	
-	def __init__(self):
+	def __init__(self,args=None):
 
-
-		self.debug=0
+		if args:
+			self.debug=1
+		else:	
+			self.debug=0
+		
 		self.storeManager=StoreManager.StoreManager(autostart=False)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
@@ -170,6 +173,7 @@ class EpiManager:
 					
 		
 		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
+		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
 	#def get_pkg_info				
 							
 
@@ -992,21 +996,23 @@ class EpiManager:
 
 		elif epi_type !="file":
 			for item in pkgs:
-				if epi_type=="mix":
-					if action=="install":
-						status=self.check_pkg_status(item["name"],self.epi_order)
-					else:
-						status=self.check_pkg_status(item["name"],0)
-	
-				else:
-					status=self.check_pkg_status(item["name"])
-	
 				if item["name"] in self.packages_selected:
+					if epi_type=="mix":
+						if action=="install":
+							status=self.check_pkg_status(item["name"],self.epi_order)
+						else:
+							status=self.check_pkg_status(item["name"],0)
+			
+					else:
+						status=self.check_pkg_status(item["name"])
+	
+				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
 				else:
-					if status=="installed":
+					if self.pkg_info[item["name"]]["status"]=="installed":
+						#if status=="installed":
 						pkgs_installed+=1			
 									
 
