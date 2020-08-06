@@ -18,9 +18,13 @@ import shutil
 
 class EpiManager:
 	
-	def __init__(self):
+	def __init__(self,args=None):
 
-
+		if args:
+			self.debug=1
+		else:	
+			self.debug=0
+		
 		self.storeManager=StoreManager.StoreManager(autostart=False)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
@@ -57,7 +61,13 @@ class EpiManager:
 		
 	#def __init__	
 
-	
+	def _show_debug(self,function,msg):
+
+		if self.debug==1:
+			print("[EPI-DEBUG]: Function: %s - Message: %s"%(function,msg))
+
+	#def _show_debug
+
 	def check_connection(self,url):
 		
 		result=[]
@@ -68,7 +78,9 @@ class EpiManager:
 		except Exception as e:
 			result.append(False)
 			result.append(str(e))
-						
+		
+		self._show_debug("check_connection","Result: %s"%(result))
+			
 		return result	
 
 	#def check_connection	
@@ -82,22 +94,48 @@ class EpiManager:
 				epi_load=json.load(f)
 				epi_conf=self.epi_base.copy()
 				f.close()
-				epi_conf.update(epi_load)
-				self.epiFiles[self.order]=epi_conf
-				self.zomando_name[self.order]=epi_conf["zomando"]
-				try:
-					if epi_conf["depends"]!="":
-						self.order=self.order+1
-						self.read_conf(epi_conf["depends"])
-				except :
-					pass
-			except:
-				return False
+				if len(epi_load)>0:
+					epi_conf.update(epi_load)
+					self.epiFiles[self.order]=epi_conf
+					self.zomando_name[self.order]=epi_conf["zomando"]
+					try:
+						if epi_conf["depends"]!="":
+							self.order=self.order+1
+							self.read_conf(epi_conf["depends"])
+					except :
+						pass
+				else:
+					self._show_debug("read_conf","Epi files is empty: %s"%(epi_file))
+					return {"status":False,"error":"empty"}
+		
 
-		return True			
+			except Exception as e:
+				self._show_debug("read_conf","Epi file is not a valid json. Error: %s"%(str(e)))
+				return {"status":False,"error":"json"}
+
+		else:
+			self._show_debug("read_conf","Epi files not exists: %s"%(epi_file))
+			return {"status":False,"error":"path"}
+
+		return {"status":True,"error":""}		
 
 	#def read_conf		
 
+	def check_script_file(self):
+
+		script=self.epiFiles[0]["script"]
+
+		if len(script)>0:
+			if os.path.exists(script["name"]):
+				if not os.access(script["name"],os.X_OK):
+					return {"status":False,"error":"permissions"}
+			else:
+				self._show_debug("check_scrip_file","Script file not exits or path is not valid: %s"%(script["name"]))
+				return {"status":False,"error":"path"}
+
+		return {"status":True,"error":""}
+	
+	#def check_script_file
 
 	def get_pkg_info(self):
 
@@ -133,7 +171,9 @@ class EpiManager:
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
 					
-
+		
+		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
+		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
 	#def get_pkg_info				
 							
 
@@ -223,6 +263,8 @@ class EpiManager:
 						cmd=script +' getStatus ' + pkg;
 						p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 						poutput=p.communicate()
+						self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
+
 						if len(poutput)>0:
 							if poutput[0].decode("utf-8").split("\n")[0]=='0':
 								return "installed"
@@ -246,6 +288,8 @@ class EpiManager:
 		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
 		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		poutput,perror=p.communicate()
+
+		self._show_debug("_get_pkg_status","pkg: %s; result by command:poutput: %s; perror: %s"%(pkg,poutput,perror))
 
 		if len(poutput)>0:
 			return "installed"
@@ -398,7 +442,8 @@ class EpiManager:
 						eulas.append(tmp)
 				except:
 					pass		
-					
+		
+		self._show_debug("required_eula","Packages with eula: %s"%(eulas))
 		return eulas
 
 	#def required_eula	
@@ -442,6 +487,7 @@ class EpiManager:
 		lastmod=os.path.getmtime(filename)
 		lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
 		cmd=""
+		update_repo=False
 
 		if self.type in ["apt","mix"]:
 			if current_date !=lastupdate or self.update:
@@ -468,13 +514,18 @@ class EpiManager:
 
 					if update_repo:	
 						cmd="LANG=C LANGUAGE=en apt-get update; "
+						self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
 						return cmd		
+
+		
+		self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
 
 		return cmd
 		
 	#def check_update_repos	
 
 	def check_arquitecture(self):
+
 
 		self.force32=self.epi_conf['force32']
 		cmd=""
@@ -485,6 +536,9 @@ class EpiManager:
 				self.update=True
 								
 		self.arquitecture=True
+		
+		self._show_debug("check_arquitecture","Required i386: %s - Command to add i386:%s"%(self.force32,cmd))
+		
 		return cmd		
 
 	#def check_arquitecture	
@@ -526,7 +580,7 @@ class EpiManager:
 				f.close()
 				self.update=True
 
-			
+		self._show_debug("add_repository_keys","Command to add keys:%s"%(cmd))
 		return cmd		
 
 	#def add_repository_keys	
@@ -549,6 +603,8 @@ class EpiManager:
 				else:
 					version=item["version"]["32b"]
 			
+		self._show_debug("get_app_version","Version to install: %s"%(version))
+
 		return version
 
 	#def get_app_version	
@@ -607,6 +663,7 @@ class EpiManager:
 
 				cmd=cmd +' '+cmd_file+'echo $? >' + self.token_result_download[1] +';'	
 		
+		self._show_debug("download_app","Command to download: %s"%(cmd))
 		return cmd			
 					
 	#def download_app		
@@ -641,6 +698,7 @@ class EpiManager:
 
 		
 		result=True
+		content=""
 
 		if self.type not in ['apt','localdeb']:
 
@@ -670,6 +728,8 @@ class EpiManager:
 						if count>0:		
 							result=True
 
+		self._show_debug("check_download","Downlodad status: Result: %s - Token Content: %s"%(result,content))
+		
 		return result
 
 	#def check_download		
@@ -687,6 +747,7 @@ class EpiManager:
 					cmd+="%s "%pkg
 				cmd+='; echo $? >' + self.token_result_preinstall[1] +';'
 
+		self._show_debug("preinstall_app","Preinstall Command: %s"%(cmd))
 		return cmd		
 
 	#def preinstall_app	
@@ -695,6 +756,7 @@ class EpiManager:
 	def check_preinstall(self):
 		
 		result=True
+		content=""
 
 		try:
 			if os.path.exists(self.token_result_preinstall[1]):
@@ -708,6 +770,8 @@ class EpiManager:
 		except:			
 			pass
 
+		self._show_debug("check_preinstall","Presintall result: Result: %s - Token content: %s"%(result,content))
+	
 		return result
 
 
@@ -802,6 +866,8 @@ class EpiManager:
 
 		cmd=cmd+";"
 
+		self._show_debug("install_app","Install Command: %s"%(cmd))
+
 		return cmd	
 
 	#def install_app
@@ -893,6 +959,7 @@ class EpiManager:
 		token=""
 		pkgs_ref=[]
 		result=False
+		content=""
 
 
 		if action=="install":
@@ -929,21 +996,23 @@ class EpiManager:
 
 		elif epi_type !="file":
 			for item in pkgs:
-				if epi_type=="mix":
-					if action=="install":
-						status=self.check_pkg_status(item["name"],self.epi_order)
-					else:
-						status=self.check_pkg_status(item["name"],0)
-	
-				else:
-					status=self.check_pkg_status(item["name"])
-	
 				if item["name"] in self.packages_selected:
+					if epi_type=="mix":
+						if action=="install":
+							status=self.check_pkg_status(item["name"],self.epi_order)
+						else:
+							status=self.check_pkg_status(item["name"],0)
+			
+					else:
+						status=self.check_pkg_status(item["name"])
+	
+				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
 				else:
-					if status=="installed":
+					if self.pkg_info[item["name"]]["status"]=="installed":
+						#if status=="installed":
 						pkgs_installed+=1			
 									
 
@@ -968,9 +1037,11 @@ class EpiManager:
 				else:
 					self.partial_installed=False			
 		
+		self._show_debug("check_install_remove","Action: %s - Result: %s - Dpkg Status: %s - Token content: %s"%(action,result,dpkg_status,content))
+
 		return dpkg_status,result			
 
-	
+		
 		
 	#def check_install_remove	
 
@@ -988,6 +1059,8 @@ class EpiManager:
 
 				cmd+='; echo $? >' + self.token_result_postinstall[1] +';'
 
+		self._show_debug("postinstall_app","Postinstall Command:%s"%(cmd))
+
 		return cmd	
 
 	#def postinstall_app	
@@ -995,7 +1068,7 @@ class EpiManager:
 	def check_postinstall(self):
 		
 		result=True
-
+		content=""
 		try:
 			if os.path.exists(self.token_result_postinstall[1]):
 				file=open(self.token_result_postinstall[1])
@@ -1007,6 +1080,8 @@ class EpiManager:
 		except:
 			pass			
 
+		self._show_debug("check_postinstall","Postinstall result: Result: %s - Token content: %s"%(result,content))
+		
 		return result
 
 	#def check_postinstall	
@@ -1040,6 +1115,9 @@ class EpiManager:
 
 				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
 				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
+		
+		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
+
 		return cmd
 
 	#def uninstall_app	

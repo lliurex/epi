@@ -311,13 +311,14 @@ class MainWindow:
 		if self.checking_system_t.done:
 
 			#if self.connection[0]:
-			if self.valid_json:			
-				if self.order>0:
+			if self.valid_json["status"]:	
+				if self.valid_script["status"]:		
+					
 					if not self.required_root:
 						if len (self.lock_info)>0:
 							self.load_unlock_panel()
 							return False
-														
+															
 						else:
 							if self.test_install[0]!='':
 								if self.test_install[0]=='1':
@@ -332,16 +333,21 @@ class MainWindow:
 					else:
 						error=True
 						msg_code=2	
+					
 				else:
 					error=True
-					if self.valid_json:
-						msg_code=1
+					if self.valid_script["error"]=="path":
+						msg_code=32
 					else:
-						msg_code=18	
-
+						msg_code=33				
 			else:
 				error=True
-				msg_code=18			
+				if self.valid_json["error"]=="path":
+					msg_code=1
+				elif self.valid_json["error"]=="json":
+					msg_code=18
+				else:
+					msg_code=34			
 			'''		
 			else:
 				error=True
@@ -375,31 +381,35 @@ class MainWindow:
 		
 		#if self.connection[0]:
 		self.valid_json=self.core.epiManager.read_conf(self.epi_file)
-		if self.valid_json:
-			epi_loaded=self.core.epiManager.epiFiles
-			order=len(epi_loaded)
-			if order>0:
-				check_root=self.core.epiManager.check_root()
-				self.core.epiManager.get_pkg_info()
-				self.required_root=self.core.epiManager.required_root()
-				self.required_eula=self.core.epiManager.required_eula()
-				if len(self.required_eula)>0:
-					self.eula_accepted=False
-				if check_root:	
-					self.lock_info=self.core.epiManager.check_locks()
+		if self.valid_json["status"]:
+			self.valid_script=self.core.epiManager.check_script_file()
+			if self.valid_script["status"]:
+				epi_loaded=self.core.epiManager.epiFiles
+				order=len(epi_loaded)
+				if order>0:
+					check_root=self.core.epiManager.check_root()
+					self.core.epiManager.get_pkg_info()
+					self.required_root=self.core.epiManager.required_root()
+					self.required_eula=self.core.epiManager.required_eula()
+					if len(self.required_eula)>0:
+						self.eula_accepted=False
+					if check_root:	
+						self.lock_info=self.core.epiManager.check_locks()
+						self.write_log("Locks info: "+ str(self.lock_info))
+					else:
+						self.lock_info={}
+						self.write_log("Locks info: Not checked. User is not root")
+					self.test_install=self.core.epiManager.test_install()
 					self.write_log("Locks info: "+ str(self.lock_info))
+					self.checking_system_t.done=True
+					self.load_epi_conf=self.core.epiManager.epiFiles
+					self.order=len(self.load_epi_conf)
 				else:
-					self.lock_info={}
-					self.write_log("Locks info: Not checked. User is not root")
-				self.test_install=self.core.epiManager.test_install()
-				self.write_log("Locks info: "+ str(self.lock_info))
-				self.checking_system_t.done=True
-				self.load_epi_conf=self.core.epiManager.epiFiles
-				self.order=len(self.load_epi_conf)
+					self.load_epi_conf=epi_loaded
+					self.order=order
+					self.checking_system_t.done=True
 			else:
-				self.load_epi_conf=epi_loaded
-				self.order=order
-				self.checking_system_t.done=True
+				self.checking_system_t.done=True		
 		else:
 			self.checking_system_t.done=True	
 		#self.checking_system_t.done=True	
@@ -612,9 +622,11 @@ class MainWindow:
 		if status=='availabled':
 
 			if not self.eula_accepted:
-				self.apply_button.set_label(_("Accept Eula and Install"))
+				if not self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self._get_label_install_button("eula")
 			else:	
-				self.apply_button.set_label(_("Install"))
+				self._get_label_install_button("install")
+
 			
 			#self.apply_button.set_sensitive(True)
 			
@@ -627,7 +639,7 @@ class MainWindow:
 
 		else:
 			self.eula_accepted=True
-			self.apply_button.set_label(_("Reinstall"))
+			self._get_label_install_button("reinstall")
 			#self.apply_button.set_sensitive(True)
 			if self.remove_btn:
 				if not self.epiBox.show_terminal:
@@ -638,6 +650,17 @@ class MainWindow:
 				self.uninstall_button.hide()			
 
 	#def show_apply_uninstall_buttons			
+
+	def _get_label_install_button(self,action):
+
+		if action=="eula":
+			self.apply_button.set_label(_("Accept Eula and Install"))
+		elif action=="install":
+			self.apply_button.set_label(_("Install"))
+		elif action=="reinstall":
+			self.apply_button.set_label(_("Reinstall"))
+
+	#def _get_label_install_button
 
 	def init_install_process(self):
 
@@ -1369,8 +1392,15 @@ class MainWindow:
 		if result:
 			for item in elements:
 				item['icon_status'].set_from_file(self.ok_image)
+				
 				if process=="install":
+					
 					if order==0:
+						try:
+							item["icon_run"].show()
+							item['icon_info'].hide()
+						except:
+							pass	
 						if item["custom"]:
 							item['icon_package'].set_from_pixbuf(item['icon_installed'])
 						else:
@@ -1382,8 +1412,13 @@ class MainWindow:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
 
 				else:
-
+					
 					if order==0:
+						try:
+							item['icon_info'].show()
+							item["icon_run"].hide()
+						except:
+							pass	
 						if item["custom"]:
 							item['icon_package'].set_from_pixbuf(item['icon'])
 						else:
@@ -1515,8 +1550,14 @@ class MainWindow:
 			msg=_("Checking system architecture")
 		elif code==31:
 			msg=_("Checking if repositories need updating")		
-
+		elif code==32:
+			msg=_("Associated script does not exist or its path is invalid")
+		elif code==33:
+			msg=_("Associated script does not have execute permissions")	
+		elif code==34:
+			msg=_("Application epi file is empty")
 		return msg
+
 	
 	#def get_msg_text
 
@@ -1558,14 +1599,14 @@ class MainWindow:
 		cmd=command+remove_tmp
 		return cmd
 
-	#def create_process_token			
+	#def create_process_token	
 
 	def quit(self,widget):
 
 		msg_log='Quit'
 		self.write_log(msg_log)
 		self.core.epiManager.remove_repo_keys()
-		Gtk.main_quit()	
+		Gtk.main_quit()		
 
 	#def quit	
 
