@@ -198,6 +198,9 @@ class MainWindow:
 		self.stack.set_visible_child_name("loadingBox")	
 		self.stack.set_transition_duration(1000)
 		#GLib.timeout_add(100,self.pulsate_checksystem)
+		self.connection=[]
+		self.first_connection=""
+		self.second_connection=""
 		self.init_threads()
 		self.checking_url1_t.start()
 		self.checking_url1_t.launched=True
@@ -258,7 +261,7 @@ class MainWindow:
 			return True
 
 		else:
-			if not self.connection[0]:
+			if not self.first_connection and not self.second_connection:
 				if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
 					return True
 				else:
@@ -270,7 +273,7 @@ class MainWindow:
 
 		if end_check:		
 		
-			if self.connection[0]:
+			if self.first_connection or self.second_connection:
 			 	GLib.timeout_add(100,self.pulsate_checksystem)
 			 	return False
 			else:
@@ -289,13 +292,13 @@ class MainWindow:
 	def checking_url1(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck1)
-
+		self.first_connection=self.connection[0]
 	#def checking_url1	
 
 	def checking_url2(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck2)
-
+		self.second_connection=self.connection[0]
  	#def checking_url2
 
 	def pulsate_checksystem(self):
