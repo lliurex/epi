@@ -88,7 +88,7 @@ class EpiManager:
 	def read_conf(self,epi_file):
 
 
-		if os.path.exists(epi_file):
+		if os.path.exists(epi_file) and os.path.isfile(epi_file):
 			f=open(epi_file)
 			try:
 				epi_load=json.load(f)
@@ -114,7 +114,7 @@ class EpiManager:
 				return {"status":False,"error":"json"}
 
 		else:
-			self._show_debug("read_conf","Epi files not exists: %s"%(epi_file))
+			self._show_debug("read_conf","Epi files not exists or path is not valid: %s"%(epi_file))
 			return {"status":False,"error":"path"}
 
 		return {"status":True,"error":""}		
@@ -126,7 +126,7 @@ class EpiManager:
 		script=self.epiFiles[0]["script"]
 
 		if len(script)>0:
-			if os.path.exists(script["name"]):
+			if os.path.exists(script["name"]) and os.path.isfile(script["name"]):
 				if not os.access(script["name"],os.X_OK):
 					return {"status":False,"error":"permissions"}
 			else:

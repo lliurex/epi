@@ -58,8 +58,8 @@ msgid "Application already installed"
 msgstr "L'aplicació ja està instal·lada."
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1479
-msgid "Application epi file does not exist"
-msgstr "El fitxer .epi de l'aplicació no existeix."
+msgid "Application epi file does not exist or its path is invalid"
+msgstr "El fitxer .epi de l'aplicació no existeix o la seua ruta no és vàlida"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1481
 msgid "You need root privileges"
