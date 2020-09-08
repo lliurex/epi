@@ -1492,7 +1492,7 @@ class MainWindow:
 		if code==0:
 			msg=_("Application already installed")
 		elif code==1:
-			msg=_("Application epi file does not exist")	
+			msg=_("Application epi file does not exist or its path is invalid")	
 		elif code==2:
 			msg=_("You need root privileges")
 		elif code==3:

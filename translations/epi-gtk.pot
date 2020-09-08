@@ -57,7 +57,7 @@ msgid "Application already installed"
 msgstr ""
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1479
-msgid "Application epi file does not exist"
+msgid "Application epi file does not exist or its path is invalid"
 msgstr ""
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1481
