@@ -1,3 +1,9 @@
+epi (0.3.11) bionic; urgency=medium
+
+  * Checked if the path of the epi file and the associated script corresponds to a directory
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 08 Sep 2020 09:45:41 +0200
+
 epi (0.3.10) bionic; urgency=medium
 
   * Improved function to check internet connection
