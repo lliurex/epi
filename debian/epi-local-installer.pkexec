@@ -1,0 +1,26 @@
+[
+    {
+        "cmd": "/usr/bin/epi-package-installer.py",
+        "prefix": "net.lliurex.epi-package-installer",
+        "nameaction": "package-install",
+        "icon": "epi-gtk",
+        "auths": [
+            {
+                "type": "group",
+                "members": [
+                    "admins",
+                    "sudo"
+                ],
+                "any": "no",
+                "inactive": "no",
+                "active": "auth_self"
+            }
+        ],
+        "default_auth": {
+            "any": "no",
+            "inactive": "no",
+            "active": "no"
+        },
+        "requiredx": "true"
+    }
+]

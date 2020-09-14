@@ -1,0 +1,39 @@
+Source: epi
+Section: python
+Priority: optional
+Maintainer: Equipo LliureX <lliurex@gva.es> 
+Build-Depends: debhelper (>=10),
+               dh-python,
+               python3-setuptools,
+               python3-all,
+               python3-poinstaller,
+               llxsrchelper,
+               zero-dev
+Standards-Version: 4.1.2
+Homepage: http://lliurex.net
+Vcs-Browser: https://svn.lliurex.net/xenial/epi
+
+Package: python3-epi
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends},python3-lliurex-store,python3-dpkgunlocker
+Description:Easy package installer (EPI). Core Library package
+  Provides the core library required by the epi-cli and epi-gtk packages
+
+Package: epi-cli
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-clint, python3-html2text,dpkgunlocker-cli
+Description:Easy package installer (EPI). CLI tool
+  Provides a version for terminal (EPIC) of EPI
+
+Package: epi-gtk
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, gir1.2-webkit-3.0,dpkgunlocker-cli,libqtcore4-perl,libqtgui4-perl
+Recommends: epi-cli (= ${binary:Version}),epi-local-installer (= ${binary:Version})
+Description:Easy package installer (EPI). GUI tool
+  Provides the graphic version (EPI-gtk) of EPI
+
+Package: epi-local-installer
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk(= ${binary:Version}),python3-magic
+Description:Local package installer for EPI
+
