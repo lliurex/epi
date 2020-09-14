@@ -3,8 +3,13 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk,Gdk,Gio,GObject,GLib
+'''
 gi.require_version('WebKit', '3.0')
 from gi.repository import WebKit
+'''
+gi.require_version('WebKit2', '4.0')
+from gi.repository import WebKit2
+
 import copy
 
 import sys
@@ -81,9 +86,10 @@ class EulaBox(Gtk.VBox):
 	def load_info(self,info):
 
 		if self.webview==None:
-			self.webview=WebKit.WebView()
+			#self.webview=WebKit.WebView()
+			self.webview=WebKit2.WebView()
 			websettings=self.webview.get_settings()
-			websettings.set_property('enable-default-context-menu', False)
+			#websettings.set_property('enable-default-context-menu', False)
 			self.webview.set_settings(websettings)
 			self.scrolled_window.add(self.webview)
 			self.webkit_box.pack_start(self.scrolled_window,True,True,0)
@@ -97,7 +103,9 @@ class EulaBox(Gtk.VBox):
 
 	def load_url(self,url):
 		
-		 self.webview.open(url)
+		 #self.webview.open(url)
+		 self.webview.load_uri(url)
+
 
 	#def load_url
 

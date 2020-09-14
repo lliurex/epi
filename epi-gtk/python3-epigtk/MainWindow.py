@@ -1087,8 +1087,12 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"keys")
+			'''
 			length=len(command)
 			self.terminalBox.vterminal.feed_child(command,length)
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
+
 		else:
 			self.add_repository_keys_done=True
 
@@ -1100,8 +1104,12 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"download")
+			'''
 			length=len(command)
 			self.terminalBox.vterminal.feed_child(command,length)
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
+
 		else:
 			self.download_app_done=True	
 
@@ -1129,8 +1137,11 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"preinstall")
+			'''
 			length=len(command)
 			self.terminalBox.vterminal.feed_child(command,length)
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
 
 		else:
 			self.preinstall_app_done=True	 		
@@ -1143,8 +1154,12 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"arquitecture")
+			'''
 			length=len(command)
 			self.terminalBox.vterminal.feed_child(command,length)
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
+
 		else:
 			self.check_arquitecture_done=True	
 
@@ -1156,8 +1171,12 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"updaterepos")
+			'''
 			length=len(command)
 			self.terminalBox.vterminal.feed_child(command,length)
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
+
 		else:
 			self.check_update_repos_done=True	
 
@@ -1177,8 +1196,11 @@ class MainWindow:
 	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive '+command
 			'''
 	 		command=self.create_process_token(command,"install")
+	 		'''
 	 		length=len(command)
 	 		self.terminalBox.vterminal.feed_child(command,length)
+	 		'''
+	 		self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
 	 		self.terminalBox.vterminal.set_sensitive(True)
 	 	else:
 	 		self.install_app_done=True	
@@ -1198,8 +1220,12 @@ class MainWindow:
 	 	length=len(command)
 	 	if length>0:
 	 		command=self.create_process_token(command,"postinstall")
+	 		'''
 	 		length=len(command)
 	 		self.terminalBox.vterminal.feed_child(command,length)
+	 		'''
+	 		self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
+
 	 	else:
 	 		self.postinstall_app_done=True	 		
 
@@ -1364,8 +1390,11 @@ class MainWindow:
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"uninstall")
+			'''
 			length=len(command)
-			self.terminalBox.vterminal.feed_child(command,length)
+			self.terminalBox.vterminal.feed_child(command,length)¡
+			'''
+			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
 
 		else:
 			self.preinstall_app_done=True	
