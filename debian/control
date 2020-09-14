@@ -27,7 +27,7 @@ Description:Easy package installer (EPI). CLI tool
 
 Package: epi-gtk
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, gir1.2-webkit-3.0,dpkgunlocker-cli,libqtcore4-perl,libqtgui4-perl
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, dpkgunlocker-cli,  gir1.2-webkit2-4.0, gir1.2-vte-2.91, debconf-kde-helper
 Recommends: epi-cli (= ${binary:Version}),epi-local-installer (= ${binary:Version})
 Description:Easy package installer (EPI). GUI tool
   Provides the graphic version (EPI-gtk) of EPI
