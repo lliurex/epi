@@ -7,8 +7,7 @@ Build-Depends: debhelper (>=10),
                python3-setuptools,
                python3-all,
                python3-poinstaller,
-               llxsrchelper,
-               zero-dev
+               llxsrchelper               
 Standards-Version: 4.1.2
 Homepage: http://lliurex.net
 Vcs-Browser: https://svn.lliurex.net/xenial/epi
