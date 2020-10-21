@@ -1,3 +1,9 @@
+epi (0.3.12) bionic; urgency=medium
+
+  * Fixed po files
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 21 Oct 2020 12:07:57 +0200
+
 epi (0.3.11) bionic; urgency=medium
 
   * Checked if the path of the epi file and the associated script corresponds to a directory
