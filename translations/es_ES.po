@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-03 12:16+0200\n"
-"PO-Revision-Date: 2020-08-03 12:17+0200\n"
+"PO-Revision-Date: 2020-10-21 12:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -242,7 +242,7 @@ msgstr "Seleccione un fichero epi para instalar/desinstalar la aplicación:"
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:71
 msgid "..."
-msgstr ""
+msgstr "..."
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:108
 msgid "The package will not be able to be installed"
@@ -263,7 +263,7 @@ msgstr "Buscar..."
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:352
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:650
 msgid "EPI"
-msgstr ""
+msgstr "EPI"
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:379
 msgid "Eula for installing "
