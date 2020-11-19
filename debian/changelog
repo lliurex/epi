@@ -1,3 +1,10 @@
+epi (0.3.13) bionic; urgency=medium
+
+  * Improved management of epi with selectable packages list
+  * Allow to install epi with selectable packages list with epic
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 19 Nov 2020 14:22:47 +0100
+
 epi (0.3.12) bionic; urgency=medium
 
   * Fixed po files
