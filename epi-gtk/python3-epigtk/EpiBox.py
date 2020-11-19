@@ -155,8 +155,16 @@ class EpiBox(Gtk.VBox):
 					entrypoint=element["entrypoint"]
 				except:
 					entrypoint=""				
-					
-				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order,entrypoint]
+				
+				if not default_checked:
+					try:
+						default_pkg=element["default_pkg"]
+					except:
+						default_pkg=False
+				else:
+					default_pkg=False			
+
+				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order,entrypoint,default_pkg]
 				self.new_epi_box(params_to_draw)
 				pkg_order+=1
 
@@ -202,7 +210,7 @@ class EpiBox(Gtk.VBox):
 		custom_icon=params_to_draw[5]
 		pkg_order=params_to_draw[6]
 		entrypoint=params_to_draw[7]
-
+		default_pkg=params_to_draw[8]
 		#search=params_to_draw[6]
 		
 		hbox=Gtk.HBox()
@@ -343,8 +351,10 @@ class EpiBox(Gtk.VBox):
 				if default_checked:
 					application_cb.set_active(True)
 				else:
-					application_cb.set_active(False)
-
+					if default_pkg:
+						application_cb.set_active(True)
+					else:
+						application_cb.set_active(False)	
 		else:
 			application_cb.set_visible(False)
 			self.core.epiManager.packages_selected.append(application_cb.id)	
