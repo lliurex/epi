@@ -1144,8 +1144,47 @@ class EpiManager:
 			os.system(cmd)		
 
 	#def zero-center_feedback	
+	def remote_install(self):
 
+		remote_available=[]
+		selection_enabled={}
+		if self.epiFiles[0]["required_x"]:
+			return [remote_available,selection_enabled]									
 
+		else:
+			path_custom_icons=self.epiFiles[0]["custom_icon_path"]
+			selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
+			add_to_list=True
+			for item in self.epiFiles[0]["pkg_list"]:
+				try:
+					if item["required_x"]:
+						add_to_list=False
+				except:
+					add_to_list=True
+
+				if add_to_list:
+					pkg={}
+					pkg["name"]=item["name"]
+					try:
+						pkg["custom_name"]=item["custom_name"]
+					except:
+						pkg["custom_name"]=item["name"]
+					try:
+						if path_custom_icons!="":
+							pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
+						else:
+							pkg["custom_icon"]=""
+					except:
+						pkg["custom_icon"]=""
+					try:
+						pkg["default_pkg"]=item["default_pkg"]
+					except:
+						pkg["default_pkg"]=False
+
+					remote_available.append(pkg)			
+		return [remote_available,selection_enabled]									
+
+	#def remote_install	
 #class ApplicationInstallerManager
 
 
