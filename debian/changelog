@@ -1,3 +1,9 @@
+epi (0.3.14) bionic; urgency=medium
+
+  * Fixed installation of epi depends with epic
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 20 Nov 2020 11:41:58 +0100
+
 epi (0.3.13) bionic; urgency=medium
 
   * Improved management of epi with selectable packages list
