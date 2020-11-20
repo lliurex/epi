@@ -64,6 +64,7 @@ class EPIC(object):
 				tmp=self.epicore.epiFiles[order]
 				for item in tmp["pkg_list"]:
 					depends=depends+item["name"]+" "
+					self.epicore.packages_selected.append(item["name"])
 			else:
 				for item in self.remote_install:
 					pkgs_available=pkgs_available+item["name"]+" "
