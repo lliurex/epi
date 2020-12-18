@@ -99,19 +99,24 @@ class EPIC(object):
 
 	def listEpi(self):
 
-		list_epi=sorted(self.epicore.remote_available_epis, key=lambda d: list(d.keys()))
+		epi_list=sorted(self.epicore.remote_available_epis, key=lambda d: list(d.keys()))
+		count_epi=len(epi_list)
 		tmp=""
 		count=1
 
-		for item in list_epi:
-			for element in item:
-				if count<len(list_epi):
-					tmp=tmp+element+", "
-				else:
-					tmp=tmp+element
-				count+=1
+		if count_epi>0:				
+			for item in epi_list:
+				for element in item:
+					if count<count_epi:
+						tmp=tmp+element+", "
+					else:
+						tmp=tmp+element
+					count+=1
+			print ('  [EPIC]: List of all epi files that can be installed with EPIC: '+tmp)
+		
+		else:
+			print ('  [EPIC]: No available epi file app detected')
 
-		print ('  [EPIC]: List of all epi files that can be installed with EPIC: '+tmp)
 
 	#def listEpi	
 	
@@ -140,7 +145,10 @@ class EPIC(object):
 			if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
 				print ("     - Packages availables: " + pkgs_available)
 				if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
-					print ("     - Packages selected by defafult: "+pkgs_default)
+					if pkgs_default=="":
+						print ("     - Packages selected by defafult: None")
+					else:
+						print ("     - Packages selected by defafult: "+pkgs_default)
 					print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
 				else:
 					print ("     - All packages are selected by default to be installed")
