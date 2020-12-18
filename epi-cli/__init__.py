@@ -15,35 +15,37 @@ class EPIC(object):
 
 	def __init__(self,app,pkgsToInstall,debug=None):
 
-		self.pkgsToInstall=pkgsToInstall
 		self.epicore=EpiManager.EpiManager(debug)
-		self.valid_json=self.epicore.read_conf(app)
 		signal.signal(signal.SIGINT,self.handler_signal)
 
-		if len(self.epicore.epiFiles)==0:
-			if self.valid_json["error"]=="path":
-				msg_log='APP epi file not exist or its path is invalid'
-			elif self.valid_json["error"]=="empty":
-				msg_log='APP epi file is empty'
-			else:	
-				msg_log='APP epi file it is not a valid json'	
-			print ('  [EPIC]: '+msg_log)
-			self.write_log(msg_log)
-			sys.exit(1)
-		else:
-			valid_script=self.epicore.check_script_file()
-			if not valid_script["status"]:
-				if valid_script["error"]=="path":
-					msg_log='Associated script does not exist or its path is invalid'
-				else:
-					msg_log='Associated script does not have execute permissions'
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)	
-				sys.exit(1)
+		if app!=None:
+			self.pkgsToInstall=pkgsToInstall
+			self.valid_json=self.epicore.read_conf(app,True)
 
-			msg_log='APP epi file loaded by EPIC: ' + app
-			self.write_log(msg_log)	
-			self.remote_install=self.epicore.remote_install()[0]
+			if len(self.epicore.epiFiles)==0:
+				if self.valid_json["error"]=="path":
+					msg_log='APP epi file not exist or its path is invalid. Use showlist to get avilabled APP epi'
+				elif self.valid_json["error"]=="empty":
+					msg_log='APP epi file is empty'
+				else:	
+					msg_log='APP epi file it is not a valid json'	
+				print ('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				sys.exit(1)
+			else:
+				valid_script=self.epicore.check_script_file()
+				if not valid_script["status"]:
+					if valid_script["error"]=="path":
+						msg_log='Associated script does not exist or its path is invalid'
+					else:
+						msg_log='Associated script does not have execute permissions'
+					print ('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)	
+					sys.exit(1)
+
+				msg_log='APP epi file loaded by EPIC: ' + app
+				self.write_log(msg_log)	
+				self.remote_install=self.epicore.check_remote_epi(app)
 
 
 	#def __init__
@@ -57,7 +59,6 @@ class EPIC(object):
 		pkgs_default=""
 		tmp_list=[]
 
-		print(self.pkgsToInstall)
 		for item in self.epicore.epiFiles:
 			order=order-1
 			if order>0:
@@ -96,7 +97,29 @@ class EPIC(object):
 
 	#def get_info			
 
+	def listEpi(self):
 
+		epi_list=sorted(self.epicore.remote_available_epis, key=lambda d: list(d.keys()))
+		count_epi=len(epi_list)
+		tmp=""
+		count=1
+
+		if count_epi>0:				
+			for item in epi_list:
+				for element in item:
+					if count<count_epi:
+						tmp=tmp+element+", "
+					else:
+						tmp=tmp+element
+					count+=1
+			print ('  [EPIC]: List of all epi files that can be installed with EPIC: '+tmp)
+		
+		else:
+			print ('  [EPIC]: No available epi file app detected')
+
+
+	#def listEpi	
+	
 	def showInfo(self,checked=None):
 		
 		checksystem=True
@@ -122,7 +145,10 @@ class EPIC(object):
 			if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
 				print ("     - Packages availables: " + pkgs_available)
 				if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
-					print ("     - Packages selected by defafult: "+pkgs_default)
+					if pkgs_default=="":
+						print ("     - Packages selected by defafult: None")
+					else:
+						print ("     - Packages selected by defafult: "+pkgs_default)
 					print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
 				else:
 					print ("     - All packages are selected by default to be installed")
