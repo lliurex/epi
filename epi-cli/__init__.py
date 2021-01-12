@@ -67,31 +67,33 @@ class EPIC(object):
 					depends=depends+item["name"]+" "
 					self.epicore.packages_selected.append(item["name"])
 			else:
-				for item in self.remote_install:
-					pkgs_available=pkgs_available+item["name"]+" "
-					if item["default_pkg"]:
-						pkgs_default=pkgs_default+item["name"]+" "
-						tmp_list.append(item["name"])
+				if len(self.remote_install)>0:
+					for item in self.remote_install:
+						pkgs_available=pkgs_available+item["name"]+" "
+						if item["default_pkg"]:
+							pkgs_default=pkgs_default+item["name"]+" "
+							tmp_list.append(item["name"])
 
-				if not show_all:
-					if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
-						if len(self.pkgsToInstall)==0:
-							pkgs_selected=pkgs_default
-							for item in tmp_list:
-								self.epicore.packages_selected.append(item)
-						else:
-							if 'all' in self.pkgsToInstall:
-								pkgs_selected='all'
-								for item in self.remote_install:
-									self.epicore.packages_selected.append(item["name"])
-							else:
-								for item in self.pkgsToInstall:
-									pkgs_selected=pkgs_selected+item +" "
+
+					if not show_all:
+						if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
+							if len(self.pkgsToInstall)==0:
+								pkgs_selected=pkgs_default
+								for item in tmp_list:
 									self.epicore.packages_selected.append(item)
-					else:
-						pkgs_selected=pkgs_available
-						for item in self.remote_install:
-							self.epicore.packages_selected.append(item["name"])
+							else:
+								if 'all' in self.pkgsToInstall:
+									pkgs_selected='all'
+									for item in self.remote_install:
+										self.epicore.packages_selected.append(item["name"])
+								else:
+									for item in self.pkgsToInstall:
+										pkgs_selected=pkgs_selected+item +" "
+										self.epicore.packages_selected.append(item)
+						else:
+							pkgs_selected=pkgs_available
+							for item in self.remote_install:
+								self.epicore.packages_selected.append(item["name"])
 
 		return depends,pkgs_available,pkgs_default,pkgs_selected
 
