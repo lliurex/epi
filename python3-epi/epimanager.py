@@ -1239,30 +1239,51 @@ class EpiManager:
 
 	def check_remote_epi(self,epi):
 
+		tmp=[]
 		epi=os.path.basename(epi)
 		for item in self.remote_available_epis:
 			for element in item:
 				if epi==element:
 					return item[element]["pkg_list"]
 
+		return tmp	
 
 	#def check_remote_epi
 	 				
 	def _get_epi_path(self,epi):
 
 		epi_path=""
-
-		for item in self.available_epis:
-			if epi in item:
-				epi_path=item
-				break
+		epi_extension=epi.split(".epi")
+		
+		if len(epi_extension)>1:
+			for item in self.available_epis:
+				if epi in item:
+					epi_path=item
+					break
 
 		return epi_path
 
 	#def _get_epi_path
 
+	def get_epi_deb(self,epi):
 
-#class ApplicationInstallerManager
+		epi_deb=""
+		epi_path=self._get_epi_path(epi)
+		cmd="dpkg -S %s"%epi_path
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		poutput,perror=p.communicate()
+
+		if len(poutput)>0:
+			if type(poutput) is bytes:
+				poutput=poutput.decode()
+
+			epi_deb=poutput.split(":")[0]
+
+		return epi_deb
+
+	#def get_epi_deb	
+
+#class EpiManager
 
 
 if __name__=="__main__":
