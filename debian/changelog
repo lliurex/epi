@@ -1,3 +1,10 @@
+epi (0.3.16) bionic; urgency=medium
+
+  * Fixed bug in epic showinfo function
+  * Added function to get epi deb
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 12 Jan 2021 17:49:18 +0100
+
 epi (0.3.15) bionic; urgency=medium
 
   * Added action in epic to show list of available app epi files.
