@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/python3
 import sys
 
 from clint import arguments
@@ -12,9 +12,10 @@ def usage():
 		puts("epic [FLAGS...] ACTION")
 		puts("Actions")
 		with indent(4):	
-			puts("showinfo PATH APP_EPI_FILE")
-			puts("install PATH APP_EPI_FILE")
-			puts("uninstall PATH APP_EPÌ_FILE")
+			puts("showlist : Shows alls epi files avaliables to be installed with EPIC")
+			puts("showinfo PATH or NAME APP_EPI_FILE : Shows information about APP_EPI_FILE")
+			puts("install PATH or NAME APP_EPI_FILE <optional all> or <optional pkg1> <optional pkg2>...")
+			puts("uninstall PATH or NAME APP_EPÌ_FILE <optional all> or <optional pkg1> <optional pkg2>...")
 
 		puts("Flags")
 		with indent(4):
@@ -29,6 +30,8 @@ if __name__ == '__main__':
 	args = arguments.Args().copy
 	mode=False
 	debug=False
+	app_file=None
+	pkgsToInstall=[]
 
 	if args.contains(["-h","--help"]) or len(args.all) == 0 :
 		usage()		
@@ -42,12 +45,18 @@ if __name__ == '__main__':
 		args.pop(index)
 	
 	action = args.pop(0)
-	app_file=args.get(0)
-	
-	if app_file ==None:
-		usage()
+	if action!="showlist":
+		app_file=args.get(0)
+		args.pop(0)
+		if len(args.all)>0:
+			for item in args.all:
+				pkgsToInstall.append(item)
+		if app_file ==None:
+			usage()
 
-	epic = EPIC(args.get(0),debug)
+	epic = EPIC(app_file,pkgsToInstall,debug)
+	if action=="showlist":
+		sys.exit(epic.listEpi())
 	if action == "showinfo":
 		sys.exit(epic.showInfo())
 	elif action=="install":
