@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+from os import listdir
+from os.path import isfile, isfile,isdir,join
 import subprocess
 import sys
 import json
@@ -37,8 +39,6 @@ class EpiManager:
 		self.urltocheck1="http://lliurex.net"
 		self.urltocheck2="https://github.com/lliurex"
 
-		self.order=0
-		self.epiFiles={}
 		self.arquitecture=False
 		self.update=False
 		self.zomando_name={}
@@ -56,6 +56,10 @@ class EpiManager:
 
 		self.packages_selected=[]
 		self.partial_installed=False
+		self.zmd_paths="/usr/share/zero-center/zmds"
+		self.list_available_epi()
+		self.epiFiles={}
+		self.order=0
 		#self.read_conf(epi_file)
 	
 		
@@ -85,8 +89,16 @@ class EpiManager:
 
 	#def check_connection	
 
-	def read_conf(self,epi_file):
+	def read_conf(self,epi_file,cli=False,standalone=None):
 
+		if standalone:
+			self.epiFiles={}
+			self.order=0
+		else:
+			if cli:
+				path=self._get_epi_path(epi_file)
+				if path!="":
+					epi_file=path
 
 		if os.path.exists(epi_file) and os.path.isfile(epi_file):
 			f=open(epi_file)
@@ -484,8 +496,13 @@ class EpiManager:
 		#Only update repos if needed
 		current_date=datetime.date.today().strftime('%y%m%d')
 		filename='/var/cache/apt/pkgcache.bin'
-		lastmod=os.path.getmtime(filename)
-		lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+		if os.path.exists(filename):
+			lastmod=os.path.getmtime(filename)
+			lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+		else:
+			self.update=True
+			lastupdate=current_date
+
 		cmd=""
 		update_repo=False
 
@@ -1144,9 +1161,135 @@ class EpiManager:
 			os.system(cmd)		
 
 	#def zero-center_feedback	
+	
+	def cli_install(self):
 
+		remote_available=[]
+		selection_enabled={}
+		zomando=""
 
-#class ApplicationInstallerManager
+		if self.epiFiles[0]["required_x"]:
+			return [remote_available,selection_enabled]									
+
+		else:
+			path_custom_icons=self.epiFiles[0]["custom_icon_path"]
+			selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
+			zomando=self.epiFiles[0]["zomando"]
+			add_to_list=True
+			for item in self.epiFiles[0]["pkg_list"]:
+				try:
+					if item["required_x"]:
+						add_to_list=False
+				except:
+					add_to_list=True
+
+				if add_to_list:
+					pkg={}
+					pkg["name"]=item["name"]
+					try:
+						pkg["custom_name"]=item["custom_name"]
+					except:
+						pkg["custom_name"]=item["name"]
+					try:
+						if path_custom_icons!="":
+							pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
+						else:
+							pkg["custom_icon"]=""
+					except:
+						pkg["custom_icon"]=""
+					try:
+						pkg["default_pkg"]=item["default_pkg"]
+					except:
+						pkg["default_pkg"]=False
+
+					remote_available.append(pkg)			
+		
+		return [remote_available,selection_enabled,zomando]									
+
+	#def cli_install	
+
+	def list_available_epi(self):
+
+		self.remote_available_epis=[]
+		self.available_epis=[]
+
+		for item in listdir(self.zmd_paths):
+			t=join(self.zmd_paths,item)
+			if isfile(t):
+				f=open(t,'r')
+				content=f.readlines()
+				for line in content:
+					if '.epi' in line:
+						line=line.split('epi-gtk')
+						try:
+							line=line[1].strip("\n").strip(" ")
+							check=self.read_conf(line,False,True)["status"]
+							if check:
+								remote=self.cli_install()
+								if len(remote[0])>0:
+									tmp={}
+									epi_name=os.path.basename(line)
+									tmp[epi_name]={}
+									tmp[epi_name]=remote[1]
+									tmp[epi_name]["zomando"]=remote[2]
+									tmp[epi_name]["pkg_list"]=remote[0]
+									self.remote_available_epis.append(tmp)
+
+								self.available_epis.append(line)	
+						except:
+							pass	
+						break
+	
+	#def list_available_epi	
+
+	def check_remote_epi(self,epi):
+
+		tmp=[]
+		epi=os.path.basename(epi)
+		for item in self.remote_available_epis:
+			for element in item:
+				if epi==element:
+					return item[element]["pkg_list"]
+
+		return tmp	
+
+	#def check_remote_epi
+	 				
+	def _get_epi_path(self,epi):
+
+		epi_path=""
+		epi_extension=epi.split(".epi")
+		
+		if len(epi_extension)>1:
+			for item in self.available_epis:
+				if epi in item:
+					epi_path=item
+					break
+
+		return epi_path
+
+	#def _get_epi_path
+
+	def get_epi_deb(self,epi=None):
+
+		epi_deb=""
+		if epi!=None:	
+			epi_path=self._get_epi_path(epi)
+			cmd="dpkg -S %s"%epi_path
+			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			poutput,perror=p.communicate()
+
+			if len(poutput)>0:
+				if type(poutput) is bytes:
+					poutput=poutput.decode()
+
+				epi_deb=poutput.split(":")[0]
+
+		return epi_deb
+
+	#def get_epi_deb	
+
+#class EpiManager
 
 
 if __name__=="__main__":
