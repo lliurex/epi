@@ -1,3 +1,13 @@
+epi (0.4.2) focal; urgency=medium
+
+  * Improved management of epi with selectable packages list
+  * Allow to install epi with selectable packages list with epic
+  * Added action in epic to show list of available app epi files
+  * Improved general performance of epic
+  * Added function to get epi deb
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 27 Jan 2021 14:35:48 +0100
+
 epi (0.4.1) focal; urgency=medium
 
   * Fixed build-depends and rules
