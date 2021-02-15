@@ -1,3 +1,9 @@
+epi (0.3.17) bionic; urgency=medium
+
+  * Fixed bug when apt-cache is cleaned
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 15 Feb 2021 11:36:42 +0100
+
 epi (0.3.16) bionic; urgency=medium
 
   * Fixed bug in epic showinfo function
