@@ -1,3 +1,9 @@
+epi (0.4.3) focal; urgency=medium
+
+  * Fixed some files
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 15 Feb 2021 12:00:21 +0100
+
 epi (0.4.2) focal; urgency=medium
 
   * Improved management of epi with selectable packages list
