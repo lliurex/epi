@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-08-03 12:16+0200\n"
-"PO-Revision-Date: 2020-08-03 12:24+0200\n"
+"PO-Revision-Date: 2021-02-15 11:58+0100\n"
 "Last-Translator: empar <montoro_mde@gva.es>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.3\n"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:625
 msgid "Accept Eula and Install"
@@ -270,7 +270,7 @@ msgstr "Busca..."
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:352
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:650
 msgid "EPI"
-msgstr ""
+msgstr "EPI"
 
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:379
 msgid "Eula for installing "
