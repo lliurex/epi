@@ -496,8 +496,13 @@ class EpiManager:
 		#Only update repos if needed
 		current_date=datetime.date.today().strftime('%y%m%d')
 		filename='/var/cache/apt/pkgcache.bin'
-		lastmod=os.path.getmtime(filename)
-		lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+		if os.path.exists(filename):
+			lastmod=os.path.getmtime(filename)
+			lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+		else:
+			self.update=True
+			lastupdate=current_date
+
 		cmd=""
 		update_repo=False
 
@@ -1265,19 +1270,20 @@ class EpiManager:
 
 	#def _get_epi_path
 
-	def get_epi_deb(self,epi):
+	def get_epi_deb(self,epi=None):
 
 		epi_deb=""
-		epi_path=self._get_epi_path(epi)
-		cmd="dpkg -S %s"%epi_path
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		poutput,perror=p.communicate()
+		if epi!=None:	
+			epi_path=self._get_epi_path(epi)
+			cmd="dpkg -S %s"%epi_path
+			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			poutput,perror=p.communicate()
 
-		if len(poutput)>0:
-			if type(poutput) is bytes:
-				poutput=poutput.decode()
+			if len(poutput)>0:
+				if type(poutput) is bytes:
+					poutput=poutput.decode()
 
-			epi_deb=poutput.split(":")[0]
+				epi_deb=poutput.split(":")[0]
 
 		return epi_deb
 
