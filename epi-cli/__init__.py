@@ -135,7 +135,6 @@ class EPIC(object):
 			depends,pkgs_available,pkgs_default,self.pkgs=self.get_info(show_all)
 
 			epi_conf=self.epicore.epiFiles[0]
-			print(epi_conf)
 			status=epi_conf["status"]
 			
 			try:
