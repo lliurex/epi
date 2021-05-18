@@ -29,7 +29,10 @@ class LoadingBox(Gtk.VBox):
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
 
 		self.main_box=builder.get_object("loading_box")
+		self.loading_msg_box=builder.get_object("loading_msg_box")
+		self.loading_error_img=builder.get_object("loading_error_img")
 		self.loading_label=builder.get_object("loading_label")
+		self.loading_label.set_halign(Gtk.Align.CENTER)
 		self.loading_spinner=builder.get_object("loading_spinner")
 
 		
@@ -56,8 +59,16 @@ class LoadingBox(Gtk.VBox):
 			
 	#def set-css_info
 	
-		
-	
+	def manage_loading_msg_box(self,hide):
+
+		if hide:
+			self.loading_msg_box.set_name("HIDE_BOX")
+			self.loading_error_img.hide()
+		else:
+			self.loading_msg_box.set_name("ERROR_BOX")
+			self.loading_error_img.show()
+			self.loading_label.set_halign(Gtk.Align.START)
+	#def manage_loading_msg_box
 
 		
 #class LoadingBox

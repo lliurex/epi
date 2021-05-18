@@ -29,6 +29,8 @@ class DependsBox(Gtk.VBox):
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
 
 		self.main_box=builder.get_object("deb_depends_box")
+		self.deb_depends_label_box=builder.get_object("deb_depends_label_box")
+		self.deb_depends_error_img=builder.get_object("deb depends_error_img")
 		self.deb_depends_label=builder.get_object("deb_depends_label")
 
 		self.scrolledwindow_deb=builder.get_object("scrolledwindow_deb")
@@ -67,7 +69,8 @@ class DependsBox(Gtk.VBox):
 		self.style_provider.load_from_file(f)
 
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-			
+		self.deb_depends_label_box.set_name("ERROR_BOX")
+		self.deb_depends_label.set_name("FEEDBACK_LABEL")	
 			
 	#def set-css_info
 	

@@ -43,7 +43,7 @@ class EpiBox(Gtk.VBox):
 		self.package_installed_dep=self.core.rsrc_dir+"package_install_dep.svg"
 		self.info_image=self.core.rsrc_dir+"info.svg"
 		self.initial=self.core.rsrc_dir+"initial.svg"
-		self.check_image=self.core.rsrc_dir+"check.png"
+		self.check_image=self.core.rsrc_dir+"check.svg"
 		self.run_image=self.core.rsrc_dir+"run.svg"
 
 		self.main_box=builder.get_object("epi_data_box")
@@ -61,8 +61,12 @@ class EpiBox(Gtk.VBox):
 		self.epi_depend_label=builder.get_object("epi_depend_label")
 		self.view_terminal_btn=builder.get_object("view_terminal_btn")
 		self.view_terminal_btn.connect("clicked",self.view_terminal)
-		self.feedbak_label=builder.get_object("feedbak_label")
-		
+		self.feedback_box=builder.get_object("feedback_box")
+		self.feedback_ok_img=builder.get_object("feedback_ok_img")
+		self.feedback_error_img=builder.get_object("feedback_error_img")
+		self.feedback_info_img=builder.get_object("feedback_info_img")
+		self.feedback_label=builder.get_object("feedback_label")
+		self.feedback_label.set_halign(Gtk.Align.CENTER)
 		self.monitoring=True
 		self.show_terminal=False
 
@@ -89,7 +93,7 @@ class EpiBox(Gtk.VBox):
 		#self.terminal_label.set_name("MSG_LABEL")
 		self.epi_depend_label.set_name("DEPEND_LABEL")
 		self.search_entry.set_name("CUSTOM-ENTRY")
-		self.feedbak_label.set_name("MSG_LABEL")
+		self.feedback_label.set_name("MSG_LABEL")
 				
 	#def set_css_info			
 			
@@ -640,6 +644,36 @@ class EpiBox(Gtk.VBox):
 
 	#def launch_app	
 	
+	def manage_feedback_box(self,hide,error,info):
+
+		if hide:
+			self.feedback_box.set_name("HIDE_BOX")
+			self.feedback_ok_img.hide()
+			self.feedback_error_img.hide()
+			self.feedback_info_img.hide()
+			self.feedback_label.set_halign(Gtk.Align.CENTER)
+		else:
+			self.feedback_label.set_halign(Gtk.Align.START)
+		
+			if error:
+				self.feedback_box.set_name("ERROR_BOX")
+				self.feedback_ok_img.hide()
+				self.feedback_error_img.show()
+				self.feedback_info_img.hide()
+			else:
+				if info:
+					self.feedback_box.set_name("INFORMATION_BOX")
+					self.feedback_ok_img.hide()
+					self.feedback_error_img.hide()
+					self.feedback_info_img.show()
+				else:
+					self.feedback_box.set_name("SUCCESS_BOX")
+					self.feedback_ok_img.show()
+					self.feedback_error_img.hide()
+					self.feedback_info_img.hide()
+
+	#def manage_feedback_box
+
 #class EpiBox
 
 from . import Core
