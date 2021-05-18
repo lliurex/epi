@@ -17,7 +17,6 @@ class EPIC(object):
 
 		self.epicore=EpiManager.EpiManager(debug)
 		signal.signal(signal.SIGINT,self.handler_signal)
-
 		if app!=None:
 			self.pkgsToInstall=pkgsToInstall
 			self.valid_json=self.epicore.read_conf(app,True)
@@ -131,10 +130,12 @@ class EPIC(object):
 			print ('  [EPIC]: Searching information...')
 			self.epicore.get_pkg_info()
 
+
 		if checksystem:
 			depends,pkgs_available,pkgs_default,self.pkgs=self.get_info(show_all)
 
 			epi_conf=self.epicore.epiFiles[0]
+			print(epi_conf)
 			status=epi_conf["status"]
 			
 			try:
@@ -183,42 +184,14 @@ class EPIC(object):
 		connection=self.pulsate_check_connection()
 		
 		if connection[0]:
-			check_root=self.epicore.check_root()
-			self.epicore.get_pkg_info()
-			self.required_root=self.epicore.required_root()
-			self.required_x=self.check_required_x()
-			self.check_pkgList=self.check_list()
-			if check_root:
+			if self.check_root:
 				self.lock_info=self.epicore.check_locks()
 				msg_log="Lock info :"+str(self.lock_info)
 			else:
 				self.lock_info={}
 				msg_log="Locks info: Not checked. User is not root"	
 			self.write_log(msg_log)
-			if self.required_root:
-				msg_log="You need root privileges to " + action + " the application"
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				check=False
-			if self.required_x:
-				msg_log="Can not " + action + " the application via terminal. Use epi-gtk for this"
-				print ('  [EPIC]: '+ msg_log)
-				self.write_log(msg_log)
-				check=False
-			if not self.check_pkgList["status"]:
-				if self.check_pkgList["error"]=="empty":
-					msg_log="No packages indicated to "+action
-					print ('  [EPIC]: '+ msg_log+ '. Execute showinfo to know the packages available')
-					check=False
-				elif self.check_pkgList["error"]=="name":
-					msg_log="Wrong packages indicated to "+action
-					print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
-					check=False
-				elif self.check_pkgList["error"]=="cli":
-					msg_log="There are packages that can not " + action + " via terminal"	
-					print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
-					check=False
-	
+			
 		else:
 			msg_log="Internet connection not detected: "+connection[1] 
 			print ('  [EPIC]: '+msg_log)
@@ -229,6 +202,41 @@ class EPIC(object):
 		
 
 	#def checking_system
+
+	def checking_epi(self,mode,action=None):
+
+		check=True
+		self.epicore.get_pkg_info()
+		self.required_root=self.epicore.required_root()
+		self.required_x=self.check_required_x()
+		self.check_pkgList=self.check_list()
+		if self.required_root:
+			msg_log="You need root privileges to " + action + " the application"
+			print ('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
+			check=False
+		if self.required_x:
+			msg_log="Can not " + action + " the application via terminal. Use epi-gtk for this"
+			print ('  [EPIC]: '+ msg_log)
+			self.write_log(msg_log)
+			check=False
+		if not self.check_pkgList["status"]:
+			if self.check_pkgList["error"]=="empty":
+				msg_log="No packages indicated to "+action
+				print ('  [EPIC]: '+ msg_log+ '. Execute showinfo to know the packages available')
+				check=False
+			elif self.check_pkgList["error"]=="name":
+				msg_log="Wrong packages indicated to "+action
+				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
+				check=False
+			elif self.check_pkgList["error"]=="cli":
+				msg_log="There are packages that can not " + action + " via terminal"	
+				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
+				check=False
+
+		return check
+
+	#def check_epi	
 
 	def check_list(self):
 
@@ -351,7 +359,7 @@ class EPIC(object):
 
 		else:
 			if self.lock_info["wait"]:
-				msg_loc="Apt or Dpks is being updated"
+				msg_log="Apt or Dpkg is being updated"
 				print ('  [EPIC]: '+msg_log+'. Wait a moment and try again')
 				self.write_log(msg_log)
 				return 0
@@ -684,15 +692,27 @@ class EPIC(object):
 
 	#def install_process		
 
-	def install(self,mode):
-		msg_log="Action to execute: Install"
+	def install(self,mode,nocheck):
+
+		msg_log="Action to execute: Install.Includes previous system checks: "+str(nocheck)
 		self.write_log(msg_log)
-		checksystem=self.checking_system(mode,'install')
+		self.check_root=self.epicore.check_root()
+
+		if not nocheck:
+			checksystem=self.checking_system(mode,'install')
+		else:
+			self.lock_info={}
+			checksystem=True
+		
 		if checksystem:
-			if len(self.lock_info)>0:
-				return self.manage_unlock_info(mode,'install')
+			checkepi=self.checking_epi(mode,'install')
+			if checkepi:
+				if len(self.lock_info)>0:
+					return self.manage_unlock_info(mode,'install')
+				else:
+					return self.install_process(mode)
 			else:
-				return self.install_process(mode)
+				return 1
 
 		else:
 			return 1	
@@ -769,17 +789,26 @@ class EPIC(object):
 					
 	#def uninstall_process				
 
-	def uninstall(self,mode):
+	def uninstall(self,mode,nocheck):
 	
-		msg_log="Action to execute: Uninstall"
+		msg_log="Action to execute: Uninstall.Includes previous system checks: "+str(nocheck)
 		self.write_log(msg_log)
-		checksystem=self.checking_system(mode,'uninstall')
+		self.check_root=self.epicore.check_root()
 
+		if not nocheck:
+			checksystem=self.checking_system(mode,'uninstall')
+		else:
+			self.lock_info={}
+			checksystem=True
 		if checksystem:
-			if len(self.lock_info)>0:
-				return self.manage_unlock_info(mode,'uninstall')
+			checkepi=self.checking_epi(mode,'uninstall')
+			if checkepi:
+				if len(self.lock_info)>0:
+					return self.manage_unlock_info(mode,'uninstall')
+				else:
+					return self.uninstall_process(mode)
 			else:
-				return self.uninstall_process(mode)
+				return 1
 		else:
 			return 1		
 
