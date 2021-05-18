@@ -45,16 +45,16 @@ class MainWindow:
 		builder.add_from_file(ui_path)
 
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-		self.ok_image=self.core.rsrc_dir+"ok.svg"
-		self.error_image=self.core.rsrc_dir+"error.svg"
-		self.sp1=self.core.rsrc_dir+"sp1.svg"
-		self.sp2=self.core.rsrc_dir+"sp2.svg"
-		self.sp3=self.core.rsrc_dir+"sp3.svg"
-		self.sp4=self.core.rsrc_dir+"sp4.svg"
-		self.sp5=self.core.rsrc_dir+"sp5.svg"
-		self.sp6=self.core.rsrc_dir+"sp6.svg"
-		self.sp7=self.core.rsrc_dir+"sp7.svg"
-		self.sp8=self.core.rsrc_dir+"sp8.svg"
+		self.ok_image=self.core.rsrc_dir+"ok.png"
+		self.error_image=self.core.rsrc_dir+"error.png"
+		self.sp1=self.core.rsrc_dir+"sp1.png"
+		self.sp2=self.core.rsrc_dir+"sp2.png"
+		self.sp3=self.core.rsrc_dir+"sp3.png"
+		self.sp4=self.core.rsrc_dir+"sp4.png"
+		self.sp5=self.core.rsrc_dir+"sp5.png"
+		self.sp6=self.core.rsrc_dir+"sp6.png"
+		self.sp7=self.core.rsrc_dir+"sp7.png"
+		self.sp8=self.core.rsrc_dir+"sp8.png"
 		
 		self.stack = Gtk.Stack()
 		self.stack.set_transition_duration(10)

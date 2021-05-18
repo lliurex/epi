@@ -37,14 +37,14 @@ class EpiBox(Gtk.VBox):
 
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
 
-		self.package_availabled=self.core.rsrc_dir+"package.svg"
-		self.package_availabled_dep=self.core.rsrc_dir+"package_dep.svg"
-		self.package_installed=self.core.rsrc_dir+"package_install.svg"
-		self.package_installed_dep=self.core.rsrc_dir+"package_install_dep.svg"
-		self.info_image=self.core.rsrc_dir+"info.svg"
-		self.initial=self.core.rsrc_dir+"initial.svg"
-		self.check_image=self.core.rsrc_dir+"check.svg"
-		self.run_image=self.core.rsrc_dir+"run.svg"
+		self.package_availabled=self.core.rsrc_dir+"package.png"
+		self.package_availabled_dep=self.core.rsrc_dir+"package_dep.png"
+		self.package_installed=self.core.rsrc_dir+"package_install.png"
+		self.package_installed_dep=self.core.rsrc_dir+"package_install_dep.png"
+		self.info_image=self.core.rsrc_dir+"info.png"
+		self.initial=self.core.rsrc_dir+"initial.png"
+		self.check_image=self.core.rsrc_dir+"check.png"
+		self.run_image=self.core.rsrc_dir+"run.png"
 
 		self.main_box=builder.get_object("epi_data_box")
 		self.epi_list_label=builder.get_object("epi_list_label")
