@@ -60,6 +60,7 @@ class EpiManager:
 		self.list_available_epi()
 		self.epiFiles={}
 		self.order=0
+		self.root=False
 		#self.read_conf(epi_file)
 	
 		
@@ -417,7 +418,6 @@ class EpiManager:
 	def required_root (self):
 
 		cont=0
-
 		if not self.root:
 			for item in self.epiFiles:
 				if self.epiFiles[item]["type"]!="file":
