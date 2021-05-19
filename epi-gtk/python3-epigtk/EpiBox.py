@@ -94,6 +94,7 @@ class EpiBox(Gtk.VBox):
 		self.epi_depend_label.set_name("DEPEND_LABEL")
 		self.search_entry.set_name("CUSTOM-ENTRY")
 		self.feedback_label.set_name("MSG_LABEL")
+		self.epi_list_box.set_name("LIST_BOX")
 				
 	#def set_css_info			
 			
@@ -112,8 +113,11 @@ class EpiBox(Gtk.VBox):
 
 		show_cb=False
 		default_checked=False
-
-		info=self.info			
+		self.are_depends=False
+		info=self.info
+		
+		if len(info)>1:
+			self.are_depends=True
 
 		for item in info:
 			pkg_order=0
@@ -124,7 +128,7 @@ class EpiBox(Gtk.VBox):
 				if info[item]["selection_enabled"]["active"]:
 					self.search_entry.show()
 					self.select_pkg_btn.set_visible(True)
-					self.core.mainWindow.main_window.resize(675,485)
+					self.core.mainWindow.main_window.resize(675,500)
 
 					show_cb=True
 					if info[item]["selection_enabled"]["all_selected"]:
@@ -137,7 +141,9 @@ class EpiBox(Gtk.VBox):
 				else:
 					self.select_pkg_btn.set_visible(False)
 					self.search_entry.hide()
-		
+
+			count=len(info[item]["pkg_list"])
+			self.number_pkg=count
 			for element in info[item]["pkg_list"]:
 				params_to_draw=[]
 				name=element["name"]
@@ -168,9 +174,10 @@ class EpiBox(Gtk.VBox):
 				else:
 					default_pkg=False			
 
-				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order,entrypoint,default_pkg]
+				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order,entrypoint,default_pkg,count]
 				self.new_epi_box(params_to_draw)
 				pkg_order+=1
+				count-=1
 
 			'''	
 			else:
@@ -184,7 +191,7 @@ class EpiBox(Gtk.VBox):
 	def hide_non_search(self):
 
 		for item in self.epi_list_box.get_children():
-			for element in item.get_children():
+			for element in item.get_children()[0].get_children():
 				if element.id in self.search_list:
 					item.hide()
 				else:
@@ -198,7 +205,7 @@ class EpiBox(Gtk.VBox):
 	def show_depend_box(self):
 
 		for item in self.epi_list_box.get_children():
-			for element in item.get_children():
+			for element in item.get_children()[0].get_children():
 				if element.order!=0 and element.pkg_order==0:
 					item.show()
 
@@ -215,8 +222,10 @@ class EpiBox(Gtk.VBox):
 		pkg_order=params_to_draw[6]
 		entrypoint=params_to_draw[7]
 		default_pkg=params_to_draw[8]
+		count=params_to_draw[9]
 		#search=params_to_draw[6]
 		
+		vbox=Gtk.VBox()
 		hbox=Gtk.HBox()
 
 		aditional_params=self._get_aditional_params(name,order,custom_icon)
@@ -290,6 +299,11 @@ class EpiBox(Gtk.VBox):
 		info.add(info_image)
 		info.set_halign(Gtk.Align.CENTER)
 		info.set_valign(Gtk.Align.CENTER)
+		if self.number_pkg>2:
+			info.set_margin_right(10)
+		else:
+			info.set_margin_right(5)
+
 		info.set_name("INFO_APP_BUTTON")
 		info.connect("clicked",self.show_info_clicked,hbox)
 		if self.core.epiManager.pkg_info[name]["summary"]!="":
@@ -346,6 +360,39 @@ class EpiBox(Gtk.VBox):
 		
 		hbox.pack_end(state,False,False,10)
 		hbox.show_all()
+
+		list_separator=Gtk.Separator()
+		if show_cb:
+			list_separator.set_margin_left(40)
+		else:
+			list_separator.set_margin_left(20)
+
+		if self.number_pkg>2:
+			list_separator.set_margin_right(20)
+		else:
+			list_separator.set_margin_right(15)
+		
+
+		if count!=1:
+			if order>0:
+				list_separator.set_name("WHITE_SEPARATOR")
+			else:
+				list_separator.set_name("SEPARATOR")
+			
+		else:
+			if order==0:
+				if not self.are_depends:
+					list_separator.set_name("WHITE_SEPARATOR")
+				else:
+					list_separator.set_name("SEPARATOR")
+				
+			else:
+				list_separator.set_name("WHITE_SEPARATOR")
+		
+		vbox.pack_start(hbox,False,False,5)
+		vbox.pack_end(list_separator,False,False,0)
+		vbox.show_all()
+
 		
 		if show_cb:
 			application_cb.set_visible(True)
@@ -369,14 +416,15 @@ class EpiBox(Gtk.VBox):
 			else:
 				run.set_visible(False)	
 		
-		hbox.set_name("APP_BOX")
-		self.epi_list_box.pack_start(hbox,False,False,5)
+		#hbox.set_name("APP_BOX")
+
+		self.epi_list_box.pack_start(vbox,False,False,0)
 		self.epi_list_box.queue_draw()
 		self.epi_list_box.set_valign(Gtk.Align.FILL)
 		
-		hbox.queue_draw()
+		vbox.queue_draw()
 		if order!=0:
-			hbox.hide()
+			vbox.hide()
 		
 	#def new_epi_box
 
@@ -446,7 +494,7 @@ class EpiBox(Gtk.VBox):
 		
 		for item in self.epi_list_box.get_children():
 			tmp={}			
-			for element in item.get_children():
+			for element in item.get_children()[0].get_children():
 				if element.id in self.core.epiManager.packages_selected:
 					if element.order not in self.update_icons:
 						self.update_icons[element.order]=[]
@@ -517,9 +565,9 @@ class EpiBox(Gtk.VBox):
 	def manage_application_cb(self,active):
 
 		for item in self.epi_list_box.get_children():
-			item.get_children()[0].set_sensitive(active)
+			item.get_children()[0].get_children()[0].set_sensitive(active)
 			try:
-				item.get_children()[4].set_sensitive(active)
+				item.get_children()[0].get_children()[4].set_sensitive(active)
 			except:
 				pass	
 
@@ -545,8 +593,8 @@ class EpiBox(Gtk.VBox):
 				self.core.mainWindow._get_label_install_button("install")	
 
 		for item in self.epi_list_box.get_children():
-			if item.get_children()[0].order==0:
-				item.get_children()[0].set_active(active)
+			if item.get_children()[0].get_children()[0].order==0:
+				item.get_children()[0].get_children()[0].set_active(active)
 
 		self.monitoring=True
 

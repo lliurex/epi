@@ -92,6 +92,7 @@
   <object class="GtkBox" id="deb_depends_box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="valign">start</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox" id="deb_depends_label_box">
@@ -146,8 +147,6 @@
       <object class="GtkBox" id="list_depends_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">25</property>
-        <property name="margin_right">25</property>
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
         <child>
@@ -155,6 +154,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="shadow_type">in</property>
+            <property name="propagate_natural_height">True</property>
             <child>
               <object class="GtkViewport" id="viewport_deb">
                 <property name="visible">True</property>
@@ -163,20 +163,22 @@
                   <object class="GtkLabel" id="depends_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_left">25</property>
+                    <property name="margin_right">25</property>
                   </object>
                 </child>
               </object>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
+        <property name="expand">True</property>
         <property name="fill">True</property>
         <property name="position">1</property>
       </packing>
@@ -255,8 +257,6 @@
                       <object class="GtkBox" id="epi_list_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="margin_top">5</property>
-                        <property name="margin_bottom">5</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <placeholder/>
@@ -274,7 +274,7 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
@@ -352,7 +352,7 @@
           <object class="GtkImage" id="feedback_ok_img">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="halign">end</property>
+            <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin_left">10</property>
             <property name="margin_right">10</property>
@@ -388,6 +388,8 @@
           <object class="GtkImage" id="feedback_info_img">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <property name="margin_left">10</property>
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
@@ -405,6 +407,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
+            <property name="valign">center</property>
             <property name="margin_right">10</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">10</property>
@@ -546,6 +549,7 @@
     <property name="height_request">180</property>
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="valign">center</property>
     <property name="orientation">vertical</property>
     <child>
       <object class="GtkBox" id="box1">
@@ -620,8 +624,6 @@
       <object class="GtkBox" id="description_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">15</property>
-        <property name="margin_right">15</property>
         <property name="margin_top">10</property>
         <property name="margin_bottom">20</property>
         <property name="orientation">vertical</property>
@@ -639,6 +641,8 @@
                   <object class="GtkLabel" id="description_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="margin_left">15</property>
+                    <property name="margin_right">15</property>
                   </object>
                 </child>
               </object>
@@ -670,8 +674,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="valign">center</property>
-        <property name="margin_top">100</property>
-        <property name="margin_bottom">20</property>
+        <property name="margin_top">10</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkSpinner" id="loading_spinner">
@@ -680,6 +683,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
+            <property name="valign">center</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -737,7 +741,7 @@
       </object>
       <packing>
         <property name="expand">True</property>
-        <property name="fill">False</property>
+        <property name="fill">True</property>
         <property name="position">0</property>
       </packing>
     </child>
@@ -960,6 +964,7 @@
         <property name="margin_bottom">10</property>
         <child>
           <object class="GtkScrolledWindow" id="terminalScrolledWindow">
+            <property name="height_request">240</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="shadow_type">in</property>

@@ -97,7 +97,7 @@
 		
 	#APP_BOX {
 		background-color: #ffffff	;
-		box-shadow: -0.5px 3px 2px #cdcdcd;
+		/*box-shadow: -0.5px 3px 2px #cdcdcd;*/
 		
 	}
 	
@@ -218,4 +218,18 @@
 	#FEEDBACK_LABEL{
 		color: #000000;
 		font: 11pt Roboto Bold;
+	}
+
+	#DEPEND_BOX{
+		border-style:solid;
+		border-width: 1px;
+		border-radius: 0px;
+		border-color:#bec0c1;
+		background: #ffffff;
+
+	}
+
+	#LIST_BOX{
+		background: #ffffff;
+
 	}
