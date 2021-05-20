@@ -328,7 +328,10 @@ class EpiBox(Gtk.VBox):
 			run.set_name("RUN_APP_BUTTON")
 			run.set_tooltip_text(_("Click to launch the application"))
 			run.connect("clicked",self.run_app,entrypoint)
-		
+			if self.number_pkg>2:
+				run.set_margin_right(10)
+			else:
+				run.set_margin_right(5)
 	
 			run.id=name
 			run.pkg=False
