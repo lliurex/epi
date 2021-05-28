@@ -854,7 +854,7 @@ class MainWindow:
 		else:
 			self.order=0
 
-		self.feedback_label.set_name("MSG_LABEL")
+		#self.feedback_label.set_name("MSG_LABEL")
 		self.core.epiManager.zerocenter_feedback(self.order,"init")	
 		GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
