@@ -62,9 +62,16 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(675,480)
+		self.main_window.resize(675,550)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
+		self.feedback_box=builder.get_object("feedback_box")
+		self.feedback_ok_img=builder.get_object("feedback_ok_img")
+		self.feedback_error_img=builder.get_object("feedback_error_img")
+		self.feedback_info_img=builder.get_object("feedback_info_img")
+		self.feedback_label=builder.get_object("feedback_label")
+		self.feedback_label.set_halign(Gtk.Align.CENTER)
+
 		self.next_button=builder.get_object("next_button")
 		self.apply_button=builder.get_object("apply_button")
 		image = Gtk.Image()
@@ -124,7 +131,7 @@ class MainWindow:
 		self.lock_quit=False
 		self.show_depends=False
 		self.loadingBox.manage_loading_msg_box(True)
-		self.epiBox.manage_feedback_box(True,False,False)
+		self.manage_feedback_box(True,False,False)
 
 
 		if self.epi_file!=None:
@@ -150,6 +157,7 @@ class MainWindow:
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		self.main_window.set_name("WINDOW")
 		self.banner_box.set_name("BANNER_BOX")
+		self.feedback_label.set_name("MSG_LABEL")
 
 	#def set_css_info	
 				
@@ -558,12 +566,11 @@ class MainWindow:
 		self.apply_button.show()
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
-			#self.epiBox.feedback_label.set_name("MSG_LABEL")
 			#self.epiBox.terminal_label.show()
 			msg_code=0
 			msg=self.get_msg_text(msg_code)
-			self.epiBox.feedback_label.set_text(msg)
-			self.epiBox.manage_feedback_box(False,False,True)
+			self.feedback_label.set_text(msg)
+			self.manage_feedback_box(False,False,True)
 
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
@@ -754,7 +761,7 @@ class MainWindow:
 
 		pkgs_not_selected=False
 		eula=True
-		self.epiBox.manage_feedback_box(True,False,False)
+		self.manage_feedback_box(True,False,False)
 
 		if self.load_epi_conf[0]["selection_enabled"]["active"]:
 			count=0
@@ -847,7 +854,7 @@ class MainWindow:
 		else:
 			self.order=0
 
-		#self.epiBox.feedback_label.set_name("MSG_LABEL")
+		#self.feedback_label.set_name("MSG_LABEL")
 		self.core.epiManager.zerocenter_feedback(self.order,"init")	
 		GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
@@ -862,7 +869,7 @@ class MainWindow:
 
 		if not self.add_repository_keys_launched:
 			msg=self.get_msg_text(4)
-			self.epiBox.feedback_label.set_text(msg)
+			self.feedback_label.set_text(msg)
 			self.add_repository_keys_launched=True
 			self.sp_cont=self.sp_cont+1
 			if order==0:
@@ -874,7 +881,7 @@ class MainWindow:
 		if self.add_repository_keys_done:
 			if not self.download_app_launched:
 				msg=self.get_msg_text(5)
-				self.epiBox.feedback_label.set_text(msg)
+				self.feedback_label.set_text(msg)
 				self.download_app_launched=True
 				self.download_app()
 
@@ -889,7 +896,7 @@ class MainWindow:
 									
 						if not self.preinstall_app_launched:
 							msg=self.get_msg_text(6)
-							self.epiBox.feedback_label.set_text(msg)
+							self.feedback_label.set_text(msg)
 							self.preinstall_app_launched=True
 							self.preinstall_app()
 
@@ -905,21 +912,21 @@ class MainWindow:
 								if self.preinstall_result:
 									if not self.check_arquitecture_launched:
 										msg=self.get_msg_text(30)
-										self.epiBox.feedback_label.set_text(msg)
+										self.feedback_label.set_text(msg)
 										self.check_arquitecture_launched=True
 										self.check_arquitecture()
 
 									if self.check_arquitecture_done:
 										if not self.check_update_repos_launched:
 											msg=self.get_msg_text(31)
-											self.epiBox.feedback_label.set_text(msg)
+											self.feedback_label.set_text(msg)
 											self.check_update_repos_launched=True
 											self.check_update_repos()
 
 										if self.check_update_repos_done:
 											if not self.install_app_launched:
 												msg=self.get_msg_text(7)
-												self.epiBox.feedback_label.set_text(msg)
+												self.feedback_label.set_text(msg)
 												self.install_app_launched=True
 												self.install_app()
 
@@ -934,7 +941,7 @@ class MainWindow:
 													if self.installed:
 														if not self.postinstall_app_launched:
 															msg=self.get_msg_text(8)
-															self.epiBox.feedback_label.set_text(msg)
+															self.feedback_label.set_text(msg)
 															self.postinstall_app_launched=True
 															self.postinstall_app()	
 
@@ -963,9 +970,9 @@ class MainWindow:
 																		self.lock_quit=False
 																		msg=self.get_msg_text(9)
 																		#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
-																		self.epiBox.manage_feedback_box(False,False,False)
-	
-																		self.epiBox.feedback_label.set_text(msg)
+																		self.manage_feedback_box(False,False,False)
+																		self.feedback_label.set_text(msg)
+
 																		self.terminalBox.manage_vterminal(False,True)
 																		self.write_log_terminal('install')
 																		self.load_epi_conf[0]["status"]="installed"
@@ -1005,9 +1012,9 @@ class MainWindow:
 			self.lock_quit=False
 			self.terminalBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
-			#self.epiBox.feedback_label.set_name("MSG_ERROR_LABEL")
-			self.epiBox.manage_feedback_box(False,True,False)
-			self.epiBox.feedback_label.set_text(msg_error)
+			self.manage_feedback_box(False,True,False)
+			self.feedback_label.set_text(msg_error)
+
 			self.update_icon(params)
 			self.core.epiManager.zerocenter_feedback(params[0],"install",False)
 			self.write_log_terminal('install')
@@ -1332,9 +1339,11 @@ class MainWindow:
 		self.sp_cont=self.sp_cont+1
 		
 		if not self.remove_package_launched:
-			self.epiBox.manage_feedback_box(True,False,False)
+			self.manage_feedback_box(True,False,False)
+
 			msg=self.get_msg_text(15)
-			self.epiBox.feedback_label.set_text(msg)
+			self.feedback_label.set_text(msg)
+
 			self.remove_package_launched=True
 			self.sp_cont=self.sp_cont+1
 			self.uninstall_app(order)
@@ -1356,9 +1365,8 @@ class MainWindow:
 
 				if self.remove:
 					msg=self.get_msg_text(16)
-					#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
-					self.epiBox.manage_feedback_box(False,False,False)
-					self.epiBox.feedback_label.set_text(msg)
+					self.manage_feedback_box(False,False,False)
+					self.feedback_label.set_text(msg)					
 					params=[order,True,'remove',None]
 					self.update_icon(params)
 					self.load_epi_conf[0]["status"]="availabled"
@@ -1373,9 +1381,9 @@ class MainWindow:
 					return False
 				else:
 					msg=self.get_msg_text(17)
-					#self.epiBox.feedback_label.set_name("MSG_ERROR_LABEL")
-					self.epiBox.manage_feedback_box(False,True,False)
-					self.epiBox.feedback_label.set_text(msg)
+					self.manage_feedback_box(False,True,False)
+					self.feedback_label.set_text(msg)
+
 					params=[order,False,'remove',self.dpkg_status]
 					self.update_icon(params)
 					self.core.epiManager.zerocenter_feedback(0,"uninstall",False)
@@ -1649,6 +1657,37 @@ class MainWindow:
 		return cmd
 
 	#def create_process_token	
+
+	def manage_feedback_box(self,hide,error,info):
+
+		if hide:
+			self.feedback_box.set_name("HIDE_BOX")
+			self.feedback_ok_img.hide()
+			self.feedback_error_img.hide()
+			self.feedback_info_img.hide()
+			self.feedback_label.set_halign(Gtk.Align.CENTER)
+		else:
+			self.feedback_label.set_halign(Gtk.Align.START)
+		
+			if error:
+				self.feedback_box.set_name("ERROR_BOX")
+				self.feedback_ok_img.hide()
+				self.feedback_error_img.show()
+				self.feedback_info_img.hide()
+			else:
+				if info:
+					self.feedback_box.set_name("INFORMATION_BOX")
+					self.feedback_ok_img.hide()
+					self.feedback_error_img.hide()
+					self.feedback_info_img.show()
+				else:
+					self.feedback_box.set_name("SUCCESS_BOX")
+					self.feedback_ok_img.show()
+					self.feedback_error_img.hide()
+					self.feedback_info_img.hide()
+
+	#def manage_feedback_box
+
 
 	def quit(self,widget):
 
