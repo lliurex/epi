@@ -687,7 +687,7 @@ class EpiBox(Gtk.VBox):
 		os.system(self.launch_cmd)
 
 	#def launch_app	
-	'''
+	
 #class EpiBox
 
 from . import Core
