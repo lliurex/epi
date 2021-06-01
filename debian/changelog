@@ -1,3 +1,9 @@
+epi (0.4.8) focal; urgency=medium
+
+  * Clean code
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 01 Jun 2021 16:59:37 +0200
+
 epi (0.4.7) focal; urgency=medium
 
   * Improved feedback to users
