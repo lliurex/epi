@@ -202,6 +202,15 @@
 		background:#cbe3f0;
 	}
 
+	#HIDE_BOX{
+
+		border-style:none;
+		border-width: 0px;
+		border-radius: 0px;
+		border-color:transparent;
+		background:transparent;
+	}
+
 	#SEPARATOR{
 
 		background-color: #bec0c1;
