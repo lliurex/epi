@@ -16,6 +16,8 @@ import urllib.request
 import lliurexstore.storeManager as StoreManager
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
+import xmlrpc.client as client
+import ssl
 
 
 class EpiManager:
@@ -60,6 +62,8 @@ class EpiManager:
 		self.list_available_epi()
 		self.epiFiles={}
 		self.order=0
+		self.root=False
+		self.init_n4d_client()
 		#self.read_conf(epi_file)
 	
 		
@@ -417,7 +421,6 @@ class EpiManager:
 	def required_root (self):
 
 		cont=0
-
 		if not self.root:
 			for item in self.epiFiles:
 				if self.epiFiles[item]["type"]!="file":
@@ -1287,7 +1290,38 @@ class EpiManager:
 
 		return epi_deb
 
-	#def get_epi_deb	
+	#def get_epi_deb
+
+	def init_n4d_client(self):
+
+		try:
+			context=ssl._create_unverified_context()
+			self.n4dClient=client.ServerProxy('https://localhost:9779',context=context,allow_none=True)
+		except Exception as e:
+			self._show_debug("init_n4d_client_app","Error:%s"%(str(e)))
+			self.n4dClient=None
+
+	#def init_n4d_client
+
+	def get_zmd_status(self,order):
+
+		zmd_configured=True
+
+		if self.n4dClient!=None:
+			try:
+				zmds_status=self.n4dClient.get_variable("","VariablesManager","ZEROCENTER")
+			except Exception as e:
+				self._show_debug("get_zmd_status","Error:%s"%(str(e)))
+				zmds_status={}
+
+			if len(zmds_status):
+				status=zmds_status[self.zomando_name[order]].get('state')
+				if status!=1:
+					zmd_configured=False
+
+		return zmd_configured
+	
+	#def get_zmd_status
 
 #class EpiManager
 

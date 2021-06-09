@@ -21,6 +21,7 @@ def usage():
 		with indent(4):
 			puts("-h --help : Show help")
 			puts("-u --unattended: Run the install/uninstall without prompting for user confirmation")
+			puts("-nc --nocheck: Run the install/uninstall without previous system checking")
 			puts("-d --debug: Run the install/uninstall in debug mode")
 	sys.exit(1)
 
@@ -29,6 +30,7 @@ def usage():
 if __name__ == '__main__':
 	args = arguments.Args().copy
 	mode=False
+	nocheck=False
 	debug=False
 	app_file=None
 	pkgsToInstall=[]
@@ -38,6 +40,10 @@ if __name__ == '__main__':
 	if args.contains(["-u","--unattended"]):
 		mode=True
 		index = args.first(["-u","--unattended"])
+		args.pop(index)
+	if args.contains(["-nc","--nocheck"]):
+		nocheck=True
+		index = args.first(["-nc","--nocheck"])
 		args.pop(index)
 	if args.contains(["-d","--debug"]):
 		debug=True
@@ -60,8 +66,8 @@ if __name__ == '__main__':
 	if action == "showinfo":
 		sys.exit(epic.showInfo())
 	elif action=="install":
-		sys.exit(epic.install(mode))	
+		sys.exit(epic.install(mode,nocheck))	
 	elif action=="uninstall":
-		sys.exit(epic.uninstall(mode))
+		sys.exit(epic.uninstall(mode,nocheck))
 	else:
 		usage()		

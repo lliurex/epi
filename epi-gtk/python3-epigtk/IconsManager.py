@@ -41,7 +41,7 @@ class IconsManager:
 		
 		#self.icon_db.set_custom_theme("Vibrancy-Dark-Orange")
 		#self.package_icon=self.icon_db.lookup_icon("package",64,Gtk.IconLookupFlags.FORCE_SVG ).get_filename()
-		self.package_icon="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.svg"
+		self.package_icon="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.png"
 		
 	#def init
 
