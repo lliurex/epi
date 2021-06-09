@@ -69,6 +69,7 @@ class MainWindow:
 		self.feedback_ok_img=builder.get_object("feedback_ok_img")
 		self.feedback_error_img=builder.get_object("feedback_error_img")
 		self.feedback_info_img=builder.get_object("feedback_info_img")
+		self.feedback_warning_img=builder.get_object("feedback_warning_img")
 		self.feedback_label=builder.get_object("feedback_label")
 		self.feedback_label.set_halign(Gtk.Align.CENTER)
 
@@ -131,7 +132,7 @@ class MainWindow:
 		self.lock_quit=False
 		self.show_depends=False
 		self.loadingBox.manage_loading_msg_box(True)
-		self.manage_feedback_box(True,False,False)
+		self.manage_feedback_box(True)
 
 
 		if self.epi_file!=None:
@@ -566,11 +567,19 @@ class MainWindow:
 		self.apply_button.show()
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
-			#self.epiBox.terminal_label.show()
-			msg_code=0
-			msg=self.get_msg_text(msg_code)
-			self.feedback_label.set_text(msg)
-			self.manage_feedback_box(False,False,True)
+			is_zmd_configured=self.core.epiManager.get_zmd_status(0)
+			if is_zmd_configured:
+				#self.epiBox.terminal_label.show()
+				msg_code=0
+				msg=self.get_msg_text(msg_code)
+				self.feedback_label.set_text(msg)
+				self.manage_feedback_box(False,"info")
+			else:
+				self.main_window.resize(675,570)
+				msg_code=35
+				msg=self.get_msg_text(msg_code)
+				self.feedback_label.set_text(msg)
+				self.manage_feedback_box(False,"warning")
 
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
@@ -761,7 +770,7 @@ class MainWindow:
 
 		pkgs_not_selected=False
 		eula=True
-		self.manage_feedback_box(True,False,False)
+		self.manage_feedback_box(True)
 
 		if self.load_epi_conf[0]["selection_enabled"]["active"]:
 			count=0
@@ -970,7 +979,7 @@ class MainWindow:
 																		self.lock_quit=False
 																		msg=self.get_msg_text(9)
 																		#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
-																		self.manage_feedback_box(False,False,False)
+																		self.manage_feedback_box(False,"success")
 																		self.feedback_label.set_text(msg)
 
 																		self.terminalBox.manage_vterminal(False,True)
@@ -1012,7 +1021,7 @@ class MainWindow:
 			self.lock_quit=False
 			self.terminalBox.manage_vterminal(False,True)
 			msg_error=self.get_msg_text(error_code)
-			self.manage_feedback_box(False,True,False)
+			self.manage_feedback_box(False,"error")
 			self.feedback_label.set_text(msg_error)
 
 			self.update_icon(params)
@@ -1339,7 +1348,7 @@ class MainWindow:
 		self.sp_cont=self.sp_cont+1
 		
 		if not self.remove_package_launched:
-			self.manage_feedback_box(True,False,False)
+			self.manage_feedback_box(True,"error")
 
 			msg=self.get_msg_text(15)
 			self.feedback_label.set_text(msg)
@@ -1365,7 +1374,7 @@ class MainWindow:
 
 				if self.remove:
 					msg=self.get_msg_text(16)
-					self.manage_feedback_box(False,False,False)
+					self.manage_feedback_box(False,"success")
 					self.feedback_label.set_text(msg)					
 					params=[order,True,'remove',None]
 					self.update_icon(params)
@@ -1381,7 +1390,7 @@ class MainWindow:
 					return False
 				else:
 					msg=self.get_msg_text(17)
-					self.manage_feedback_box(False,True,False)
+					self.manage_feedback_box(False,"error")
 					self.feedback_label.set_text(msg)
 
 					params=[order,False,'remove',self.dpkg_status]
@@ -1417,7 +1426,7 @@ class MainWindow:
 			command=self.create_process_token(command,"uninstall")
 			'''
 			length=len(command)
-			self.terminalBox.vterminal.feed_child(command,length)¡
+			self.terminalBox.vterminal.feed_child(command,length)
 			'''
 			self.terminalBox.vterminal.feed_child_binary(bytes(command,'utf8'))
 
@@ -1613,6 +1622,8 @@ class MainWindow:
 			msg=_("Associated script does not have execute permissions")	
 		elif code==34:
 			msg=_("Application epi file is empty")
+		elif code==35:
+			msg=_("It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation")
 		return msg
 
 	
@@ -1658,33 +1669,43 @@ class MainWindow:
 
 	#def create_process_token	
 
-	def manage_feedback_box(self,hide,error,info):
+	def manage_feedback_box(self,hide,msg_type=None):
 
 		if hide:
 			self.feedback_box.set_name("HIDE_BOX")
 			self.feedback_ok_img.hide()
 			self.feedback_error_img.hide()
 			self.feedback_info_img.hide()
+			self.feedback_warning_img.hide()
 			self.feedback_label.set_halign(Gtk.Align.CENTER)
 		else:
 			self.feedback_label.set_halign(Gtk.Align.START)
 		
-			if error:
+			if msg_type=="error":
 				self.feedback_box.set_name("ERROR_BOX")
 				self.feedback_ok_img.hide()
 				self.feedback_error_img.show()
 				self.feedback_info_img.hide()
-			else:
-				if info:
-					self.feedback_box.set_name("INFORMATION_BOX")
-					self.feedback_ok_img.hide()
-					self.feedback_error_img.hide()
-					self.feedback_info_img.show()
-				else:
-					self.feedback_box.set_name("SUCCESS_BOX")
-					self.feedback_ok_img.show()
-					self.feedback_error_img.hide()
-					self.feedback_info_img.hide()
+				self.feedback_warning_img.hide()
+			elif msg_type=="info":
+				self.feedback_box.set_name("INFORMATION_BOX")
+				self.feedback_ok_img.hide()
+				self.feedback_error_img.hide()
+				self.feedback_info_img.show()
+				self.feedback_warning_img.hide()
+			elif msg_type=="success":
+				self.feedback_box.set_name("SUCCESS_BOX")
+				self.feedback_ok_img.show()
+				self.feedback_error_img.hide()
+				self.feedback_info_img.hide()
+				self.feedback_warning_img.hide()
+			elif msg_type=="warning":
+				self.feedback_box.set_name("WARNING_BOX")
+				self.feedback_ok_img.hide()
+				self.feedback_error_img.hide()
+				self.feedback_info_img.hide()
+				self.feedback_warning_img.show()
+
 
 	#def manage_feedback_box
 
