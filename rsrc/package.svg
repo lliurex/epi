@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:export-ydpi="95.699997"
+   inkscape:export-xdpi="95.699997"
+   inkscape:export-filename="/home/lliurex/Desarrollo/lliurex-up/lliurex-up/usr/share/lliurex-up/rsrc/package.png"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   sodipodi:docname="package.svg"
+   id="svg13"
+   height="48"
+   version="1.1"
+   width="48">
+  <metadata
+     id="metadata17">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="layer1"
+     inkscape:window-maximized="1"
+     inkscape:window-y="32"
+     inkscape:window-x="0"
+     inkscape:cy="28.765975"
+     inkscape:cx="-6.6063452"
+     inkscape:zoom="7.8997086"
+     showgrid="false"
+     id="namedview15"
+     inkscape:window-height="901"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <defs
+     id="defs5455">
+    <linearGradient
+       y2="335.43387"
+       x2="0"
+       y1="394.54437"
+       gradientTransform="matrix(0.48,0,0,0.40601922,362.65138,385.60555)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient5849"
+       xlink:href="#linearGradient6251"
+       inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient6251">
+      <stop
+         stop-opacity="0"
+         stop-color="#ffffff"
+         id="stop6253" />
+      <stop
+         stop-opacity="0.2"
+         stop-color="#ffffff"
+         offset="1"
+         id="stop6255" />
+    </linearGradient>
+  </defs>
+  <g
+     transform="translate(-384.57143,-515.798)"
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Capa 1">
+    <g
+       transform="matrix(1.7499993,0,0,1.7499993,-292.42832,-394.34808)"
+       id="g847">
+      <rect
+         y="521.79797"
+         x="388.57144"
+         height="23.999989"
+         width="23.999989"
+         id="rect5837"
+         mix-blend-mode="normal"
+         isolation="auto"
+         style="color:#000000;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#2e6ea9;color-rendering:auto;image-rendering:auto;shape-rendering:auto" />
+      <rect
+         width="24.00001"
+         x="388.57144"
+         y="544.79797"
+         height="0.99997401"
+         id="rect5839"
+         mix-blend-mode="normal"
+         isolation="auto"
+         style="color:#000000;opacity:0.25;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto" />
+      <rect
+         width="23.999989"
+         x="388.57144"
+         y="521.79797"
+         height="1.00003"
+         id="rect5841"
+         mix-blend-mode="normal"
+         isolation="auto"
+         style="color:#000000;opacity:0.5;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#ffffff;color-rendering:auto;image-rendering:auto;shape-rendering:auto" />
+      <path
+         inkscape:connector-curvature="0"
+         d="m 399.57141,522.79812 v 1 h 1 v -1 z m 1,1 v 1 h 1 v -1 z m 0,1 h -1 v 1 h 1 z m 0,1 v 1 h 1 v -1 z m 0,1 h -1 v 1 h 1 z m 0,1 v 1 h 1 v -1 z m 0,1 h -1 v 0.56054 1.43946 h 2 v -1 h -1 z"
+         id="path5843"
+         mix-blend-mode="normal"
+         isolation="auto"
+         style="color:#000000;opacity:0.8;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#ffffff;stroke-width:2;stroke-linecap:square;color-rendering:auto;image-rendering:auto;shape-rendering:auto" />
+      <rect
+         style="color:#000000;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:url(#linearGradient5849);color-rendering:auto;image-rendering:auto;shape-rendering:auto"
+         id="rect5847"
+         width="24"
+         height="24"
+         x="388.57144"
+         y="521.79797"
+         mix-blend-mode="normal"
+         isolation="auto" />
+    </g>
+  </g>
+</svg>

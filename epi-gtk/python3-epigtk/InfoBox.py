@@ -47,6 +47,7 @@ class InfoBox(Gtk.VBox):
 		self.scrolledwindow_desc=builder.get_object("scrolledwindow_desc")
 		self.viewport_desc=builder.get_object("viewport_desc")
 
+		self.description_box=builder.get_object("description_box")
 		self.description_label=builder.get_object("description_label")
 		self.description_label.set_margin_right(10)
 		self.description_label.set_alignment(0,1)
@@ -80,7 +81,8 @@ class InfoBox(Gtk.VBox):
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		self.name_label.set_name("TITLE")
 		self.summary_label.set_name("SHORT_DESCRIPTION")
-		self.description_label.set_name("FULL_DESCRIPTION")		
+		self.description_label.set_name("FULL_DESCRIPTION")	
+		self.description_box.set_name("DEPEND_BOX")
 			
 	#def set-css_info
 	
