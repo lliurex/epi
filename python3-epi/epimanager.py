@@ -16,7 +16,7 @@ import urllib.request
 import lliurexstore.storeManager as StoreManager
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
-import n4d.client as n4dClient
+import n4d.client as client
 
 
 class EpiManager:
@@ -1294,7 +1294,7 @@ class EpiManager:
 	def init_n4d_client(self):
 
 		try:
-			self.n4dClient=n4dClient.Client('https://localhost:9779')
+			self.n4dClient=client.Client('https://localhost:9779')
 		except Exception as e:
 			self._show_debug("init_n4d_client_app","Error:%s"%(str(e)))
 			self.n4dClient=None
@@ -1305,7 +1305,7 @@ class EpiManager:
 
 		zmd_configured=True
 
-		if n4dClient!=None:
+		if self.n4dClient!=None:
 			try:
 				zmds_status=self.n4dClient.get_variable("ZEROCENTER")
 			except Exception as e:
