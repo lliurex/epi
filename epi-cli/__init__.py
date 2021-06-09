@@ -137,6 +137,11 @@ class EPIC(object):
 			epi_conf=self.epicore.epiFiles[0]
 			status=epi_conf["status"]
 			
+			if status=="installed":
+				is_zmd_configured=self.epicore.get_zmd_status(0)
+				if not is_zmd_configured:
+					status="Installed. It seems that the packages were installed without using EPI.It may be necessary to run EPI for proper operation"
+
 			try:
 				if epi_conf["script"]["remove"]:
 					self.uninstall="Yes"

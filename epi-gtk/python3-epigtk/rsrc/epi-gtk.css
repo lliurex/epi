@@ -211,6 +211,15 @@
 		background:transparent;
 	}
 
+	#WARNING_BOX{
+
+		border-style:solid;
+		border-width: 1px;
+		border-radius: 0px;
+		border-color:#f67400;
+		background:#f0d7c1;
+	}
+
 	#SEPARATOR{
 
 		background-color: #bec0c1;
