@@ -1,3 +1,12 @@
+epi (0.3.18) bionic-updates; urgency=medium
+
+  * Added some changes in the style of gui
+  * Improved feedback
+  * Added new mode in epic
+  * Checked if package was installed with EPI
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 09 Jun 2021 18:00:26 +0200
+
 epi (0.3.17) bionic; urgency=medium
 
   * Fixed bug when apt-cache is cleaned
