@@ -1,3 +1,9 @@
+epi (0.4.10) focal; urgency=medium
+
+  * Checked if package was installed using EPI
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 09 Jun 2021 12:09:18 +0200
+
 epi (0.4.9) focal; urgency=medium
 
   * Fixed css file
