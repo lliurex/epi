@@ -1300,24 +1300,32 @@ class EpiManager:
 		except Exception as e:
 			self._show_debug("init_n4d_client_app","Error:%s"%(str(e)))
 			self.n4dClient=None
+			pass
 
 	#def init_n4d_client
 
 	def get_zmd_status(self,order):
 
-		zmd_configured=True
+		zmd_configured=False
 
 		if self.n4dClient!=None:
 			try:
 				zmds_status=self.n4dClient.get_variable("","VariablesManager","ZEROCENTER")
 			except Exception as e:
-				self._show_debug("get_zmd_status","Error:%s"%(str(e)))
-				zmds_status={}
+				self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
+				return True
 
 			if len(zmds_status):
-				status=zmds_status[self.zomando_name[order]].get('state')
-				if status!=1:
-					zmd_configured=False
+				try:
+					status=zmds_status[self.zomando_name[order]].get('state')
+					if status==1:
+						zmd_configured=True
+				except Exception as e:
+					self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
+					pass 
+			
+		else:
+			zmd_configured=True
 
 		return zmd_configured
 	
