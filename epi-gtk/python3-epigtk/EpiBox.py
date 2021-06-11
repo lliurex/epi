@@ -359,9 +359,9 @@ class EpiBox(Gtk.VBox):
 
 		list_separator=Gtk.Separator()
 		if show_cb:
-			list_separator.set_margin_left(40)
+			list_separator.set_margin_left(96)
 		else:
-			list_separator.set_margin_left(20)
+			list_separator.set_margin_left(68)
 
 		if self.number_pkg>2:
 			list_separator.set_margin_right(20)
@@ -449,10 +449,15 @@ class EpiBox(Gtk.VBox):
 
 				
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
-			if not custom:
-				img=Gtk.Image.new_from_file(icon_installed)
+			if order==0:
+				if not custom:
+					img=Gtk.Image.new_from_file(icon_installed)
+				else:
+					img=Gtk.Image.new_from_pixbuf(icon_installed)	
 			else:
-				img=Gtk.Image.new_from_pixbuf(icon_installed)	
+				img=Gtk.Image.new_from_file(self.package_availabled_dep)
+
+
 		else:
 			if order==0:
 				if not custom:
