@@ -173,8 +173,14 @@ class EpiManager:
 
 			if cont==len(pkg_list):
 				if item>0:
-					self.epiFiles.pop(item)
-					self.zomando_name.pop(item)
+					zmd_status=self.get_zmd_status(item)
+					if zmd_status:
+						self.epiFiles.pop(item)
+						self.zomando_name.pop(item)
+					else:
+						self.epiFiles[item]["status"]="availabled"
+						self.pkg_info.update(info)
+
 				else:
 					self.epiFiles[item]["status"]="installed"
 					self.pkg_info.update(info)
