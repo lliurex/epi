@@ -174,7 +174,7 @@ class EpiManager:
 			if cont==len(pkg_list):
 				if item>0:
 					zmd_status=self.get_zmd_status(item)
-					if zmd_status:
+					if zmd_status==1:
 						self.epiFiles.pop(item)
 						self.zomando_name.pop(item)
 					else:
@@ -1243,8 +1243,10 @@ class EpiManager:
 									tmp[epi_name]["pkg_list"]=remote[0]
 									self.remote_available_epis.append(tmp)
 
-								self.available_epis.append(line)	
-						except:
+								
+								self.available_epis.append(line)
+
+						except Exception as e:
 							pass	
 						break
 	
@@ -1310,29 +1312,36 @@ class EpiManager:
 
 	def get_zmd_status(self,order):
 
-		zmd_configured=False
+		'''
+			zmd status code:
+				 0: not-configured
+				 1: configured
+				-1: failed
+		'''
 
+		zmd_status=0
+		
 		if self.n4dClient!=None:
 			try:
-				zmds_status=self.n4dClient.get_variable("ZEROCENTER")
+				zmds_info=self.n4dClient.get_variable("ZEROCENTER")
 			except Exception as e:
 				self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
-				return True
+				return 1
 
-			if len(zmds_status):
+			if len(zmds_info):
 				try:
-					status=zmds_status[self.zomando_name[order]].get('state')
-					if status==1:
-						zmd_configured=True
+					status=zmds_info[self.zomando_name[order]].get('state')
+					zmd_status=status
 				except Exception as e:
 					self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
 					pass 
 		else:
-			zmd_configured=True
+			zmd_status=1
 
-		return zmd_configured
+		return zmd_status
 	
 	#def get_zmd_status
+
 
 #class EpiManager
 

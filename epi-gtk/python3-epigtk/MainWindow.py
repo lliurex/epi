@@ -567,19 +567,26 @@ class MainWindow:
 		self.apply_button.show()
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
-			is_zmd_configured=self.core.epiManager.get_zmd_status(0)
-			if is_zmd_configured:
+			zmd_configured=self.core.epiManager.get_zmd_status(0)
+			if zmd_configured==1:
 				#self.epiBox.terminal_label.show()
 				msg_code=0
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"info")
-			else:
+			elif zmd_configured==0:
 				self.main_window.resize(675,570)
 				msg_code=35
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"warning")
+			elif zmd_configured==-1:
+				self.main_window.resize(675,570)
+				msg_code=36
+				msg=self.get_msg_text(msg_code)
+				self.feedback_label.set_text(msg)
+				self.manage_feedback_box(False,"warning")
+
 
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
@@ -1552,6 +1559,7 @@ class MainWindow:
 
 	def get_msg_text(self,code):
 
+		msg=""
 		if code==0:
 			msg=_("Application already installed")
 		elif code==1:
@@ -1624,9 +1632,10 @@ class MainWindow:
 			msg=_("Application epi file is empty")
 		elif code==35:
 			msg=_("It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation")
+		elif code==36:
+			msg=_("It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation")
 		return msg
 
-	
 	#def get_msg_text
 
 	def create_process_token(self,command,action):
