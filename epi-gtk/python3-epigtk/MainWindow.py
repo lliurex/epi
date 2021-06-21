@@ -62,7 +62,7 @@ class MainWindow:
 		
 		self.main_window=builder.get_object("main_window")
 		self.main_window.set_title("EPI")
-		self.main_window.resize(675,549)
+		self.main_window.resize(675,550)
 		self.banner_box=builder.get_object("banner_box")
 		self.main_box=builder.get_object("main_box")
 		self.feedback_box=builder.get_object("feedback_box")
@@ -194,7 +194,6 @@ class MainWindow:
 		self.stack.set_visible_child_name("loadingBox")
 		#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")	
 		msg_error=self.get_msg_text(25)
-		self.main_window.resize(675,550)
 		self.loadingBox.loading_label.set_text(msg_error)
 		self.loadingBox.manage_loading_msg_box(False)
 	#def deb_error	
@@ -296,7 +295,6 @@ class MainWindow:
 				self.write_log(msg_error+":"+self.connection[1])
 				self.loadingBox.loading_label.set_text(msg_error)
 				self.loadingBox.manage_loading_msg_box(False)
-				self.main_window.resize(675,550)
 				return False
 		
 		return True	 
@@ -565,7 +563,6 @@ class MainWindow:
 
 	def load_info_panel(self):
 
-		self.main_window.resize(675,550)
 		self.load_info()
 		self.apply_button.show()
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
@@ -578,13 +575,11 @@ class MainWindow:
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"info")
 			elif zmd_configured==0:
-				self.main_window.resize(675,570)
 				msg_code=35
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"warning")
 			elif zmd_configured==-1:
-				self.main_window.resize(675,570)
 				msg_code=36
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
@@ -1660,9 +1655,21 @@ class MainWindow:
 			self.feedback_info_img.hide()
 			self.feedback_warning_img.hide()
 			self.feedback_label.set_halign(Gtk.Align.CENTER)
+			try:
+				if self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self.main_window.resize(675,570)
+				else:
+					self.main_window.resize(675,550)
+			except:
+				pass
+
 		else:
 			self.feedback_label.set_halign(Gtk.Align.START)
-		
+			if self.load_epi_conf[0]["selection_enabled"]["active"] or msg_type=="warning":
+				self.main_window.resize(675,571)
+			else:
+				self.main_window.resize(675,551)
+	
 			if msg_type=="error":
 				self.feedback_ok_img.hide()
 				self.feedback_error_img.show()
