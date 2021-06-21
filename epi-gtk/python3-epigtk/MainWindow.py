@@ -575,13 +575,11 @@ class MainWindow:
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"info")
 			elif zmd_configured==0:
-				self.main_window.resize(675,570)
 				msg_code=35
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"warning")
 			elif zmd_configured==-1:
-				self.main_window.resize(675,570)
 				msg_code=36
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
@@ -1687,9 +1685,19 @@ class MainWindow:
 			self.feedback_info_img.hide()
 			self.feedback_warning_img.hide()
 			self.feedback_label.set_halign(Gtk.Align.CENTER)
+			try:
+				if self.load_epi_conf[0]["selection_enabled"]["active"]:
+					self.main_window.resize(675,570)
+				else:
+					self.main_window.resize(675,550)
+			except:
+				pass
 		else:
 			self.feedback_label.set_halign(Gtk.Align.START)
-		
+			if self.load_epi_conf[0]["selection_enabled"]["active"] or msg_type=="warning":
+				self.main_window.resize(675,571)
+			else:
+				self.main_window.resize(675,551)
 			if msg_type=="error":
 				self.feedback_box.set_name("ERROR_BOX")
 				self.feedback_ok_img.hide()
