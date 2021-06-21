@@ -52,7 +52,8 @@ class EpiManager:
 					"required_root":False,
 					"required_dconf":False,
 					"selection_enabled":{"active":False,"all_selected":False},
-					"custom_icon_path":""
+					"custom_icon_path":"",
+					"check_zomando_state":True
 					}
 
 		self.packages_selected=[]
@@ -1321,23 +1322,26 @@ class EpiManager:
 
 		zmd_status=0
 		
-		if self.n4dClient!=None:
-			try:
-				zmds_info=self.n4dClient.get_variable("ZEROCENTER")
-			except Exception as e:
-				self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
-				return 1
-
-			if len(zmds_info):
+		if self.epiFiles[order]["check_zomando_state"]:
+			if self.n4dClient!=None:
 				try:
-					status=zmds_info[self.zomando_name[order]].get('state')
-					zmd_status=status
+					zmds_info=self.n4dClient.get_variable("ZEROCENTER")
 				except Exception as e:
-					self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
-					pass 
+					self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
+					return 1
+
+				if len(zmds_info):
+					try:
+						status=zmds_info[self.zomando_name[order]].get('state')
+						zmd_status=status
+					except Exception as e:
+						self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
+						pass 
+			else:
+				zmd_status=1
 		else:
 			zmd_status=1
-
+			
 		return zmd_status
 	
 	#def get_zmd_status
