@@ -52,7 +52,8 @@ class EpiManager:
 					"required_root":False,
 					"required_dconf":False,
 					"selection_enabled":{"active":False,"all_selected":False},
-					"custom_icon_path":""
+					"custom_icon_path":"",
+					"check_zomando_state":True
 					}
 
 		self.packages_selected=[]
@@ -272,7 +273,7 @@ class EpiManager:
 		try:
 			if self.epiFiles[order]["script"]["getStatus"]:
 				self.getStatus_byscript=True
-		except:
+		except Exception as e:
 			self.getStatus_byscript=False
 			pass
 
@@ -985,6 +986,9 @@ class EpiManager:
 		pkgs_ref=[]
 		result=False
 		content=""
+		pkgs={}
+		file_with_list=False	
+
 
 
 		if action=="install":
@@ -992,14 +996,24 @@ class EpiManager:
 			if epi_type == "file":
 				if self.token_result_install!="":
 					token=self.token_result_install[1]
+					if self.epi_conf["selection_enabled"]["active"]:
+						pkgs=self.epi_conf["pkg_list"]
+						file_with_list=True
 			
+
 			elif epi_type!="file":
 				pkgs=self.epi_conf["pkg_list"]
 		else:
 			epi_type=self.epiFiles[0]["type"]
 			if epi_type=="file":
 				token=self.token_result_remove[1]
-				
+				if self.epiFiles[0]["selection_enabled"]["active"]:
+					pkgs=self.epiFiles[0]["pkg_list"]
+					file_with_list=True
+					for item in pkgs:
+						if item["name"] in self.packages_selected:
+							pkgs_ref.append(item["name"])
+	
 			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
@@ -1007,19 +1021,20 @@ class EpiManager:
 						pkgs_ref.append(item["name"])
 
 
-		if epi_type=="file":
+		if epi_type=="file" and not file_with_list:
 			if os.path.exists(token):
 				file=open(token)
 				content=file.readline()
 				if '0' not in content:
 					result=False
+
 				else:
 					result=True	
 							
 				file.close()
 				os.remove(token)
 
-		elif epi_type !="file":
+		elif epi_type !="file" or file_with_list:
 			for item in pkgs:
 				if item["name"] in self.packages_selected:
 					if epi_type=="mix":
@@ -1029,8 +1044,11 @@ class EpiManager:
 							status=self.check_pkg_status(item["name"],0)
 			
 					else:
-						status=self.check_pkg_status(item["name"])
-	
+						if epi_type=="file":
+							status=self.check_pkg_status(item["name"],0)
+						else:
+							status=self.check_pkg_status(item["name"])
+
 				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
@@ -1066,8 +1084,6 @@ class EpiManager:
 
 		return dpkg_status,result			
 
-		
-		
 	#def check_install_remove	
 
 	def postinstall_app(self):
@@ -1321,20 +1337,23 @@ class EpiManager:
 
 		zmd_status=0
 		
-		if self.n4dClient!=None:
-			try:
-				zmds_info=self.n4dClient.get_variable("ZEROCENTER")
-			except Exception as e:
-				self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
-				return 1
-
-			if len(zmds_info):
+		if self.epiFiles[order]["check_zomando_state"]:
+			if self.n4dClient!=None:
 				try:
-					status=zmds_info[self.zomando_name[order]].get('state')
-					zmd_status=status
+					zmds_info=self.n4dClient.get_variable("ZEROCENTER")
 				except Exception as e:
-					self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
-					pass 
+					self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
+					return 1
+
+				if len(zmds_info):
+					try:
+						status=zmds_info[self.zomando_name[order]].get('state')
+						zmd_status=status
+					except Exception as e:
+						self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
+						pass 
+			else:
+				zmd_status=1
 		else:
 			zmd_status=1
 
