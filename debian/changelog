@@ -1,3 +1,9 @@
+epi (0.3.22) bionic-updates; urgency=medium
+
+  * Improved performance
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 21 Jun 2021 14:51:57 +0200
+
 epi (0.3.21) bionic-updates; urgency=medium
 
   * Improved function to check zmd status
