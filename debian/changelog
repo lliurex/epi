@@ -1,3 +1,9 @@
+epi (0.3.23) bionic-updates; urgency=medium
+
+  * Litle change in css file
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 30 Jun 2021 13:42:06 +0200
+
 epi (0.3.22) bionic-updates; urgency=medium
 
   * Improved performance
