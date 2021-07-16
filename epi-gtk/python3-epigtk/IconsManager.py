@@ -29,7 +29,7 @@ class IconsManager:
 		self.distro_name="lliurex"
 		
 		self.icons_path="/var/lib/app-info/icons/"
-		self.dists=["bionic","bionic-updates","bionic-security"]
+		self.dists=["focal","focal-updates","focal-security"]
 		self.components=["main","restricted","universe","multiverse"]
 		self.icon_dates_file="downloaded_icons.dates"
 		
