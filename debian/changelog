@@ -1,3 +1,9 @@
+epi (0.4.17) focal; urgency=medium
+
+  * Fixed release name in IconsManager class
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 16 Jul 2021 11:38:09 +0200
+
 epi (0.4.16) focal; urgency=medium
 
   * Litle change in css file
