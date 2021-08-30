@@ -1,3 +1,9 @@
+epi (0.4.18) focal; urgency=medium
+
+  * An apt-update is forced before preInstall phase when adding repositories
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 30 Aug 2021 12:22:42 +0200
+
 epi (0.4.17) focal; urgency=medium
 
   * Fixed release name in IconsManager class
