@@ -521,28 +521,29 @@ class EpiManager:
 				cmd="LANG=C LANGUAGE=en apt-get update; "
 			else:
 				for item in self.epi_conf["pkg_list"]:
-					update_repo=False
-					app=item["name"]
-					command="LANG=C LANGUAGE=en apt-cache policy %s"%app
-					p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
-					output=p.communicate()
-					if str(output[0]) != '':
-						tmp=str(output[0]).split("\\n")
-						if len(tmp)>1:
-							if tmp[2].split(":")[1]=="":
+					if item["name"] in self.packages_selected:
+						update_repo=False
+						app=item["name"]
+						command="LANG=C LANGUAGE=en apt-cache policy %s"%app
+						p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
+						output=p.communicate()
+						if str(output[0]) != '':
+							tmp=str(output[0]).split("\\n")
+							if len(tmp)>1:
+								if tmp[2].split(":")[1]=="":
+									update_repo=True
+									
+							else:
 								update_repo=True
 								
+
 						else:
 							update_repo=True
-							
 
-					else:
-						update_repo=True
-
-					if update_repo:	
-						cmd="LANG=C LANGUAGE=en apt-get update; "
-						self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
-						return cmd		
+						if update_repo:	
+							cmd="LANG=C LANGUAGE=en apt-get update; "
+							self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
+							return cmd		
 
 		
 		self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
@@ -605,7 +606,8 @@ class EpiManager:
 								pass
 
 				f.close()
-				self.update=True
+				#self.update=True
+				cmd=cmd+' apt-get update;'
 
 		self._show_debug("add_repository_keys","Command to add keys:%s"%(cmd))
 		return cmd		
