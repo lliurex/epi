@@ -66,6 +66,8 @@ class EpiManager:
 		self.order=0
 		self.root=False
 		self.init_n4d_client()
+		self.types_without_download=["apt","localdeb","snap","flatpak"]
+		self.types_with_download=["deb","file"]
 		#self.read_conf(epi_file)
 	
 		
@@ -214,6 +216,11 @@ class EpiManager:
 				icon=""
 				debian_name=""
 				component=""
+				if type_epi=="mix":
+					pkg_type=item["type"]
+				else:
+					pkg_type=type_epi
+
 				if type_epi!="localdeb":
 					try:
 						pkg=item["key_store"]
@@ -236,18 +243,18 @@ class EpiManager:
 								debian_name=data["info"][0]["package"]
 								component=data["info"][0]["component"]
 
-								status=self.check_pkg_status(app,order)
+								status=self.check_pkg_status(app,pkg_type,order)
 								if not self.getStatus_byscript and status!="installed":
 									if (data["info"][0]["state"]) !="":
 										status=data["info"][0]["state"]
 
 							else:
-								status=self.check_pkg_status(app,order)		
+								status=self.check_pkg_status(app,pkg_type,order)		
 						else:
-							status=self.check_pkg_status(app,order)	
+							status=self.check_pkg_status(app,pkg_type,order)	
 					
 					except:
-						status=self.check_pkg_status(app,order)	
+						status=self.check_pkg_status(app,pkg_type,order)	
 				else:
 					data=self.get_localdeb_info(app,order)	
 					summary=data[0]
@@ -264,12 +271,13 @@ class EpiManager:
 				pkg_info[app]["icon"]=icon
 				pkg_info[app]["name"]=name
 				pkg_info[app]["summary"]=summary
+				pkg_info[app]["type"]=pkg_type
 
 			return pkg_info
 
 	#def get_store_info			
 
-	def check_pkg_status(self,pkg,order=None):
+	def check_pkg_status(self,pkg,pkg_type,order=None):
 	
 		try:
 			if self.epiFiles[order]["script"]["getStatus"]:
@@ -292,23 +300,29 @@ class EpiManager:
 							if poutput[0].decode("utf-8").split("\n")[0]=='0':
 								return "installed"
 							elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-								return self._get_pkg_status(pkg)
+								return self._get_pkg_status(pkg,pkg_type)
 
 				except Exception as e:
 					self.getStatus_byscript=False
 					
 					pass
 		else:					
-			return self._get_pkg_status(pkg)
+			return self._get_pkg_status(pkg,pkg_type)
 		
 				
 		return "available"	
 
 	#def check_pkg_status	
 
-	def _get_pkg_status(self,pkg):
+	def _get_pkg_status(self,pkg,pkg_type):
 
-		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+		if pkg_type in ["apt","deb","localdeb"]:
+			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+		elif pkg_type=="snap":
+			cmd='snap list | grep %s | cut -d " " -f 1'%pkg
+		elif pkg_type=="flatpak":
+			cmd='flatpak list | grep %s | cut -d " " -f 1'%pkg
+
 		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		poutput,perror=p.communicate()
 
@@ -647,7 +661,7 @@ class EpiManager:
 
 		self.type=self.epi_conf["type"]
 
-		if self.type not in ['apt','localdeb']:
+		if self.type not in self.types_without_download:
 			if len(self.epi_conf["script"])>0:
 				try:
 					if self.epi_conf["script"]["download"]:
@@ -660,7 +674,7 @@ class EpiManager:
 
 			self.token_result_download=tempfile.mkstemp("_result_download")
 			
-			if self.type in ["deb","file"]:	
+			if self.type in self.types_with_download:	
 
 				if self.type=="file":
 					if not self.manage_download:
@@ -678,7 +692,7 @@ class EpiManager:
 				
 				for item in self.epi_conf["pkg_list"]:
 					if item["name"] in self.packages_selected:
-						if item["type"] in ["deb","file"]:
+						if item["type"] in self.types_with_download:
 							if self.manage_download:
 								cmd=self._get_download_cmd(item["type"],item,cmd)
 							else:
@@ -729,7 +743,7 @@ class EpiManager:
 		result=True
 		content=""
 
-		if self.type not in ['apt','localdeb']:
+		if self.type not in self.types_without_download:
 
 			count=0
 			pkgs_todownload=len(self.download_folder)
@@ -823,10 +837,13 @@ class EpiManager:
 			result_mix=self._check_epi_mix_content(calledfrom)
 			pkgs_apt=result_mix[0]
 			pkgs_deb=result_mix[1]
-			pkgs_file=result_mix[2]
-			cmd_dpkg=result_mix[3]
+			cmd_dpkg=result_mix[2]
+			pkgs_file=result_mix[3]
 			cmd_file=result_mix[4]
-			
+			pkgs_snap=result_mix[5]
+			cmd_snap=result_mix[6]
+			pkgs_flatpak=result_mix[7]
+			cmd_flatpak=result_mix[8]
 		
 		if self.type=="apt" or pkgs_apt>0:
 			#update_repos=self.check_update_repos()
@@ -878,8 +895,15 @@ class EpiManager:
 						if cmd_file!="":
 							cmd_file+="%s "%item["name"]
 
-			
-			
+					elif item["type"]=="snap":
+						if cmd_snap!="":
+							cmd_snap+="%s "%item["name"] 
+					
+					elif item["type"]=="flatpak":
+						if cmd_flatpak!="":
+							cmd_flatpak+="%s "%item["name"] 
+
+
 			if cmd_dpkg!="":
 				if cmd!="":
 					cmd=cmd+"; "+cmd_dpkg
@@ -891,7 +915,35 @@ class EpiManager:
 				if cmd!="":
 					cmd=cmd+"; "+cmd_file
 				else:
-					cmd=cmd_file		
+					cmd=cmd_file
+
+			if cmd_snap!="":
+				if cmd!="":
+					cmd=cmd+"; "+cmd_snap
+				else:
+					cmd=cmd_snap		
+			
+			if cmd_flatpak!="":
+				if cmd!="":
+					cmd=cmd+"; "+cmd_flatpak
+				else:
+					cmd=cmd_flatpak		
+
+
+		elif self.type=="snap":
+			cmd=self._get_install_snap_cmd_base()
+			for item in self.epi_conf["pkg_list"]:
+				if item["name"] in self.packages_selected:
+					app=item["name"]
+					cmd=cmd + app +" "
+		
+		elif self.type=="flatpak":
+			cmd=self._get_install_flatpak_cmd_base()
+			for item in self.epi_conf["pkg_list"]:
+				if item["name"] in self.packages_selected:
+					app=item["name"]
+					cmd=cmd + app +" "
+
 
 		cmd=cmd+";"
 
@@ -929,8 +981,12 @@ class EpiManager:
 		pkgs_apt=0
 		pkgs_file=0
 		pkgs_deb=0
+		pkgs_snap=0
+		pkgs_flatpak=0
 		cmd_file=""
 		cmd_dpkg=""
+		cmd_snap=""
+		cmd_flatpak=""
 		result=[]
 
 		for item in self.epi_conf["pkg_list"]:
@@ -942,15 +998,27 @@ class EpiManager:
 					pkgs_deb+=1
 
 				elif item["type"]=="file":
-					pkgs_file+=1	
-						
+					pkgs_file+=1
+
+				elif item["type"]=="snap":
+					pkgs_snap+=1
+		
+				elif item["type"]=="flatpak":
+					pkgs_flatpak+=1
+				
 		if pkgs_deb>0:
 			cmd_dpkg=self._get_install_cmd_base(calledfrom,"deb")	
 
 		if pkgs_file>0:
-			cmd_file=self._get_install_file_cmd_base()	
+			cmd_file=self._get_install_file_cmd_base()
 
-		result=[pkgs_apt,pkgs_deb,pkgs_file,cmd_dpkg,cmd_file]
+		if pkgs_snap>0:
+			cmd_snap=self._get_install_snap_cmd_base()	
+
+		if pkgs_flatpak>0:
+			cmd_flatpak=self._get_install_flatpak_cmd_base()	
+
+		result=[pkgs_apt,pkgs_deb,cmd_dpkg,pkgs_file,cmd_file,pkgs_snap,cmd_snap,pkgs_flatpak,cmd_flatpak]
 
 		return result
 
@@ -968,6 +1036,20 @@ class EpiManager:
 		return cmd_tmp 
 
 	#def _get_install_file_cmd_base	
+
+	def _get_install_snap_cmd_base(self):
+
+		cmd="snap install "
+		return cmd
+
+	#def _get_install_snap_cmd_base
+
+	def _get_install_flatpak_cmd_base(self):
+
+		cmd="flatpak -y install "
+		return cmd
+
+	#def _get_install_flatpak_cmd_base
 
 	def _copy_epi_keyring(self):
 
@@ -1039,16 +1121,16 @@ class EpiManager:
 				if item["name"] in self.packages_selected:
 					if epi_type=="mix":
 						if action=="install":
-							status=self.check_pkg_status(item["name"],self.epi_order)
+							status=self.check_pkg_status(item["name"],item["type"],self.epi_order)
 						else:
-							status=self.check_pkg_status(item["name"],0)
-			
+							status=self.check_pkg_status(item["name"],item["type"],0)
+
 					else:
 						if epi_type=="file":
-							status=self.check_pkg_status(item["name"],0)
+							status=self.check_pkg_status(item["name"],epi_type,0)
 						else:
-							status=self.check_pkg_status(item["name"])
-	
+							status=self.check_pkg_status(item["name"],epi_type)
+
 				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
