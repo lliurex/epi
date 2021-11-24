@@ -1355,10 +1355,6 @@ class MainWindow:
 
 		if self.check_remove_meta_t.done:
 
-			if self.metaRemovedWarning:
-				if len(self.core.epiManager.packages_selected)==len(self.core.epiManager.blockedRemovePkgsList):
-					self.stop_uninstall=True
-
 			if not self.stop_uninstall:
 				self.spinner_sync(order)
 				self.sp_cont=self.sp_cont+1
@@ -1455,6 +1451,11 @@ class MainWindow:
 
 		self.metaRemovedWarning=self.core.epiManager.check_remove_meta()
 		self.write_log("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.core.epiManager.blockedRemovePkgsList)
+		
+		if self.metaRemovedWarning:
+			if len(self.core.epiManager.packages_selected)==len(self.core.epiManager.blockedRemovePkgsList):
+				self.stop_uninstall=True
+		
 		self.check_remove_meta_t.done=True 
 
 	#def check_remove_meta
@@ -1660,9 +1661,9 @@ class MainWindow:
 		elif code==29:
 			msg=_("There is no package selected to be uninstalled")				
 		elif code==30:
-			msg=_("Checking system architecture")
+			msg=_("Checking system architecture...")
 		elif code==31:
-			msg=_("Checking if repositories need updating")		
+			msg=_("Checking if repositories need updating...")		
 		elif code==32:
 			msg=_("Associated script does not exist or its path is invalid")
 		elif code==33:
@@ -1678,7 +1679,7 @@ class MainWindow:
 		elif code==38:
 			msg=_("The selected applications cannot be uninstalled.\nIt is part of the system meta-package")
 		elif code==39:
-			msg=_("Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package ")
+			msg=_("Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package")
 		return msg
 
 	#def get_msg_text

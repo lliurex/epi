@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-11-24 14:35+0100\n"
-"PO-Revision-Date: 2021-11-24 14:45+0100\n"
+"PO-Revision-Date: 2021-11-24 17:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -193,7 +193,7 @@ msgstr "El sistema esta siendo actualizado. Espere unos minutos y vuelva a inten
 #: epi-gtk/python3-epigtk/MainWindow.py:1604
 #: epi-gtk/python3-epigtk/MainWindow.py:1643
 msgid "Apt or Dpkg are being executed. Checking if they have finished"
-msgstr "Apt o Dpkg están siendo ejecutados. Comprobando si han finalizado..."
+msgstr "Apt o Dpkg están siendo ejecutados. Comprobando si han finalizado"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1598
 #: epi-gtk/python3-epigtk/MainWindow.py:1606
@@ -260,13 +260,13 @@ msgstr "No hay ningún paquete seleccionado para ser desinstalado"
 #: epi-gtk/python3-epigtk/MainWindow.py:1616
 #: epi-gtk/python3-epigtk/MainWindow.py:1624
 #: epi-gtk/python3-epigtk/MainWindow.py:1663
-msgid "Checking system architecture"
+msgid "Checking system architecture..."
 msgstr "Comprobando la arquitectura del sistema..."
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1618
 #: epi-gtk/python3-epigtk/MainWindow.py:1626
 #: epi-gtk/python3-epigtk/MainWindow.py:1665
-msgid "Checking if repositories need updating"
+msgid "Checking if repositories need updating..."
 msgstr "Comprobando si los respositorios necesitan ser actualizados..."
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1620
@@ -408,7 +408,7 @@ msgstr ""
 #: epi-gtk/python3-epigtk/MainWindow.py:1681
 msgid ""
 "Some selected application successfully uninstalled.\n"
-"Others not because they are part of the system's meta-package "
+"Others not because they are part of the system's meta-package"
 msgstr ""
 "Algunas aplicaciones seleccionadas se han desinstalado correctamente.\n"
 "Otras no porque forman parte del meta-paquete del sistema"

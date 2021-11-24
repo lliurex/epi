@@ -258,13 +258,13 @@ msgstr ""
 #: epi-gtk/python3-epigtk/MainWindow.py:1616
 #: epi-gtk/python3-epigtk/MainWindow.py:1624
 #: epi-gtk/python3-epigtk/MainWindow.py:1663
-msgid "Checking system architecture"
+msgid "Checking system architecture..."
 msgstr ""
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1618
 #: epi-gtk/python3-epigtk/MainWindow.py:1626
 #: epi-gtk/python3-epigtk/MainWindow.py:1665
-msgid "Checking if repositories need updating"
+msgid "Checking if repositories need updating..."
 msgstr ""
 
 #: epi-gtk/python3-epigtk/MainWindow.py:1620
@@ -413,5 +413,5 @@ msgstr ""
 #: epi-gtk/python3-epigtk/MainWindow.py:1681
 msgid ""
 "Some selected application successfully uninstalled.\n"
-"Others not because they are part of the system's meta-package "
+"Others not because they are part of the system's meta-package"
 msgstr ""
