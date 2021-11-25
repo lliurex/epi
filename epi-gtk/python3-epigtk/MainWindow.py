@@ -766,7 +766,8 @@ class MainWindow:
 	
 		elements=self.epiBox.update_icons[order]
 		for item in elements:
-			item['icon_status'].set_from_file(self.img)
+			if item["pkg_name"] not in self.core.epiManager.blockedRemovePkgsList:
+				item['icon_status'].set_from_file(self.img)
 			
 	#def spinner_sync						
 
@@ -1248,6 +1249,10 @@ class MainWindow:
 
 	def init_uninstall_process(self):
 
+		self.check_remove_meta_t=threading.Thread(target=self.check_remove_meta)
+		self.check_remove_meta_t.launched=False
+		self.check_remove_meta_t.done=False
+
 		self.remove_package_launched=False
 		self.remove_package_done=False
 
@@ -1308,6 +1313,7 @@ class MainWindow:
 				self.epiBox.search_entry.set_sensitive(False)
 				self.epiBox.get_icon_toupdate()
 				self.lock_quit=True
+				self.stop_uninstall=False
 				self.terminalBox.manage_vterminal(True,False)
 				self.sp_cont=0
 				self.init_uninstall_process()
@@ -1321,64 +1327,92 @@ class MainWindow:
 
 	def pulsate_uninstall_process(self,order):
 
-		
-		self.spinner_sync(order)
-		self.sp_cont=self.sp_cont+1
-		
-		if not self.remove_package_launched:
+		if not self.check_remove_meta_t.launched:
 			self.manage_feedback_box(True,"error")
-
-			msg=self.get_msg_text(15)
+			msg=self.get_msg_text(37)
 			self.feedback_label.set_text(msg)
+			self.check_remove_meta_t.launched=True
+			self.check_remove_meta_t.start()
 
-			self.remove_package_launched=True
-			self.sp_cont=self.sp_cont+1
-			self.uninstall_app(order)
+		if self.check_remove_meta_t.done:
 
+			if not self.stop_uninstall:
+				self.spinner_sync(order)
+				self.sp_cont=self.sp_cont+1
 
-		if self.remove_package_done:
+				if not self.remove_package_launched:
+					self.manage_feedback_box(True,"error")
 
-			if not self.check_remove_launched:
-				self.check_remove_launched=True
-				self.check_remove()
-			
-			if self.check_remove_done:
-				self.lock_quit=False
-				self.terminalBox.manage_vterminal(False,True)
+					msg=self.get_msg_text(15)
+					self.feedback_label.set_text(msg)
+
+					self.remove_package_launched=True
+					self.sp_cont=self.sp_cont+1
+					self.epiBox.view_terminal_btn.set_sensitive(True)
+					self.epiBox.view_terminal_btn.set_label(_("See uninstall details"))
+					self.terminalBox.terminal_label.set_text(_("Uninstall process details"))
+					self.uninstall_app(order)
+
+				if self.remove_package_done:
+
+					if not self.check_remove_launched:
+						self.check_remove_launched=True
+						self.check_remove()
+					
+					if self.check_remove_done:
+						self.lock_quit=False
+						self.terminalBox.manage_vterminal(False,True)
+						self.epiBox.manage_application_cb(True)
+						self.epiBox.select_pkg_btn.set_sensitive(True)
+						self.epiBox.search_entry.set_sensitive(True)
+
+						if self.remove:
+							if self.metaRemovedWarning:
+								msg=self.get_msg_text(39)
+								self.manage_feedback_box(False,"warning")
+							else:
+								msg=self.get_msg_text(16)
+								self.manage_feedback_box(False,"success")
+							self.feedback_label.set_text(msg)					
+							params=[order,True,'remove',None]
+							self.update_icon(params)
+							self.load_epi_conf[0]["status"]="availabled"
+							self.show_apply_uninstall_buttons()
+							self.uninstall_button.set_sensitive(True)
+							self.apply_button.set_sensitive(True)
+							if self.order==0:
+								self.install_dep=False
+							self.core.epiManager.zerocenter_feedback(0,"uninstall",True)
+							self.write_log_terminal('uninstall')
+							self.write_log(msg)
+							return False
+						else:
+							msg=self.get_msg_text(17)
+							self.manage_feedback_box(False,"error")
+							self.feedback_label.set_text(msg)
+							params=[order,False,'remove',self.dpkg_status]
+							self.update_icon(params)
+							self.core.epiManager.zerocenter_feedback(0,"uninstall",False)
+							self.write_log_terminal('unistall')
+							self.write_log(msg)
+							return False
+			else:
+				msg=self.get_msg_text(38)
+				self.write_log("Uninstall blocked because remove metapackage.: %s"%self.core.epiManager.blockedRemovePkgsList)
+				self.manage_feedback_box(False,"error")
+				self.feedback_label.set_text(msg)
+				self.show_apply_uninstall_buttons()
+				self.uninstall_button.set_sensitive(True)
+				self.apply_button.set_sensitive(True)
 				self.epiBox.manage_application_cb(True)
 				self.epiBox.select_pkg_btn.set_sensitive(True)
 				self.epiBox.search_entry.set_sensitive(True)
-
-
-				if self.remove:
-					msg=self.get_msg_text(16)
-					self.manage_feedback_box(False,"success")
-					self.feedback_label.set_text(msg)					
-					params=[order,True,'remove',None]
-					self.update_icon(params)
-					self.load_epi_conf[0]["status"]="availabled"
-					self.show_apply_uninstall_buttons()
-					self.uninstall_button.set_sensitive(True)
-					self.apply_button.set_sensitive(True)
-					if self.order==0:
-						self.install_dep=False
-					self.core.epiManager.zerocenter_feedback(0,"uninstall",True)
-					self.write_log_terminal('uninstall')
-					self.write_log(msg)
-					return False
-				else:
-					msg=self.get_msg_text(17)
-					self.manage_feedback_box(False,"error")
-					self.feedback_label.set_text(msg)
-
-					params=[order,False,'remove',self.dpkg_status]
-					self.update_icon(params)
-					self.core.epiManager.zerocenter_feedback(0,"uninstall",False)
-					self.write_log_terminal('unistall')
-					self.write_log(msg)
-					return False
-
-	
+				self.lock_quit=False
+				return False
+				
+		if self.check_remove_meta_t.launched:
+			if not self.check_remove_meta_t.done:
+				return True
 
 		if self.remove_package_launched:
 			if 	not self.remove_package_done:
@@ -1394,6 +1428,18 @@ class MainWindow:
 
 	#def pulsate_uninstall_process				
 
+	def check_remove_meta(self):
+
+		self.metaRemovedWarning=self.core.epiManager.check_remove_meta()
+		self.write_log("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.core.epiManager.blockedRemovePkgsList)
+		
+		if self.metaRemovedWarning:
+			if len(self.core.epiManager.packages_selected)==len(self.core.epiManager.blockedRemovePkgsList):
+				self.stop_uninstall=True
+		
+		self.check_remove_meta_t.done=True 
+
+	#def check_remove_meta
 
 	def uninstall_app(self,order):
 
@@ -1434,6 +1480,7 @@ class MainWindow:
 				item['icon_status'].set_from_file(self.ok_image)
 				
 				if process=="install":
+					item['icon_status'].set_from_file(self.ok_image)
 					
 					if order==0:
 						try:
@@ -1452,17 +1499,23 @@ class MainWindow:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
 
 				else:
+					if item["pkg_name"] in self.core.epiManager.blockedRemovePkgsList:
+						item['icon_status'].set_from_file(self.error_image)
+					else:
+						item['icon_status'].set_from_file(self.ok_image)
 					
 					if order==0:
 						try:
 							item['icon_info'].show()
 							item["icon_run"].hide()
 						except:
-							pass	
-						if item["custom"]:
-							item['icon_package'].set_from_pixbuf(item['icon'])
-						else:
-							item['icon_package'].set_from_file(item['icon'])
+							pass
+
+						if item["pkg_name"] not in self.core.epiManager.blockedRemovePkgsList:
+							if item["custom"]:
+								item['icon_package'].set_from_pixbuf(item['icon'])
+							else:
+								item['icon_package'].set_from_file(item['icon'])
 
 					else:
 						item['icon_package'].set_from_file(self.core.epiBox.package_availabled_dep)
@@ -1588,9 +1641,9 @@ class MainWindow:
 		elif code==29:
 			msg=_("There is no package selected to be uninstalled")				
 		elif code==30:
-			msg=_("Checking system architecture")
+			msg=_("Checking system architecture...")
 		elif code==31:
-			msg=_("Checking if repositories need updating")		
+			msg=_("Checking if repositories need updating...")		
 		elif code==32:
 			msg=_("Associated script does not exist or its path is invalid")
 		elif code==33:
@@ -1601,6 +1654,12 @@ class MainWindow:
 			msg=_("It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation")
 		elif code==36:
 			msg=_("It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation")
+		elif code==37:
+			msg=_("Checking if selected applications can be uninstalled...")
+		elif code==38:
+			msg=_("The selected applications cannot be uninstalled.\nIt is part of the system meta-package")
+		elif code==39:
+			msg=_("Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package")
 		return msg
 
 	

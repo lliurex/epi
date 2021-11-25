@@ -769,16 +769,28 @@ class EPIC(object):
 
 				msg_log='Uninstall application by CLI'
 				self.write_log(msg_log)
+				self.stop_uninstall=self.check_remove_meta()
 
-				result=self.uninstall_app()
-				if result:
-					self.epicore.zerocenter_feedback(0,'uninstall',result)
-					msg_log='Application successfully uninstalled'
+				if not self.stop_uninstall:
+					result=self.uninstall_app()
+					if result:
+						if not self.metaRemovedWarning:
+							msg_log='Application successfully uninstalled'
+						else:
+							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blockedPkgs
+						
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
+						self.epicore.zerocenter_feedback(0,'uninstall',result)
+						return 0
+
+					else:
+						self.epicore.zerocenter_feedback(0,'uninstall',result)
+						return 1
+				else:
+					msg_log='Uninstall blocked because remove metapackage.'
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
-					return 0
-				else:
-					self.epicore.zerocenter_feedback(0,'uninstall',result)
 					return 1
 			else:
 				msg_log='Uninstall process canceled'
@@ -821,6 +833,33 @@ class EPIC(object):
 
 	#def uninstall									
 
+	def check_remove_meta(self):
+
+		self.blockedPkgs=""
+		stop_uninstall=False
+
+		print('  [EPIC]: Checking if selected applications can be uninstalled...')
+		self.metaRemovedWarning=self.epicore.check_remove_meta()
+
+		if self.metaRemovedWarning:
+			count=1
+			for item in self.epicore.blockedRemovePkgsList:
+				if count<len(self.epicore.blockedRemovePkgsList):
+					self.blockedPkgs=self.blockedPkgs+item+", "
+				else:
+					self.blockedPkgs=self.blockedPkgs+item
+				count+=1	
+
+			if len(self.epicore.packages_selected)==len(self.epicore.blockedRemovePkgsList):
+				stop_uninstall=True
+
+		msg_log="Packages blocked because remove metapackage: %s"%self.blockedPkgs
+		print('  [EPIC]: '+msg_log)
+		self.write_log(msg_log)
+
+		return stop_uninstall
+
+	#def check_remove_meta
 
 	def readErrorOutput(self,output):
 
