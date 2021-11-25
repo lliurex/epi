@@ -69,7 +69,10 @@ class EpiManager:
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
 		#self.read_conf(epi_file)
-	
+		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
+		self.blockedRemovePkgsList=[]
+		self.metaRemovedWarning=False
+
 		
 	#def __init__	
 
@@ -1101,7 +1104,8 @@ class EpiManager:
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:
-						pkgs_ref.append(item["name"])
+						if item["name"] not in self.blockedRemovePkgsList:
+							pkgs_ref.append(item["name"])
 
 
 		if epi_type=="file" and not file_with_list :
@@ -1236,7 +1240,8 @@ class EpiManager:
 				cmd=script + " remove "
 
 				for pkg in self.packages_selected:
-					cmd+="%s "%pkg
+					if pkg not in self.blockedRemovePkgsList:
+						cmd+="%s "%pkg
 
 				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
 				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
@@ -1443,6 +1448,40 @@ class EpiManager:
 		return zmd_status
 	
 	#def get_zmd_status
+
+	def check_remove_meta(self):
+
+		self.blockedRemovePkgsList=[]
+		tmpBlockedRemovePkgsList=[]
+
+		for pkg in self.packages_selected:
+			tmpBlockedRemovePkgsList=[]
+			cmd="apt-get remove --simulate %s"%pkg
+			psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			rawoutputsimulate=psimulate.stdout.readlines()
+			rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
+
+			r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
+
+			if len(r)>0:
+				for item in r:
+					tmp=item.split(' ')[0]
+					tmpBlockedRemovePkgsList.append(tmp)
+
+				for item in tmpBlockedRemovePkgsList:
+					if item in self.lliurex_meta_pkgs:
+						self.blockedRemovePkgsList.append(pkg) 
+						break	
+
+		if len(self.blockedRemovePkgsList)>0:
+			self.metaRemovedWarning=True 
+
+		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blockedRemovePkgsList)))
+		
+		return self.metaRemovedWarning
+
+
+	#def check_remove_meta
 
 #class EpiManager
 

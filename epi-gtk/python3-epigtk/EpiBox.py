@@ -500,6 +500,7 @@ class EpiBox(Gtk.VBox):
 					if element.order not in self.update_icons:
 						self.update_icons[element.order]=[]
 					if element.pkg:
+						tmp["pkg_name"]=element.id
 						tmp['icon_package']=element
 						tmp['icon']=element.icon
 						tmp["icon_installed"]=element.icon_installed
