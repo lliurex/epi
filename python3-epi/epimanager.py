@@ -59,6 +59,7 @@ class EpiManager:
 		self.packages_selected=[]
 		self.partial_installed=False
 		self.zmd_paths="/usr/share/zero-center/zmds"
+		self.app_folder="/usr/share/zero-center/applications"
 		self.list_available_epi()
 		self.epiFiles={}
 		self.order=0
@@ -1327,6 +1328,7 @@ class EpiManager:
 
 		self.remote_available_epis=[]
 		self.available_epis=[]
+		self.cli_available_epis=[]
 
 		for item in listdir(self.zmd_paths):
 			t=join(self.zmd_paths,item)
@@ -1348,7 +1350,11 @@ class EpiManager:
 									tmp[epi_name]=remote[1]
 									tmp[epi_name]["zomando"]=remote[2]
 									tmp[epi_name]["pkg_list"]=remote[0]
-									self.remote_available_epis.append(tmp)
+									if not self.is_zmd_service(remote[2]):
+										self.remote_available_epis.append(tmp)
+										self.cli_available_epis.append(tmp)
+									else:
+										self.cli_available_epis.append(tmp)
 
 								
 								self.available_epis.append(line)
@@ -1486,6 +1492,27 @@ class EpiManager:
 
 	#def check_remove_meta
 
+	def is_zmd_service(self,zomando):
+
+		app_file=zomando+".app"
+		app_path=os.path.join(self.app_folder,app_file)
+		if os.path.exists(app_path):
+			with open(app_path,'r') as fd:
+				lines=fd.readlines()
+				fd.close()
+			
+			for line in lines:
+				if line.startswith('Category'):
+					tmp_categ=line.split("=")[1].split("\n")[0]
+					if tmp_categ=="Services":
+						return True 
+					else:
+						return False 
+					break
+		else:
+			return True
+
+	#def is_zmd_service
 #class EpiManager
 
 
