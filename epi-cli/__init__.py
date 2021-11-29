@@ -100,7 +100,7 @@ class EPIC(object):
 
 	def listEpi(self):
 
-		epi_list=sorted(self.epicore.remote_available_epis, key=lambda d: list(d.keys()))
+		epi_list=sorted(self.epicore.cli_available_epis, key=lambda d: list(d.keys()))
 		count_epi=len(epi_list)
 		tmp=""
 		count=1
