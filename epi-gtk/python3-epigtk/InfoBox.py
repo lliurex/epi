@@ -61,7 +61,7 @@ class InfoBox(Gtk.VBox):
 		self.scrolledwindow_desc.set_overlay_scrolling(True)
 		self.scrolledwindow_desc.set_kinetic_scrolling(True)
 
-		self.scrolledwindow_desc.set_size_request(0,100)
+		self.scrolledwindow_desc.set_size_request(0,170)
 		
 
 		
