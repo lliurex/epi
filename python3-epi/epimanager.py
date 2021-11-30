@@ -17,7 +17,7 @@ import lliurexstore.storeManager as StoreManager
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
 import n4d.client as client
-
+import codecs
 
 class EpiManager:
 	
@@ -1497,18 +1497,18 @@ class EpiManager:
 		app_file=zomando+".app"
 		app_path=os.path.join(self.app_folder,app_file)
 		if os.path.exists(app_path):
-			with open(app_path,'r') as fd:
-				lines=fd.readlines()
+			with open(app_path,'r',encoding='utf-8') as fd:
+				content=fd.readlines()
 				fd.close()
 			
-			for line in lines:
-				if line.startswith('Category'):
-					tmp_categ=line.split("=")[1].split("\n")[0]
+			for line in content:
+				key,value=line.split("=")
+				if key=="Category":
+					tmp_categ=value.strip("\n")
 					if tmp_categ=="Services":
 						return True 
 					else:
 						return False 
-					break
 		else:
 			return True
 
