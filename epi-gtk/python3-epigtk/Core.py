@@ -41,14 +41,13 @@ class Core:
 		self.ui_path= settings.RSRC_DIR + "/epi-gtk.ui"
 		#self.get_icons=IconsManager.IconsManager()
 		debug=False
+		noCheck=False
 		if len(sys.argv)>2:
-			if '-d' or '--debug' in sys.argv[2]:
-				debug=True
-		
-		if len(sys.argv)>1:
-			epi_file=sys.argv[1]
-		else:
-			epi_file=None		
+			for item in sys.argv:
+				if item=="-d" or item=="--debug":
+					debug=True
+				if item=="-nc" or item=="--no-check":
+					noCheck=True
 
 		self.iconsManager=IconsManager.IconsManager()
 		self.epiManager=EpiManager.EpiManager(debug)
@@ -67,7 +66,7 @@ class Core:
 			epi_file=sys.argv[1]
 		else:
 			epi_file=None		
-		self.mainWindow=MainWindow.MainWindow(epi_file)
+		self.mainWindow=MainWindow.MainWindow(noCheck,epi_file)
 			
 		self.mainWindow.load_gui()
 		self.mainWindow.start_gui()

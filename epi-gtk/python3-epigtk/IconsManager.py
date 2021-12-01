@@ -51,8 +51,10 @@ class IconsManager:
 		ret_icon=""
 		if icon==None:
 			icon=""
-		
-		
+
+		if os.path.exists(icon):
+			return icon
+
 		ret_icon=self.icon_db.lookup_icon(debian_name,64,Gtk.IconLookupFlags.FORCE_SVG)
 		if ret_icon!=None:
 			return ret_icon.get_filename()
