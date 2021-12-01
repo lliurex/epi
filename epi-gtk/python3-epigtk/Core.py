@@ -42,12 +42,15 @@ class Core:
 		#self.get_icons=IconsManager.IconsManager()
 		debug=False
 		noCheck=False
-		if len(sys.argv)>2:
-			for item in sys.argv:
-				if item=="-d" or item=="--debug":
-					debug=True
-				if item=="-nc" or item=="--no-check":
-					noCheck=True
+		epi_file=None
+
+		for item in sys.argv:
+			if item=="-d" or item=="--debug":
+				debug=True
+			if item=="-nc" or item=="--no-check":
+				noCheck=True
+			if ".epi" in item:
+				epi_file=item
 
 		self.iconsManager=IconsManager.IconsManager()
 		self.epiManager=EpiManager.EpiManager(debug)
@@ -60,12 +63,7 @@ class Core:
 		self.eulaBox=EulaBox.EulaBox()
 		self.terminalBox=TerminalBox.TerminalBox()
 				
-			
-			# Main window must be the last one
-		if len(sys.argv)>1:
-			epi_file=sys.argv[1]
-		else:
-			epi_file=None		
+	
 		self.mainWindow=MainWindow.MainWindow(noCheck,epi_file)
 			
 		self.mainWindow.load_gui()
