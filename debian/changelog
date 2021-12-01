@@ -1,3 +1,9 @@
+epi (0.4.22) focal; urgency=medium
+
+  * Improved sys.argv management in epi-gtk
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 01 Dec 2021 18:44:39 +0100
+
 epi (0.4.21) focal; urgency=medium
 
   * Removed from remote_available_epis zomandos that are services
