@@ -27,11 +27,12 @@ _ = gettext.gettext
 
 class MainWindow:
 	
-	def __init__(self,epi_file=None):
+	def __init__(self,noCheck=False,epi_file=None):
 
 		self.core=Core.Core.get_core()
 
 		self.epi_file=epi_file
+		self.no_check=noCheck
 
 	#def init
 
@@ -213,11 +214,14 @@ class MainWindow:
 		self.first_connection=""
 		self.second_connection=""
 		self.init_threads()
-		self.checking_url1_t.start()
-		self.checking_url1_t.launched=True
-		self.checking_url2_t.start()
-		self.checking_url2_t.launched=True
-		GLib.timeout_add(100,self.pulsate_check_url)
+		if not self.no_check:
+			self.checking_url1_t.start()
+			self.checking_url1_t.launched=True
+			self.checking_url2_t.start()
+			self.checking_url2_t.launched=True
+			GLib.timeout_add(100,self.pulsate_check_url)
+		else:
+			GLib.timeout_add(100,self.pulsate_checksystem)
 
 	
 	#def init_process
@@ -409,8 +413,11 @@ class MainWindow:
 					self.required_eula=self.core.epiManager.required_eula()
 					if len(self.required_eula)>0:
 						self.eula_accepted=False
-					if check_root:	
-						self.lock_info=self.core.epiManager.check_locks()
+					if check_root:
+						if not self.no_check:	
+							self.lock_info=self.core.epiManager.check_locks()
+						else:
+							self.lock_info={}
 						self.write_log("Locks info: "+ str(self.lock_info))
 					else:
 						self.lock_info={}
