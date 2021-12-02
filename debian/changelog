@@ -1,3 +1,10 @@
+epi (0.3.27) bionic-updates; urgency=medium
+
+  * Removed from remote available epis zomandos that are service
+  * Added --no-check optional param to exec epi-gtk
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 02 Dec 2021 10:43:00 +0100
+
 epi (0.3.26) bionic-updates; urgency=medium
 
   * Checked if meta is removed in uninstall process
