@@ -1,3 +1,9 @@
+epi (0.4.23) focal-updates; urgency=medium
+
+  * Added epic bash completion
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 16 Feb 2022 16:10:11 +0100
+
 epi (0.4.22) focal; urgency=medium
 
   * Improved sys.argv management in epi-gtk
