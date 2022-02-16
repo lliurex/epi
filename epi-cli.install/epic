@@ -1,0 +1,26 @@
+have epic &&
+_epic() 
+{
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    #
+    #  The basic options we'll complete.
+    #
+    opts="showinfo showlist install uninstall help"
+
+    case "${prev}" in 
+        install | uninstall)
+            local running="-u --unattended -nc --nocheck -d --debug"
+            COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+            return 0
+            ;;
+        *)
+           COMPREPLY=($(compgen -W "${opts}" -- ${cur}))  
+           return 0
+           ;;
+    esac
+}
+[ "$have" ] && complete -F _epic epic
