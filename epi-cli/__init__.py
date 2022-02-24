@@ -454,7 +454,17 @@ class EPIC(object):
 		else:
 			return True		
 
-	#def add_repository_keys		
+	#def add_repository_keys
+
+	def update_keyring(self):
+
+		cmd=self.epicore.update_keyring()
+		if cmd!="":
+			os.system(cmd)
+
+		return True
+
+	#def update_keyring
 
 	def download_app(self):
 
@@ -648,6 +658,7 @@ class EPIC(object):
 
 				result=self.add_repository_keys(order)
 				if result:
+					result=self.update_keyring()
 					result=self.download_app()
 					if result:
 						result=self.preinstall_app()
