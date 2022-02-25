@@ -5,7 +5,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk,Pango,Gio,GObject,GLib,Gdk
 
-
 from . import settings
 import gettext
 gettext.textdomain(settings.TEXT_DOMAIN)
@@ -21,13 +20,10 @@ class ChooserBox(Gtk.VBox):
 		
 		builder=Gtk.Builder()
 		builder.set_translation_domain(settings.TEXT_DOMAIN)
-
 		ui_path=self.core.ui_path
 		builder.add_from_file(ui_path)
 
-
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-
 		self.main_box=builder.get_object("chooser_box")
 		self.chooser_label=builder.get_object("chooser_label")
 		self.filechooser_box=builder.get_object("filechooser_box")
@@ -37,17 +33,13 @@ class ChooserBox(Gtk.VBox):
 		self.filechooser_label.set_xalign(-1)
 		self.filechooser_label.set_ellipsize(Pango.EllipsizeMode.END)
 		self.filechooser_button=builder.get_object("filechooser_button")
-
-		
 		self.epi_loaded=None
+		
 		self.pack_start(self.main_box,True,True,0)
-
 		self.set_css_info()
 		self.connect_signals()
 
-		
 		#self.init_threads()
-
 				
 	#def __init__
 
@@ -70,8 +62,8 @@ class ChooserBox(Gtk.VBox):
 
 	#def connect_signals	
 
-	
 	def on_file_clicked(self, widget):
+
 		dialog = Gtk.FileChooserDialog(_("Please choose a epi file"), None,
 			Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
 			Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -87,7 +79,6 @@ class ChooserBox(Gtk.VBox):
 			if self.epi_loaded==None:
 				self.filechooser_label.set_text("")
 
-
 		if self.epi_loaded !=None:
 			self.core.mainWindow.next_button.show()
 		else:
@@ -97,8 +88,8 @@ class ChooserBox(Gtk.VBox):
 
 	#def on_file_clicked	
 
-	
 	def add_filters(self, dialog):
+		
 		filter_epi = Gtk.FileFilter()
 		filter_epi.set_name("Epi files")
 		filter_epi.add_mime_type("application/easy-package-installer")
@@ -106,7 +97,6 @@ class ChooserBox(Gtk.VBox):
 
     #def add_filters
 
-		
 #class ChooserBox
 
 from . import Core

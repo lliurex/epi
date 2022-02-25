@@ -7,7 +7,6 @@ import subprocess
 import sys
 import json
 import platform
-#import socket
 import tempfile
 import time
 import datetime
@@ -67,7 +66,6 @@ class EpiManager:
 		self.init_n4d_client()
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
-		#self.read_conf(epi_file)
 		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
@@ -624,11 +622,9 @@ class EpiManager:
 										cmd=cmd+command
 										self.add_key=True
 							except Exception as e:
-								#print (str(e))
 								pass
 
 				f.close()
-				#self.update=True
 				if not self.add_key:
 					cmd=cmd+' apt-get update;'
 
@@ -831,16 +827,10 @@ class EpiManager:
 
 	def install_app(self,calledfrom):
 	
-		#self._copy_epi_keyring()
 		self.token_result_install=""
 		pkgs_apt=0
 		add_i386=""
 		cmd=""
-		
-		'''
-		if not self.arquitecture:
-			add_i386=self.check_arquitecture()
-		'''
 	
 		if self.type=="mix":
 			result_mix=self._check_epi_mix_content(calledfrom)
@@ -855,8 +845,6 @@ class EpiManager:
 			cmd_flatpak=result_mix[8]
 		
 		if self.type=="apt" or pkgs_apt>0:
-			#update_repos=self.check_update_repos()
-			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
 			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			
 		if self.type=="apt":	
@@ -1148,13 +1136,11 @@ class EpiManager:
 						else:
 							status=self.check_pkg_status(item["name"],epi_type)
 
-				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
 				else:
 					if self.pkg_info[item["name"]]["status"]=="installed":
-						#if status=="installed":
 						pkgs_installed+=1			
 									
 
@@ -1255,7 +1241,6 @@ class EpiManager:
 						cmd+="%s "%pkg
 
 				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
-				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 

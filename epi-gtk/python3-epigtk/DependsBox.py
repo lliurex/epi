@@ -5,7 +5,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk,Gio,GObject,GLib,Gdk
 
-
 from . import settings
 import gettext
 gettext.textdomain(settings.TEXT_DOMAIN)
@@ -21,22 +20,17 @@ class DependsBox(Gtk.VBox):
 		
 		builder=Gtk.Builder()
 		builder.set_translation_domain(settings.TEXT_DOMAIN)
-
 		ui_path=self.core.ui_path
 		builder.add_from_file(ui_path)
 
-
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-
 		self.main_box=builder.get_object("deb_depends_box")
 		self.deb_depends_label_box=builder.get_object("deb_depends_label_box")
 		self.deb_depends_error_img=builder.get_object("deb depends_error_img")
 		self.deb_depends_label=builder.get_object("deb_depends_label")
-
 		self.list_depends_box=builder.get_object("list_depends_box")
 		self.scrolledwindow_deb=builder.get_object("scrolledwindow_deb")
 		self.viewport_deb=builder.get_object("viewport_deb")
-
 		self.depends_label=builder.get_object("depends_label")
 		self.depends_label.set_margin_right(10)
 		self.depends_label.set_alignment(0,1)
@@ -44,21 +38,15 @@ class DependsBox(Gtk.VBox):
 		self.depends_label.set_line_wrap(True)
 		self.depends_label.set_valign(Gtk.Align.START)
 		self.depends_label.set_halign(Gtk.Align.FILL)
-
-
 		self.scrolledwindow_deb.set_shadow_type(Gtk.ShadowType.NONE)
 		self.scrolledwindow_deb.set_overlay_scrolling(True)
 		self.scrolledwindow_deb.set_kinetic_scrolling(True)
-
 		self.scrolledwindow_deb.set_size_request(0,100)
 		
 		self.pack_start(self.main_box,True,True,0)
-
 		self.set_css_info()
-
 		
 		#self.init_threads()
-
 				
 	#def __init__
 
@@ -76,10 +64,6 @@ class DependsBox(Gtk.VBox):
 		self.list_depends_box.set_name("DEPEND_BOX")	
 
 	#def set-css_info
-	
-		
-	
-
 		
 #class DependsBox
 

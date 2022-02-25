@@ -36,7 +36,6 @@ class EpiBox(Gtk.VBox):
 		builder.add_from_file(ui_path)
 
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-
 		self.package_availabled=self.core.rsrc_dir+"package.png"
 		self.package_availabled_dep=self.core.rsrc_dir+"package_dep.png"
 		self.package_installed=self.core.rsrc_dir+"package_install.png"
@@ -45,13 +44,10 @@ class EpiBox(Gtk.VBox):
 		self.initial=self.core.rsrc_dir+"initial.png"
 		self.check_image=self.core.rsrc_dir+"check.png"
 		self.run_image=self.core.rsrc_dir+"run.png"
-
 		self.main_box=builder.get_object("epi_data_box")
 		self.epi_list_label=builder.get_object("epi_list_label")
-		
 		self.search_entry=builder.get_object("search_entry")
 		self.search_entry.connect("changed",self.search_entry_changed)
-
 		self.epi_box=builder.get_object("epi_box")
 		self.scrolledwindow=builder.get_object("scrolledwindow")
 		self.epi_list_box=builder.get_object("epi_list_box")
@@ -71,8 +67,6 @@ class EpiBox(Gtk.VBox):
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
 		
-
-				
 	#def __init__
 
 	def set_css_info(self):
@@ -84,7 +78,6 @@ class EpiBox(Gtk.VBox):
 
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		self.epi_list_label.set_name("OPTION_LABEL")
-		#self.terminal_label.set_name("MSG_LABEL")
 		self.epi_depend_label.set_name("DEPEND_LABEL")
 		self.search_entry.set_name("CUSTOM-ENTRY")
 		self.epi_list_box.set_name("LIST_BOX")
@@ -98,6 +91,7 @@ class EpiBox(Gtk.VBox):
 		if self.info[0]["selection_enabled"]["active"]:
 			self.epi_list_label.set_text(_("Select the applications to install"))
 			self.epi_list_label.set_halign(Gtk.Align.START)
+		
 		self.draw_pkg_list()
 
 	#def load_info
@@ -116,14 +110,13 @@ class EpiBox(Gtk.VBox):
 			pkg_order=0
 			show_cb=False
 			order=item
-			#if info[item]["type"]!="file":
 			if order==0:
 				if info[item]["selection_enabled"]["active"]:
 					self.search_entry.show()
 					self.select_pkg_btn.set_visible(True)
 					self.core.mainWindow.main_window.resize(675,570)
-
 					show_cb=True
+
 					if info[item]["selection_enabled"]["all_selected"]:
 						default_checked=True
 						self.uncheck_all=True
@@ -137,6 +130,7 @@ class EpiBox(Gtk.VBox):
 
 			count=len(info[item]["pkg_list"])
 			self.number_pkg=count
+
 			for element in info[item]["pkg_list"]:
 				params_to_draw=[]
 				name=element["name"]
@@ -168,17 +162,11 @@ class EpiBox(Gtk.VBox):
 					default_pkg=False			
 
 				params_to_draw=[name,order,show_cb,default_checked,custom_name,custom_icon,pkg_order,entrypoint,default_pkg,count]
+				
 				self.new_epi_box(params_to_draw)
 				pkg_order+=1
 				count-=1
 
-			'''	
-			else:
-				name=info[item]["name"]
-				self.new_epi_box(name,order)
-			'''
-		#self.get_icon_toupdate()	
-		
 	#def draw_pkg_list				
 
 	def hide_non_search(self):
@@ -216,7 +204,6 @@ class EpiBox(Gtk.VBox):
 		entrypoint=params_to_draw[7]
 		default_pkg=params_to_draw[8]
 		count=params_to_draw[9]
-		#search=params_to_draw[6]
 		
 		vbox=Gtk.VBox()
 		hbox=Gtk.HBox()
@@ -256,7 +243,6 @@ class EpiBox(Gtk.VBox):
 		application_image.pkg_order=pkg_order
 		application_image.info=False
 		application_image.run=False
-		#application_image.installed=installed
 
 		if custom_name=='':
 			application_info="<span font='Roboto'><b>"+name+"</b></span>"
@@ -276,7 +262,6 @@ class EpiBox(Gtk.VBox):
 		application.set_margin_top(21)
 		application.set_margin_bottom(21)
 		application.set_width_chars(50)
-		#application.set_max_width_chars(50)
 		application.set_xalign(-1)
 		application.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
 		application.id=name
@@ -292,6 +277,7 @@ class EpiBox(Gtk.VBox):
 		info.add(info_image)
 		info.set_halign(Gtk.Align.CENTER)
 		info.set_valign(Gtk.Align.CENTER)
+		
 		if self.number_pkg>2:
 			info.set_margin_right(10)
 		else:
@@ -299,6 +285,7 @@ class EpiBox(Gtk.VBox):
 
 		info.set_name("INFO_APP_BUTTON")
 		info.connect("clicked",self.show_info_clicked,hbox)
+		
 		if self.core.epiManager.pkg_info[name]["summary"]!="":
 			info.set_tooltip_text(_("Press to view application information"))
 		else:
@@ -321,6 +308,7 @@ class EpiBox(Gtk.VBox):
 			run.set_name("RUN_APP_BUTTON")
 			run.set_tooltip_text(_("Click to launch the application"))
 			run.connect("clicked",self.run_app,entrypoint)
+			
 			if self.number_pkg>2:
 				run.set_margin_right(10)
 			else:
@@ -334,7 +322,6 @@ class EpiBox(Gtk.VBox):
 			run.info=False
 			run.run=True
 		
-		#state=Gtk.Image()
 		state=img_state
 		state.set_halign(Gtk.Align.CENTER)
 		state.set_valign(Gtk.Align.CENTER)
@@ -358,6 +345,7 @@ class EpiBox(Gtk.VBox):
 		hbox.show_all()
 
 		list_separator=Gtk.Separator()
+		
 		if show_cb:
 			list_separator.set_margin_left(96)
 		else:
@@ -368,20 +356,17 @@ class EpiBox(Gtk.VBox):
 		else:
 			list_separator.set_margin_right(15)
 		
-
 		if count!=1:
 			if order>0:
 				list_separator.set_name("WHITE_SEPARATOR")
 			else:
 				list_separator.set_name("SEPARATOR")
-			
 		else:
 			if order==0:
 				if not self.are_depends:
 					list_separator.set_name("WHITE_SEPARATOR")
 				else:
 					list_separator.set_name("SEPARATOR")
-				
 			else:
 				list_separator.set_name("WHITE_SEPARATOR")
 		
@@ -389,7 +374,6 @@ class EpiBox(Gtk.VBox):
 		vbox.pack_end(list_separator,False,False,0)
 		vbox.show_all()
 
-		
 		if show_cb:
 			application_cb.set_visible(True)
 			if name in self.core.epiManager.packages_selected:
@@ -412,13 +396,12 @@ class EpiBox(Gtk.VBox):
 			else:
 				run.set_visible(False)	
 		
-		#hbox.set_name("APP_BOX")
-
 		self.epi_list_box.pack_start(vbox,False,False,0)
 		self.epi_list_box.queue_draw()
 		self.epi_list_box.set_valign(Gtk.Align.FILL)
 		
 		vbox.queue_draw()
+
 		if order!=0:
 			vbox.hide()
 		
@@ -437,17 +420,15 @@ class EpiBox(Gtk.VBox):
 			image=Gtk.Image.new_from_file(custom_icon)
 			pixbuf=image.get_pixbuf()
 			icon=pixbuf.scale_simple(48,48,GdkPixbuf.InterpType.BILINEAR)
-			
 			icon_installed=self.core.iconsManager.create_pixbuf(custom_icon)
+			
 			if icon_installed=="":
 				custom=False
 				icon=self.package_availabled
 				icon_installed=self.package_installed
 
-
 		img_state=Gtk.Image.new_from_file(self.initial)
 
-				
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
 			if order==0:
 				if not custom:
@@ -467,7 +448,6 @@ class EpiBox(Gtk.VBox):
 				img=Gtk.Image.new_from_file(self.package_availabled_dep)
 
 		img_state=Gtk.Image.new_from_file(self.initial)	
-
 		aditional_params=[custom,icon,icon_installed,img,img_state]
 
 		return aditional_params
@@ -479,7 +459,6 @@ class EpiBox(Gtk.VBox):
 		if widget.get_active():
 			if widget.id not in self.core.epiManager.packages_selected:
 				self.core.epiManager.packages_selected.append(widget.id)
-
 		else:
 			if widget.id in self.core.epiManager.packages_selected:
 				self.core.epiManager.packages_selected.remove(widget.id)
@@ -514,13 +493,10 @@ class EpiBox(Gtk.VBox):
 					if element.run:
 						tmp["icon_run"]=element		
 
-					
 			if len(tmp)>0:
-
 				self.update_icons[element.order].append(tmp)
 
 	#def get_icon_toupdate				
-
 
 	def show_info_clicked(self,button,hbox):
 
@@ -534,7 +510,6 @@ class EpiBox(Gtk.VBox):
 		if summary!="":
 			debian_name=self.core.epiManager.pkg_info[app]["debian_name"]
 			component=self.core.epiManager.pkg_info[app]["component"]
-
 			name=self.core.epiManager.pkg_info[app]["name"]
 			icon=self.core.epiManager.pkg_info[app]["icon"]
 			description=self.core.epiManager.pkg_info[app]["description"]
@@ -550,6 +525,7 @@ class EpiBox(Gtk.VBox):
 			image=Gtk.Image.new_from_file(icon)
 			pixbuf=image.get_pixbuf()
 			pixbuf=pixbuf.scale_simple(64,64,GdkPixbuf.InterpType.BILINEAR)
+			
 			self.core.infoBox.icon.set_from_pixbuf(pixbuf)
 			self.core.infoBox.name_label.set_text(name)
 			self.core.infoBox.summary_label.set_text(summary)
@@ -559,7 +535,6 @@ class EpiBox(Gtk.VBox):
 			self.core.mainWindow.return_button.show()
 			self.core.mainWindow.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 			self.core.mainWindow.stack.set_visible_child_name("infoBox")
-
 
 	#def show_info_clicked
 	
@@ -571,7 +546,6 @@ class EpiBox(Gtk.VBox):
 				item.get_children()[0].get_children()[4].set_sensitive(active)
 			except:
 				pass	
-
 
 	#def manage_application_cb		
 
@@ -611,10 +585,9 @@ class EpiBox(Gtk.VBox):
 			for item in self.core.mainWindow.load_epi_conf[0]["pkg_list"]:
 				if item["name"] in self.core.epiManager.packages_selected:
 					count_ck+=1
-
 				else:
 					count_uck+=1	
-			
+
 			for item in self.core.mainWindow.required_eula:
 				if item["pkg_name"] in self.core.epiManager.packages_selected:
 					count_eula+=1
@@ -637,7 +610,6 @@ class EpiBox(Gtk.VBox):
 	def search_entry_changed(self,widget):
 
 		self.search_list=[]
-		
 		search=self.search_entry.get_text().lower()
 
 		if search=="":
@@ -679,10 +651,9 @@ class EpiBox(Gtk.VBox):
 		self.launch_app_t=threading.Thread(target=self.launch_app)
 		self.launch_app_t.daemon=True
 		self.launch_cmd=entrypoint
+		
 		GObject.threads_init()
-		
 		self.launch_app_t.start()
-		
 		self.core.mainWindow.quit(widget)
 
 	#def run_app
