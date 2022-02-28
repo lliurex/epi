@@ -1,3 +1,9 @@
+epi (0.4.24) focal-updates; urgency=medium
+
+  * Improved gpg keys management
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 28 Feb 2022 13:37:23 +0100
+
 epi (0.4.23) focal-updates; urgency=medium
 
   * Added epic bash completion
