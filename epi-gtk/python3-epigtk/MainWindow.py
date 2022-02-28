@@ -707,6 +707,9 @@ class MainWindow:
 		self.add_repository_keys_launched=False
 		self.add_repository_keys_done=False
 
+		self.update_keyring_launched=False
+		self.update_keyring_done=False
+
 		self.download_app_launched=False
 		self.download_app_done=False
 
@@ -901,130 +904,136 @@ class MainWindow:
 			
 		
 		if self.add_repository_keys_done:
-			if not self.download_app_launched:
-				msg=self.get_msg_text(5)
-				self.feedback_label.set_text(msg)
-				self.download_app_launched=True
-				self.download_app()
+			if not self.update_keyring_launched:
+				self.update_keyring_launched=True 
+				self.update_keyring()
 
-			if self.download_app_done:
+			if self.update_keyring_done:
+				if not self.download_app_launched:
+					msg=self.get_msg_text(5)
+					self.feedback_label.set_text(msg)
+					self.download_app_launched=True
+					self.download_app()
 
-				if not self.check_download_launched:
-					self.check_download_launched=True
-					self.check_download()
+				if self.download_app_done:
 
-				if self.check_download_done:
-					if self.download_result:	
+					if not self.check_download_launched:
+						self.check_download_launched=True
+						self.check_download()
+
+					if self.check_download_done:
+						if self.download_result:	
+										
+							if not self.preinstall_app_launched:
+								msg=self.get_msg_text(6)
+								self.feedback_label.set_text(msg)
+								self.preinstall_app_launched=True
+								self.preinstall_app()
+
+							if self.preinstall_app_done:	
+
+								if not self.check_preinstall_launched:
+									self.check_preinstall_launched=True
+									self.check_preinstall()
+
+								if self.check_preinstall_done:
 									
-						if not self.preinstall_app_launched:
-							msg=self.get_msg_text(6)
-							self.feedback_label.set_text(msg)
-							self.preinstall_app_launched=True
-							self.preinstall_app()
-
-						if self.preinstall_app_done:	
-
-							if not self.check_preinstall_launched:
-								self.check_preinstall_launched=True
-								self.check_preinstall()
-
-							if self.check_preinstall_done:
-								
-								
-								if self.preinstall_result:
-									if not self.check_arquitecture_launched:
-										msg=self.get_msg_text(30)
-										self.feedback_label.set_text(msg)
-										self.check_arquitecture_launched=True
-										self.check_arquitecture()
-
-									if self.check_arquitecture_done:
-										if not self.check_update_repos_launched:
-											msg=self.get_msg_text(31)
+									
+									if self.preinstall_result:
+										if not self.check_arquitecture_launched:
+											msg=self.get_msg_text(30)
 											self.feedback_label.set_text(msg)
-											self.check_update_repos_launched=True
-											self.check_update_repos()
+											self.check_arquitecture_launched=True
+											self.check_arquitecture()
 
-										if self.check_update_repos_done:
-											if not self.install_app_launched:
-												msg=self.get_msg_text(7)
+										if self.check_arquitecture_done:
+											if not self.check_update_repos_launched:
+												msg=self.get_msg_text(31)
 												self.feedback_label.set_text(msg)
-												self.install_app_launched=True
-												self.install_app()
+												self.check_update_repos_launched=True
+												self.check_update_repos()
 
-											if self.install_app_done:
+											if self.check_update_repos_done:
+												if not self.install_app_launched:
+													msg=self.get_msg_text(7)
+													self.feedback_label.set_text(msg)
+													self.install_app_launched=True
+													self.install_app()
 
-												if not self.check_install_launched:
-													self.check_install_launched=True
-													self.check_install()
+												if self.install_app_done:
 
-													
-												if self.check_install_done:	
-													if self.installed:
-														if not self.postinstall_app_launched:
-															msg=self.get_msg_text(8)
-															self.feedback_label.set_text(msg)
-															self.postinstall_app_launched=True
-															self.postinstall_app()	
+													if not self.check_install_launched:
+														self.check_install_launched=True
+														self.check_install()
 
-														if self.postinstall_app_done:
+														
+													if self.check_install_done:	
+														if self.installed:
+															if not self.postinstall_app_launched:
+																msg=self.get_msg_text(8)
+																self.feedback_label.set_text(msg)
+																self.postinstall_app_launched=True
+																self.postinstall_app()	
 
-															if not self.check_postinstall_launched:
-																self.check_postinstall_launched=True
-																self.check_postinstall()
+															if self.postinstall_app_done:
 
-															if self.check_postinstall_done:
-																if self.postinstall_result:	
-																	params=[order,True,'install',None]
-																	self.update_icon(params)
-																	self.core.epiManager.zerocenter_feedback(self.order,"install",True)
+																if not self.check_postinstall_launched:
+																	self.check_postinstall_launched=True
+																	self.check_postinstall()
 
-																	if self.order>0:
-																		self.order=self.order-1
-																		self.sp_cont=0
-																		self.init_install_process()
-																		GLib.timeout_add(100,self.pulsate_install_package,self.order)
+																if self.check_postinstall_done:
+																	if self.postinstall_result:	
+																		params=[order,True,'install',None]
+																		self.update_icon(params)
+																		self.core.epiManager.zerocenter_feedback(self.order,"install",True)
+
+																		if self.order>0:
+																			self.order=self.order-1
+																			self.sp_cont=0
+																			self.init_install_process()
+																			GLib.timeout_add(100,self.pulsate_install_package,self.order)
+
+																		else:
+																			self.epiBox.manage_application_cb(True)
+																			self.epiBox.select_pkg_btn.set_sensitive(True)
+																			self.epiBox.search_entry.set_sensitive(True)
+																			self.lock_quit=False
+																			msg=self.get_msg_text(9)
+																			#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
+																			self.manage_feedback_box(False,"success")
+																			self.feedback_label.set_text(msg)
+
+																			self.terminalBox.manage_vterminal(False,True)
+																			self.write_log_terminal('install')
+																			self.load_epi_conf[0]["status"]="installed"
+																			self.write_log(msg)
+																			self.show_apply_uninstall_buttons()
+																			self.uninstall_button.set_sensitive(True)
+																			self.apply_button.set_sensitive(True)
+																			self.core.epiManager.remove_repo_keys()
+
+																			return False
+																		return False
+																	
 
 																	else:
-																		self.epiBox.manage_application_cb(True)
-																		self.epiBox.select_pkg_btn.set_sensitive(True)
-																		self.epiBox.search_entry.set_sensitive(True)
-																		self.lock_quit=False
-																		msg=self.get_msg_text(9)
-																		#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
-																		self.manage_feedback_box(False,"success")
-																		self.feedback_label.set_text(msg)
-
-																		self.terminalBox.manage_vterminal(False,True)
-																		self.write_log_terminal('install')
-																		self.load_epi_conf[0]["status"]="installed"
-																		self.write_log(msg)
-																		self.show_apply_uninstall_buttons()
-																		self.uninstall_button.set_sensitive(True)
-																		self.apply_button.set_sensitive(True)
-																		self.core.epiManager.remove_repo_keys()
-
-																		return False
-																	return False
-
-																else:
-																	error=True
-																	error_code=10
-																	params=[order,False,'install',None]
-													else:
-														error=True
-														error_code=11
-														params=[order,False,'install',self.dpkg_status]
-															
-								else:
-									error=True
-									error_code=12
-									params=[order,False,'install',None]
-																				
-					else:
-						error=True
-						error_code=13
-						params=[order,False,'install',None]
+																		error=True
+																		error_code=10
+																		params=[order,False,'install',None]
+														else:
+															error=True
+															error_code=11
+															params=[order,False,'install',self.dpkg_status]
+																
+									else:
+										error=True
+										error_code=12
+										params=[order,False,'install',None]
+																					
+						else:
+							error=True
+							error_code=13
+							params=[order,False,'install',None]
 										
 
 		if error:
@@ -1062,6 +1071,14 @@ class MainWindow:
 				else:
 					self.download_app_done=True
 					return True	
+
+		if self.update_keyring_launched:
+			if 	not self.update_keyring_done:
+				if os.path.exists(self.token_keyring[1]):
+					return True
+				else:
+					self.update_keyring_done=True
+					return True
 
 		if self.check_download_launched:
 			if not self.check_download_done:
@@ -1135,7 +1152,21 @@ class MainWindow:
 		else:
 			self.add_repository_keys_done=True
 
-	#def add_repository_keys		
+	#def add_repository_keys
+
+	def update_keyring(self):
+
+		command=self.core.epiManager.update_keyring()
+		length=len(command)
+
+		if length>0:
+			command=self.create_process_token(command,"keyring")
+			length=len(command)
+			self.terminalBox.vterminal.feed_child(command,length)
+		else:
+			self.update_keyring_done=True
+
+	#def update_keyring
 
 	def download_app(self):
 
@@ -1676,6 +1707,10 @@ class MainWindow:
 			self.token_keys=tempfile.mkstemp('_keys')
 			remove_tmp=' rm -f ' + self.token_keys[1] + ';'+'\n'
 			
+		elif action=="keyring":
+			self.token_keyring=tempfile.mkstemp('_keyring')
+			remove_tmp=' rm -f ' + self.token_keyring[1] + ';'+'\n'
+		
 		elif action=="download":
 			self.token_download=tempfile.mkstemp('_download')
 			remove_tmp=' rm -f ' + self.token_download[1] + ';'+'\n'

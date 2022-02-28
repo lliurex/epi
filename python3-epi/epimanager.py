@@ -596,6 +596,7 @@ class EpiManager:
 		self.epi_order=order
 		self.type=self.epi_conf["type"]
 		cmd=""
+		self.add_key=False
 
 		if self.type in ["apt","mix"]:
 
@@ -611,7 +612,8 @@ class EpiManager:
 					try:
 						key_cmd=item["key_cmd"]
 						if key_cmd !="":
-							cmd=cmd+key_cmd+';'	
+							cmd=cmd+key_cmd+';'
+							self.add_key=True	
 					except Exception as e:
 						if len(self.epi_conf["script"])>0:
 							try:
@@ -620,13 +622,15 @@ class EpiManager:
 									if os.path.exists(script):
 										command=script + ' addRepoKeys;'
 										cmd=cmd+command
+										self.add_key=True
 							except Exception as e:
 								#print (str(e))
 								pass
 
 				f.close()
 				#self.update=True
-				cmd=cmd+' apt-get update;'
+				if not self.add_key:
+					cmd=cmd+' apt-get update;'
 
 		self._show_debug("add_repository_keys","Command to add keys:%s"%(cmd))
 		return cmd		
@@ -827,7 +831,6 @@ class EpiManager:
 
 	def install_app(self,calledfrom):
 	
-		self._copy_epi_keyring()
 		self.token_result_install=""
 		pkgs_apt=0
 		add_i386=""
@@ -1056,14 +1059,18 @@ class EpiManager:
 
 	#def _get_install_flatpak_cmd_base
 
-	def _copy_epi_keyring(self):
+	def update_keyring(self):
 
+		cmd="";
 		if os.path.exists(self.epi_keyring_path):
-			if not os.path.exists(os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")):
-				dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")
-				shutil.copy(self.epi_keyring_path,dest_path)
+			dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")
+			shutil.copy(self.epi_keyring_path,dest_path)
+			cmd="apt-get update;"
+		else:
+			if self.add_key:
+				cmd="apt-get update";
 
-		return
+		return cmd
 		
 	#def _copy_epi_keyring			
 
