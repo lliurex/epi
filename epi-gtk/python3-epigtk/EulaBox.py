@@ -3,15 +3,10 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk,Gdk,Gio,GObject,GLib
-'''
-gi.require_version('WebKit', '3.0')
-from gi.repository import WebKit
-'''
 gi.require_version('WebKit2', '4.0')
 from gi.repository import WebKit2
 
 import copy
-
 import sys
 import os
 import html2text
@@ -20,7 +15,6 @@ from . import settings
 import gettext
 gettext.textdomain(settings.TEXT_DOMAIN)
 _ = gettext.gettext
-
 
 class EulaBox(Gtk.VBox):
 	
@@ -36,7 +30,6 @@ class EulaBox(Gtk.VBox):
 		builder.add_from_file(ui_path)
 
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-
 		self.eula_window=builder.get_object("eula_window")
 		self.eula_window.set_default_size(600,700)
 		self.eula_title=builder.get_object("eula_title")
@@ -45,16 +38,13 @@ class EulaBox(Gtk.VBox):
 		self.eula_buttons_box=builder.get_object("eula_buttons_box")
 		self.cancel_eula_button=builder.get_object("cancel_eula_button")
 		self.accept_eula_button=builder.get_object("accept_eula_button")
-
 		self.scrolled_window = Gtk.ScrolledWindow()
 		self.webview=None
-		
 
 		self.set_css_info()
 		self.connect_signals()
 		self.init_threads()		
 
-				
 	#def __init__
 
 	def set_css_info(self):
@@ -86,10 +76,8 @@ class EulaBox(Gtk.VBox):
 	def load_info(self,info):
 
 		if self.webview==None:
-			#self.webview=WebKit.WebView()
 			self.webview=WebKit2.WebView()
 			websettings=self.webview.get_settings()
-			#websettings.set_property('enable-default-context-menu', False)
 			self.webview.set_settings(websettings)
 			self.scrolled_window.add(self.webview)
 			self.webkit_box.pack_start(self.scrolled_window,True,True,0)
@@ -103,9 +91,7 @@ class EulaBox(Gtk.VBox):
 
 	def load_url(self,url):
 		
-		 #self.webview.open(url)
 		 self.webview.load_uri(url)
-
 
 	#def load_url
 
@@ -114,7 +100,6 @@ class EulaBox(Gtk.VBox):
 		self.load_url("")
 		
 		if self.core.mainWindow.load_epi_conf[0]["selection_enabled"]["active"]:
-
 			for item in self.core.epiBox.epi_list_box.get_children():
 				for element in item.get_children():
 					if element.id == self.pkg_name:
@@ -125,9 +110,7 @@ class EulaBox(Gtk.VBox):
 			self.core.mainWindow.accept_eula()
 		else:
 			self.eula_window.hide()
-		
-
-
+	
 	#def cancel_eula_button_clicked
 	
 	def accept_eula_button_clicked(self,widget):
@@ -135,11 +118,11 @@ class EulaBox(Gtk.VBox):
 		self.core.mainWindow.eulas_tocheck.pop(self.core.mainWindow.eula_order)
 		self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
 		self.core.mainWindow.eula_order-=1
+		
 		self.load_url("")
 		self.core.mainWindow.accept_eula()
 
 	#def cancel_eula_button_clicked 	
-
 
 #class EulaBox
 

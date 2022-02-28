@@ -184,8 +184,6 @@ class EPIC(object):
 		check=True
 		print ('  [EPIC]: Checking system...')
 
-		#self.connection=self.epicore.check_connection()
-		
 		connection=self.pulsate_check_connection()
 		
 		if connection[0]:
@@ -454,7 +452,17 @@ class EPIC(object):
 		else:
 			return True		
 
-	#def add_repository_keys		
+	#def add_repository_keys
+
+	def update_keyring(self):
+
+		cmd=self.epicore.update_keyring()
+		if cmd!="":
+			os.system(cmd)
+
+		return True
+
+	#def update_keyring
 
 	def download_app(self):
 
@@ -557,12 +565,6 @@ class EPIC(object):
 		cmd=self.epicore.install_app("cli")
 
 		if cmd !="":
-			'''
-			if not self.epicore.epiFiles[0]["required_dconf"]:
-				cmd="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "+cmd
-			else:
-				cmd="LANG=C LANGUAGE=en "+cmd
-			'''
 			print('  [EPIC]: Installing application...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
@@ -648,6 +650,7 @@ class EPIC(object):
 
 				result=self.add_repository_keys(order)
 				if result:
+					result=self.update_keyring()
 					result=self.download_app()
 					if result:
 						result=self.preinstall_app()

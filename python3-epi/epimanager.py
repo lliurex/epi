@@ -7,7 +7,6 @@ import subprocess
 import sys
 import json
 import platform
-#import socket
 import tempfile
 import time
 import datetime
@@ -67,7 +66,6 @@ class EpiManager:
 		self.init_n4d_client()
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
-		#self.read_conf(epi_file)
 		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
@@ -596,6 +594,7 @@ class EpiManager:
 		self.epi_order=order
 		self.type=self.epi_conf["type"]
 		cmd=""
+		self.add_key=False
 
 		if self.type in ["apt","mix"]:
 
@@ -611,7 +610,8 @@ class EpiManager:
 					try:
 						key_cmd=item["key_cmd"]
 						if key_cmd !="":
-							cmd=cmd+key_cmd+';'	
+							cmd=cmd+key_cmd+';'
+							self.add_key=True	
 					except Exception as e:
 						if len(self.epi_conf["script"])>0:
 							try:
@@ -620,13 +620,13 @@ class EpiManager:
 									if os.path.exists(script):
 										command=script + ' addRepoKeys;'
 										cmd=cmd+command
+										self.add_key=True
 							except Exception as e:
-								#print (str(e))
 								pass
 
 				f.close()
-				#self.update=True
-				cmd=cmd+' apt-get update;'
+				if not self.add_key:
+					cmd=cmd+' apt-get update;'
 
 		self._show_debug("add_repository_keys","Command to add keys:%s"%(cmd))
 		return cmd		
@@ -827,16 +827,10 @@ class EpiManager:
 
 	def install_app(self,calledfrom):
 	
-		self._copy_epi_keyring()
 		self.token_result_install=""
 		pkgs_apt=0
 		add_i386=""
 		cmd=""
-		
-		'''
-		if not self.arquitecture:
-			add_i386=self.check_arquitecture()
-		'''
 	
 		if self.type=="mix":
 			result_mix=self._check_epi_mix_content(calledfrom)
@@ -851,8 +845,6 @@ class EpiManager:
 			cmd_flatpak=result_mix[8]
 		
 		if self.type=="apt" or pkgs_apt>0:
-			#update_repos=self.check_update_repos()
-			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
 			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			
 		if self.type=="apt":	
@@ -1056,16 +1048,20 @@ class EpiManager:
 
 	#def _get_install_flatpak_cmd_base
 
-	def _copy_epi_keyring(self):
+	def update_keyring(self):
 
+		cmd=""
 		if os.path.exists(self.epi_keyring_path):
-			if not os.path.exists(os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")):
-				dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")
-				shutil.copy(self.epi_keyring_path,dest_path)
-
-		return
+			dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")
+			shutil.copy(self.epi_keyring_path,dest_path)
+			cmd="apt-get update;"
+		else:
+			if self.add_key:
+				cmd="apt-get update;"
+				
+		return cmd
 		
-	#def _copy_epi_keyring			
+	#def update_keyring			
 
 	def check_install_remove(self,action):
 
@@ -1140,13 +1136,11 @@ class EpiManager:
 						else:
 							status=self.check_pkg_status(item["name"],epi_type)
 
-				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
 				else:
 					if self.pkg_info[item["name"]]["status"]=="installed":
-						#if status=="installed":
 						pkgs_installed+=1			
 									
 
@@ -1247,7 +1241,6 @@ class EpiManager:
 						cmd+="%s "%pkg
 
 				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
-				#cmd=script + ' remove '+str(self.packages_selected)+'; echo $? >' + self.token_result_remove[1] + ';'
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 

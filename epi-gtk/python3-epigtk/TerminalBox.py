@@ -24,18 +24,16 @@ class TerminalBox(Gtk.VBox):
 		
 		builder=Gtk.Builder()
 		builder.set_translation_domain(settings.TEXT_DOMAIN)
-
 		ui_path=self.core.ui_path
 		builder.add_from_file(ui_path)
 
 		self.css_file=self.core.rsrc_dir+"epi-gtk.css"
-
-		
 		self.terminal_config=self.core.rsrc_dir+"terminal.conf"
 		self.main_box=builder.get_object("terminal_box")
 		self.terminal_label=builder.get_object("terminal_label")
 		self.viewport=builder.get_object("viewport")
 		self.terminal_scrolled=builder.get_object("terminalScrolledWindow")
+		
 		self.vterminal=Vte.Terminal()
 		self.vterminal.spawn_sync(
 			Vte.PtyFlags.DEFAULT,
@@ -55,11 +53,9 @@ class TerminalBox(Gtk.VBox):
 		self.terminal_scrolled.add(self.vterminal)
 
 		self.pack_start(self.main_box,True,True,0)
-		
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
 		
-				
 	#def __init__
 
 	def set_css_info(self):
@@ -81,7 +77,6 @@ class TerminalBox(Gtk.VBox):
 
 	#def manage_vterminal		
 	
-		
 #class TerminalBox
 
 from . import Core

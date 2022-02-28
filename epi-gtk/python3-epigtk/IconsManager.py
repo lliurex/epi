@@ -27,28 +27,20 @@ class IconsManager:
 		self.core=Core.Core.get_core()
 		self.check_image=self.core.rsrc_dir+"check.png"
 		self.distro_name="lliurex"
-		
 		self.icons_path="/var/lib/app-info/icons/"
 		self.dists=["focal","focal-updates","focal-security"]
 		self.components=["main","restricted","universe","multiverse"]
 		self.icon_dates_file="downloaded_icons.dates"
-		
-		#self.distro_name="ubuntu"
-		
 		self.icon_db=Gtk.IconTheme()
 		self.icon_db.set_custom_theme("Breeze")
-		
-		
-		#self.icon_db.set_custom_theme("Vibrancy-Dark-Orange")
-		#self.package_icon=self.icon_db.lookup_icon("package",64,Gtk.IconLookupFlags.FORCE_SVG ).get_filename()
 		self.package_icon="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.png"
 		
 	#def init
 
 	def get_icon(self,debian_name,icon,component=None):
 		
-
 		ret_icon=""
+
 		if icon==None:
 			icon=""
 
@@ -56,16 +48,16 @@ class IconsManager:
 			return icon
 
 		ret_icon=self.icon_db.lookup_icon(debian_name,64,Gtk.IconLookupFlags.FORCE_SVG)
+		
 		if ret_icon!=None:
 			return ret_icon.get_filename()
 
-
 		ret_icon=self.icon_db.lookup_icon(icon,64,Gtk.IconLookupFlags.FORCE_SVG)
+		
 		if ret_icon!=None:
 			return ret_icon.get_filename()	
 			
 		if len(icon)>0:
-			
 			for dist in self.dists:
 				# "64x64/" is included in pkg_info["icon"]
 				if not re.match("[0-9]*x[0-9]*\/",icon):
@@ -76,7 +68,6 @@ class IconsManager:
 								icon=icon.replace(debian_name,debian_name+"_"+debian_name)
 										
 				if component!="":
-					#tmp_path=self.distro_name+"-"+dist+"-"+component
 					ret_icon=self.icons_path+"%s/%s"%(component,icon)
 					if os.path.exists(ret_icon):
 						return ret_icon
@@ -92,7 +83,6 @@ class IconsManager:
 						if os.path.exists(ret_icon):
 							return ret_icon		
 			
-		
 		ret_icon=self.package_icon
 		return ret_icon
 		
@@ -101,6 +91,7 @@ class IconsManager:
 	def search_icon(self,pkg,path,icon,component):
 
 		icon_file=self.get_icon(pkg,icon,component)
+		
 		if icon_file=="" or "local_deb" in icon_file:
 			if os.path.exists(os.path.join(path,icon)):
 				icon_file=os.path.join(path,icon)
