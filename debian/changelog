@@ -1,3 +1,9 @@
+epi (0.3.29) bionic-updates; urgency=medium
+
+  * Improved gpg keys management
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 28 Feb 2022 11:00:36 +0100
+
 epi (0.3.28) bionic-updates; urgency=medium
 
   * Added bash-completion for epic
