@@ -1,3 +1,9 @@
+epi (0.4.25) focal; urgency=medium
+
+  * Support zmd with multiple epi
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 04 Mar 2022 12:36:08 +0100
+
 epi (0.4.24) focal-updates; urgency=medium
 
   * Improved gpg keys management
