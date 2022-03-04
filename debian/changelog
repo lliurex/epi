@@ -1,3 +1,9 @@
+epi (0.3.30) bionic-updates; urgency=medium
+
+  * Added support to zmd with multiple epi
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 04 Mar 2022 13:01:02 +0100
+
 epi (0.3.29) bionic-updates; urgency=medium
 
   * Improved gpg keys management
