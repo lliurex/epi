@@ -57,6 +57,7 @@ class EPIC(object):
 		pkgs_available=""
 		pkgs_default=""
 		tmp_list=[]
+		pkgs_installed=""
 
 		for item in self.epicore.epiFiles:
 			order=order-1
@@ -68,6 +69,8 @@ class EPIC(object):
 			else:
 				if len(self.remote_install)>0:
 					for item in self.remote_install:
+						if  self.epicore.pkg_info[item["name"]]["status"]=="installed":
+							pkgs_installed=pkgs_installed+item["name"]+" "
 						pkgs_available=pkgs_available+item["name"]+" "
 						if item["default_pkg"]:
 							pkgs_default=pkgs_default+item["name"]+" "
@@ -94,7 +97,7 @@ class EPIC(object):
 							for item in self.remote_install:
 								self.epicore.packages_selected.append(item["name"])
 
-		return depends,pkgs_available,pkgs_default,pkgs_selected
+		return depends,pkgs_available,pkgs_default,pkgs_installed,pkgs_selected
 
 	#def get_info			
 
@@ -132,7 +135,7 @@ class EPIC(object):
 
 
 		if checksystem:
-			depends,pkgs_available,pkgs_default,self.pkgs=self.get_info(show_all)
+			depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs=self.get_info(show_all)
 
 			epi_conf=self.epicore.epiFiles[0]
 			status=epi_conf["status"]
@@ -163,13 +166,22 @@ class EPIC(object):
 					print ("     - All packages are selected by default to be installed")
 					print ("     - If you want to install only some packages indicate their names separated by space")
 			
+				if pkgs_installed=="":
+					print("     - Packages already installed: None")
+				else:
+					if pkgs_installed==pkgs_available:
+						print("     - Packages already installed: all")
+					else:
+						print("     - Packages already installed: "+pkgs_installed)
+
 			else:
 				if pkgs_available!="":
 					print ("     - Application: " + pkgs_available)
 				else:		
 					print ("     - Application not availabled to install/uninstall via terminal. Use epi-gtk for this")
 					return 0
-			print ("     - Status: " + status)
+				print ("     - Status: " + status)
+				
 			print ("     - Uninstall process availabled: " + self.uninstall)
 			if len(depends)>0:
 				print ("     - Additional application required: " + depends)
