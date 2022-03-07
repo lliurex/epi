@@ -1,3 +1,9 @@
+epi (0.4.26) focal; urgency=medium
+
+  * Show packages already installed in epic
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 07 Mar 2022 13:48:23 +0100
+
 epi (0.4.25) focal; urgency=medium
 
   * Support zmd with multiple epi
