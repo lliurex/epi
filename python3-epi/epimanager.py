@@ -30,7 +30,6 @@ class EpiManager:
 		storeBus=dbus.SystemBus()
 		storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
 		self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
-		#self.storeManager=StoreManager.StoreManager(autostart=False)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
@@ -229,17 +228,13 @@ class EpiManager:
 
 				if type_epi!="localdeb":
 
-					pkg=item.get("key_store",item.get("name"))
+					pkg=item.get("key_store",item.get("name",""))
 					pkginfo=showMethod(pkg,"")
 					info=""
-					data={}
 					try:
 						info=json.loads(pkginfo)[0]
 					except:
 						status=self.check_pkg_status(app,pkg_type,order)		
-					data["info"]=[]
-					if info:
-						data["info"].append(json.loads(info))
 
 					if info:
 						data=json.loads(info)
@@ -250,10 +245,11 @@ class EpiManager:
 						debian_name=data.get("package",data.get("pkgname",''))
 						component=data.get("component",'')
 
-						status=self.check_pkg_status(app,pkg_type,order)
-						if not self.getStatus_byscript and status!="installed":
-							if (data.get("state").get("package",1)) !="0":
-								status=data["state"]
+						#status=self.check_pkg_status(app,pkg_type,order)
+						#if not self.getStatus_byscript and status!="installed":
+						status="available"
+						if data.get("state",{}).get("package",1)=="0":
+							status="installed"
 					else:
 						status=self.check_pkg_status(app,pkg_type,order)	
 				else:
