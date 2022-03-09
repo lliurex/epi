@@ -27,8 +27,12 @@ class EpiManager:
 			self.debug=0
 		
 		storeBus=dbus.SystemBus()
-		storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
-		self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
+		try:
+			storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
+			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
+		except Exception as e:
+			self.dbusStore=None
+			print(e)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
@@ -209,7 +213,11 @@ class EpiManager:
 			self.getStatus_byscript=False
 			pkg_info={}
 						
-			showMethod=self.dbusStore.get_dbus_method('show')                            
+			if self.dbusStore:
+				showMethod=self.dbusStore.get_dbus_method('show')                            
+			else:
+				def showMethod(*args):
+					pass
 			for item in pkg_list:
 				app=item["name"]
 				name=""
