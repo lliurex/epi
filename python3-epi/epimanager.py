@@ -245,10 +245,8 @@ class EpiManager:
 						debian_name=data.get("package",data.get("pkgname",''))
 						component=data.get("component",'')
 
-						#status=self.check_pkg_status(app,pkg_type,order)
-						#if not self.getStatus_byscript and status!="installed":
 						status="available"
-						if data.get("state",{}).get("package",1)=="0":
+						if (data.get("state",{}).get("package",1)=="0") and (data.get("state",{}).get("zomando",0)!="1"):
 							status="installed"
 					else:
 						status=self.check_pkg_status(app,pkg_type,order)	
