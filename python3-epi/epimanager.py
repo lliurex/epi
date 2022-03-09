@@ -8,7 +8,6 @@ import sys
 import json
 import platform
 import tempfile
-import time
 import datetime
 import urllib.request
 
@@ -211,7 +210,6 @@ class EpiManager:
 			pkg_info={}
 						
 			showMethod=self.dbusStore.get_dbus_method('show')                            
-			print(time.process_time())
 			for item in pkg_list:
 				app=item["name"]
 				name=""
@@ -228,7 +226,7 @@ class EpiManager:
 
 				if type_epi!="localdeb":
 
-					pkg=item.get("key_store",item.get("name",""))
+					pkg=item.get("name","")
 					pkginfo=showMethod(pkg,"")
 					info=""
 					try:
@@ -268,7 +266,6 @@ class EpiManager:
 				pkg_info[app]["summary"]=summary
 				pkg_info[app]["type"]=pkg_type
 
-			print(time.process_time())
 			return pkg_info
 
 	#def get_store_info			
