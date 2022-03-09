@@ -12,7 +12,7 @@ import time
 import datetime
 import urllib.request
 
-import lliurexstore.storeManager as StoreManager
+import json, dbus
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
 import n4d.client as client
@@ -27,7 +27,10 @@ class EpiManager:
 		else:	
 			self.debug=0
 		
-		self.storeManager=StoreManager.StoreManager(autostart=False)
+		storeBus=dbus.SystemBus()
+		storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
+		self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
+		#self.storeManager=StoreManager.StoreManager(autostart=False)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
@@ -208,6 +211,8 @@ class EpiManager:
 			self.getStatus_byscript=False
 			pkg_info={}
 						
+			showMethod=self.dbusStore.get_dbus_method('show')                            
+			print(time.process_time())
 			for item in pkg_list:
 				app=item["name"]
 				name=""
@@ -223,38 +228,33 @@ class EpiManager:
 					pkg_type=type_epi
 
 				if type_epi!="localdeb":
+
+					pkg=item.get("key_store",item.get("name"))
+					pkginfo=showMethod(pkg,"")
+					info=""
+					data={}
 					try:
-						pkg=item["key_store"]
-						action="info"
-						self.storeManager.execute_action(action,pkg)
-						while self.storeManager.is_action_running(action):
-							time.sleep(0.2)
-
-						ret=self.storeManager.get_status(action)
-
-						if ret["status"]==0:
-							data=self.storeManager.get_result(action)
-
-							if len(data)>0:
-
-								description=data["info"][0]["description"]
-								icon=data["info"][0]["icon"]
-								name=data["info"][0]["name"]
-								summary=data["info"][0]["summary"]
-								debian_name=data["info"][0]["package"]
-								component=data["info"][0]["component"]
-
-								status=self.check_pkg_status(app,pkg_type,order)
-								if not self.getStatus_byscript and status!="installed":
-									if (data["info"][0]["state"]) !="":
-										status=data["info"][0]["state"]
-
-							else:
-								status=self.check_pkg_status(app,pkg_type,order)		
-						else:
-							status=self.check_pkg_status(app,pkg_type,order)	
-					
+						info=json.loads(pkginfo)[0]
 					except:
+						status=self.check_pkg_status(app,pkg_type,order)		
+					data["info"]=[]
+					if info:
+						data["info"].append(json.loads(info))
+
+					if info:
+						data=json.loads(info)
+						description=data.get("description","")
+						icon=data.get("icon","")
+						name=data.get("name","")
+						summary=data.get("summary","")
+						debian_name=data.get("package",data.get("pkgname",''))
+						component=data.get("component",'')
+
+						status=self.check_pkg_status(app,pkg_type,order)
+						if not self.getStatus_byscript and status!="installed":
+							if (data.get("state").get("package",1)) !="0":
+								status=data["state"]
+					else:
 						status=self.check_pkg_status(app,pkg_type,order)	
 				else:
 					data=self.get_localdeb_info(app,order)	
@@ -274,6 +274,7 @@ class EpiManager:
 				pkg_info[app]["summary"]=summary
 				pkg_info[app]["type"]=pkg_type
 
+			print(time.process_time())
 			return pkg_info
 
 	#def get_store_info			
