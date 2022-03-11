@@ -172,7 +172,8 @@ class EpiManager:
 			pkg_list=[]
 			pkg_list=tmp_list[item]["pkg_list"]
 			type_epi=tmp_list[item]["type"]
-			info=self.get_store_info(pkg_list,item,type_epi)
+			script=self.check_getStatus_byScript(item)
+			info=self.get_store_info(pkg_list,item,type_epi,script)
 
 			cont=0
 
@@ -207,9 +208,8 @@ class EpiManager:
 	#def get_pkg_info				
 							
 
-	def get_store_info(self,pkg_list,order,type_epi):			
+	def get_store_info(self,pkg_list,order,type_epi,script):			
 
-			self.getStatus_byscript=False
 			pkg_info={}
 						
 			for item in pkg_list:
@@ -248,18 +248,18 @@ class EpiManager:
 								debian_name=data["info"][0]["package"]
 								component=data["info"][0]["component"]
 
-								status=self.check_pkg_status(app,pkg_type,order)
-								if not self.getStatus_byscript and status!="installed":
+								status=self.check_pkg_status(app,pkg_type,script)
+								if script=="" and status!="installed":
 									if (data["info"][0]["state"]) !="":
 										status=data["info"][0]["state"]
 
 							else:
-								status=self.check_pkg_status(app,pkg_type,order)		
+								status=self.check_pkg_status(app,pkg_type,script)		
 						else:
-							status=self.check_pkg_status(app,pkg_type,order)	
+							status=self.check_pkg_status(app,pkg_type,script)	
 					
 					except:
-						status=self.check_pkg_status(app,pkg_type,order)	
+						status=self.check_pkg_status(app,pkg_type,script)	
 				else:
 					data=self.get_localdeb_info(app,order)	
 					summary=data[0]
@@ -282,45 +282,32 @@ class EpiManager:
 
 	#def get_store_info			
 
-	def check_pkg_status(self,pkg,pkg_type,order=None):
+	def check_pkg_status(self,pkg,pkg_type,script):
 	
-		try:
-			if self.epiFiles[order]["script"]["getStatus"]:
-				self.getStatus_byscript=True
-		except:
-			self.getStatus_byscript=False
-			pass
-
-		if self.getStatus_byscript:
-			if order !=None:
+		if script!="":
+			if pkg_type=="file":
 				try:
-					script=self.epiFiles[order]["script"]["name"]
-					if os.path.exists(script):
-						cmd=script +' getStatus ' + pkg;
-						p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-						poutput=p.communicate()
-						self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
+					cmd=script +' getStatus ' + pkg;
+					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+					poutput=p.communicate()
+					self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
 
-						if len(poutput)>0:
-							if poutput[0].decode("utf-8").split("\n")[0]=='0':
-								return "installed"
-							elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-								return self._get_pkg_status(pkg,pkg_type)
+					if len(poutput)>0:
+						if poutput[0].decode("utf-8").split("\n")[0]=='0':
+							return "installed"
+						elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
+							return self._get_pkg_status(pkg,pkg_type)
 
 				except Exception as e:
-					self.getStatus_byscript=False
-					
-					pass
-		else:					
-			return self._get_pkg_status(pkg,pkg_type)
-		
-				
-		return "available"	
+					return "available"
+						
+		return self._get_pkg_status(pkg,pkg_type)
 
 	#def check_pkg_status	
 
 	def _get_pkg_status(self,pkg,pkg_type):
 
+		cmd=""
 		if pkg_type in ["apt","deb","localdeb"]:
 			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
 		elif pkg_type=="snap":
@@ -335,6 +322,8 @@ class EpiManager:
 
 		if len(poutput)>0:
 			return "installed"
+		else:
+			return "available"
 
 	#def _get_pkg_status
 
@@ -1130,19 +1119,25 @@ class EpiManager:
 				os.remove(token)
 
 		elif epi_type !="file" or file_with_list:
+			if epi_type=="mix":
+				if action=="install":
+					order=self.epi_order
+				else:
+					order=0
+			else:
+				if epi_type=="file":
+					order=0
+				else:
+					order=""
+			
+			script=self.check_getStatus_byScript(order)
+
 			for item in pkgs:
 				if item["name"] in self.packages_selected:
 					if epi_type=="mix":
-						if action=="install":
-							status=self.check_pkg_status(item["name"],item["type"],self.epi_order)
-						else:
-							status=self.check_pkg_status(item["name"],item["type"],0)
-
+						status=self.check_pkg_status(item["name"],item["type"],script)
 					else:
-						if epi_type=="file":
-							status=self.check_pkg_status(item["name"],epi_type,0)
-						else:
-							status=self.check_pkg_status(item["name"],epi_type)
+						status=self.check_pkg_status(item["name"],epi_type,script)
 
 				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
@@ -1520,6 +1515,23 @@ class EpiManager:
 			return True
 
 	#def is_zmd_service
+
+	def check_getStatus_byScript(self,order):
+
+		script=""
+		if order!="":
+			try:
+				tmp_script=self.epiFiles[order]["script"]["name"]
+				if os.path.exists(tmp_script):
+					if self.epiFiles[order]["script"]["getStatus"]:
+						script=tmp_script
+			except Exception as e:
+				pass
+
+		return script
+
+	#def check_getStatus_byScript
+
 #class EpiManager
 
 
