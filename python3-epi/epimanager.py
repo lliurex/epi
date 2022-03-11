@@ -210,7 +210,7 @@ class EpiManager:
 
 	def get_store_info(self,pkg_list,order,type_epi):			
 
-			self.getStatus_byscript=False
+			#self.getStatus_byscript=False
 			pkg_info={}
 						
 			if self.dbusStore:
@@ -240,7 +240,7 @@ class EpiManager:
 					try:
 						info=json.loads(pkginfo)[0]
 					except:
-						status=self.check_pkg_status(app,pkg_type,order)		
+						self._show_debug("get_store_info","pkg: %s; error parsing json"%(pkg))
 
 					if info:
 						data=json.loads(info)
@@ -251,9 +251,10 @@ class EpiManager:
 						debian_name=data.get("package",data.get("pkgname",''))
 						component=data.get("component",'')
 
-						status="available"
 						if (data.get("state",{}).get("package",1)=="0") and (data.get("state",{}).get("zomando",0)!="1"):
 							status="installed"
+						else:
+							status=self.check_pkg_status(app,pkg_type,order)	
 					else:
 						status=self.check_pkg_status(app,pkg_type,order)	
 				else:
