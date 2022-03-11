@@ -7,12 +7,10 @@ import subprocess
 import sys
 import json
 import platform
-#import socket
 import tempfile
 import time
 import datetime
 import urllib.request
-
 import lliurexstore.storeManager as StoreManager
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
@@ -70,7 +68,6 @@ class EpiManager:
 		self.init_n4d_client()
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
-		#self.read_conf(epi_file)
 		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
@@ -132,7 +129,6 @@ class EpiManager:
 				else:
 					self._show_debug("read_conf","Epi files is empty: %s"%(epi_file))
 					return {"status":False,"error":"empty"}
-		
 
 			except Exception as e:
 				self._show_debug("read_conf","Epi file is not a valid json. Error: %s"%(str(e)))
@@ -174,7 +170,6 @@ class EpiManager:
 			type_epi=tmp_list[item]["type"]
 			script=self.check_getStatus_byScript(item)
 			info=self.get_store_info(pkg_list,item,type_epi,script)
-
 			cont=0
 
 			for element in pkg_list:
@@ -202,12 +197,11 @@ class EpiManager:
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
 					
-		
 		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
 		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
+	
 	#def get_pkg_info				
 							
-
 	def get_store_info(self,pkg_list,order,type_epi,script):			
 
 			pkg_info={}
@@ -362,7 +356,6 @@ class EpiManager:
 	
 	#def get_localdeb_info 	
 
-
 	def check_locks(self):
 
 		'''
@@ -432,7 +425,6 @@ class EpiManager:
 
 	#def check_root		
 
-
 	def required_root (self):
 
 		cont=0
@@ -454,7 +446,6 @@ class EpiManager:
 			return False		
 
 	#def required_root		
-
 
 	def required_eula(self):
 
@@ -543,7 +534,6 @@ class EpiManager:
 									
 							else:
 								update_repo=True
-								
 
 						else:
 							update_repo=True
@@ -552,7 +542,6 @@ class EpiManager:
 							cmd="LANG=C LANGUAGE=en apt-get update; "
 							self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
 							return cmd		
-
 		
 		self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
 
@@ -561,7 +550,6 @@ class EpiManager:
 	#def check_update_repos	
 
 	def check_arquitecture(self):
-
 
 		self.force32=self.epi_conf['force32']
 		cmd=""
@@ -613,11 +601,9 @@ class EpiManager:
 										cmd=cmd+command
 										self.add_key=True
 							except Exception as e:
-								#print (str(e))
 								pass
 
 				f.close()
-				#self.update=True
 				if not self.add_key:
 					cmd=cmd+' apt-get update;'
 
@@ -625,7 +611,6 @@ class EpiManager:
 		return cmd		
 
 	#def add_repository_keys	
-
 
 	def get_app_version(self,item=None):
 
@@ -737,7 +722,6 @@ class EpiManager:
 
 	def check_download(self):
 
-		
 		result=True
 		content=""
 
@@ -792,7 +776,6 @@ class EpiManager:
 		return cmd		
 
 	#def preinstall_app	
-	
 
 	def check_preinstall(self):
 		
@@ -815,7 +798,6 @@ class EpiManager:
 	
 		return result
 
-
 	#def check_preinstall_app	
 
 	def install_app(self,calledfrom):
@@ -824,11 +806,6 @@ class EpiManager:
 		pkgs_apt=0
 		add_i386=""
 		cmd=""
-		
-		'''
-		if not self.arquitecture:
-			add_i386=self.check_arquitecture()
-		'''
 	
 		if self.type=="mix":
 			result_mix=self._check_epi_mix_content(calledfrom)
@@ -843,8 +820,6 @@ class EpiManager:
 			cmd_flatpak=result_mix[8]
 		
 		if self.type=="apt" or pkgs_apt>0:
-			#update_repos=self.check_update_repos()
-			#cmd=add_i386+update_repos+"apt-get install --reinstall --allow-downgrades --yes "
 			cmd=self._get_install_cmd_base(calledfrom,"apt")
 			
 		if self.type=="apt":	
@@ -900,7 +875,6 @@ class EpiManager:
 						if cmd_flatpak!="":
 							cmd_flatpak+="%s "%item["name"] 
 
-
 			if cmd_dpkg!="":
 				if cmd!="":
 					cmd=cmd+"; "+cmd_dpkg
@@ -940,7 +914,6 @@ class EpiManager:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
 					cmd=cmd + app +" "
-
 
 		cmd=cmd+";"
 
@@ -1075,7 +1048,6 @@ class EpiManager:
 		pkgs={}
 		file_with_list=False
 
-
 		if action=="install":
 			epi_type=self.type
 			if epi_type == "file":
@@ -1139,7 +1111,6 @@ class EpiManager:
 					else:
 						status=self.check_pkg_status(item["name"],epi_type,script)
 
-				#if item["name"] in self.packages_selected:
 					dpkg_status[item["name"]]=status
 					if status!="installed":
 						count+=1
@@ -1148,7 +1119,6 @@ class EpiManager:
 						#if status=="installed":
 						pkgs_installed+=1			
 									
-
 			if action=="install":
 				if count==0:
 					result=True
@@ -1163,7 +1133,6 @@ class EpiManager:
 						result=False
 				else:
 					resul=False
-				
 
 				if pkgs_installed>0:
 					self.partial_installed=True
@@ -1173,9 +1142,7 @@ class EpiManager:
 		self._show_debug("check_install_remove","Action: %s - Result: %s - Dpkg Status: %s - Token content: %s"%(action,result,dpkg_status,content))
 
 		return dpkg_status,result			
-
-		
-		
+	
 	#def check_install_remove	
 
 	def postinstall_app(self):
@@ -1364,7 +1331,6 @@ class EpiManager:
 						except Exception as e:
 							pass	
 						
-	
 	#def list_available_epi	
 
 	def check_remote_epi(self,epi):
