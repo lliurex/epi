@@ -12,11 +12,18 @@ _epic()
     opts="showinfo showlist install uninstall help"
 
     case "${prev}" in 
-        install | uninstall)
-            local running="-u --unattended -nc --nocheck -d --debug"
-            COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+        showinfo | install | uninstall)
+            local epis=$(epic showlist)
+            if [[ $epis == *"List of all epi"* ]];then
+                epis=${epis//"[EPIC]: List of all epi files that can be installed with EPIC: "/}
+                epis=${epis//,/}
+                COMPREPLY=( $(compgen -W "${epis}" -- ${cur}) )
+            else
+                COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+            fi
             return 0
-            ;;
+        ;;
+
         *)
            COMPREPLY=($(compgen -W "${opts}" -- ${cur}))  
            return 0
