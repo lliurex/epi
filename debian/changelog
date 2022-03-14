@@ -1,3 +1,9 @@
+epi (0.4.27) focal; urgency=medium
+
+  * Improve rebost integration
+
+ -- Juanma1980 <juanma1980@gmail.com>  Mon, 14 Mar 2022 15:54:18 +0100
+
 epi (0.4.26) focal; urgency=medium
 
   * Show packages already installed in epic
