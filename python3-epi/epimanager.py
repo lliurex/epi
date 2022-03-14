@@ -243,20 +243,21 @@ class EpiManager:
 						self._show_debug("get_store_info","pkg: %s; error parsing json"%(pkg))
 
 					if info:
-						data=json.loads(info)
+						data={}
+						try:
+							data=json.loads(info)
+						except:
+							self._show_debug("get_store_info","pkg: %s; error parsing pkgdata json"%(pkg))
 						description=data.get("description","")
 						icon=data.get("icon","")
 						name=data.get("name","")
 						summary=data.get("summary","")
 						debian_name=data.get("package",data.get("pkgname",''))
 						component=data.get("component",'')
-
+						#Special check for zomandos
 						if (data.get("state",{}).get("package",1)=="0") and (data.get("state",{}).get("zomando",0)!="1"):
 							status="installed"
-						else:
-							status=self.check_pkg_status(app,pkg_type,order)	
-					else:
-						status=self.check_pkg_status(app,pkg_type,order)	
+					status=self.check_pkg_status(app,pkg_type,order)	
 				else:
 					data=self.get_localdeb_info(app,order)	
 					summary=data[0]
