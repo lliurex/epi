@@ -8,11 +8,10 @@ import sys
 import json
 import platform
 import tempfile
-import time
 import datetime
 import urllib.request
 
-import lliurexstore.storeManager as StoreManager
+import json, dbus
 import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
 import n4d.client as client
@@ -27,7 +26,13 @@ class EpiManager:
 		else:	
 			self.debug=0
 		
-		self.storeManager=StoreManager.StoreManager(autostart=False)
+		storeBus=dbus.SystemBus()
+		try:
+			storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
+			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
+		except Exception as e:
+			self.dbusStore=None
+			print(e)
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
@@ -205,9 +210,14 @@ class EpiManager:
 
 	def get_store_info(self,pkg_list,order,type_epi):			
 
-			self.getStatus_byscript=False
+			#self.getStatus_byscript=False
 			pkg_info={}
 						
+			if self.dbusStore:
+				showMethod=self.dbusStore.get_dbus_method('show')                            
+			else:
+				def showMethod(*args):
+					pass
 			for item in pkg_list:
 				app=item["name"]
 				name=""
@@ -223,39 +233,31 @@ class EpiManager:
 					pkg_type=type_epi
 
 				if type_epi!="localdeb":
+
+					pkg=item.get("name","")
+					pkginfo=showMethod(pkg,"")
+					info=""
 					try:
-						pkg=item["key_store"]
-						action="info"
-						self.storeManager.execute_action(action,pkg)
-						while self.storeManager.is_action_running(action):
-							time.sleep(0.2)
-
-						ret=self.storeManager.get_status(action)
-
-						if ret["status"]==0:
-							data=self.storeManager.get_result(action)
-
-							if len(data)>0:
-
-								description=data["info"][0]["description"]
-								icon=data["info"][0]["icon"]
-								name=data["info"][0]["name"]
-								summary=data["info"][0]["summary"]
-								debian_name=data["info"][0]["package"]
-								component=data["info"][0]["component"]
-
-								status=self.check_pkg_status(app,pkg_type,order)
-								if not self.getStatus_byscript and status!="installed":
-									if (data["info"][0]["state"]) !="":
-										status=data["info"][0]["state"]
-
-							else:
-								status=self.check_pkg_status(app,pkg_type,order)		
-						else:
-							status=self.check_pkg_status(app,pkg_type,order)	
-					
+						info=json.loads(pkginfo)[0]
 					except:
-						status=self.check_pkg_status(app,pkg_type,order)	
+						self._show_debug("get_store_info","pkg: %s; error parsing json"%(pkg))
+
+					if info:
+						data={}
+						try:
+							data=json.loads(info)
+						except:
+							self._show_debug("get_store_info","pkg: %s; error parsing pkgdata json"%(pkg))
+						description=data.get("description","")
+						icon=data.get("icon","")
+						name=data.get("name","")
+						summary=data.get("summary","")
+						debian_name=data.get("package",data.get("pkgname",''))
+						component=data.get("component",'')
+						#Special check for zomandos
+						if (data.get("state",{}).get("package",1)=="0") and (data.get("state",{}).get("zomando",0)!="1"):
+							status="installed"
+					status=self.check_pkg_status(app,pkg_type,order)	
 				else:
 					data=self.get_localdeb_info(app,order)	
 					summary=data[0]
