@@ -14,7 +14,8 @@ _epic()
     case "${prev}" in 
         install | uninstall)
             local running="-u --unattended -nc --nocheck -d --debug"
-            COMPREPLY=( $(compgen -W "${running}" -- ${cur}) )
+            local names=$(epic showlist)
+            COMPREPLY=( $(compgen -W "${running}" "${names}" -- ${cur}) )
             return 0
             ;;
         *)
