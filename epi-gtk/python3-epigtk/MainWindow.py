@@ -194,7 +194,6 @@ class MainWindow:
 
 		self.init_threads()
 
-
 		self.checking_system_t.start()
 		self.checking_system_t.launched=True	
 
@@ -241,38 +240,6 @@ class MainWindow:
 	
 	#def load_info
 
-	def pulsate_check_url(self):
-
-		end_check=False
-
-		if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
-			return True
-		else:
-			if not self.first_connection and not self.second_connection:
-				if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
-					return True
-				else:
-					end_check=True
-			else:
-				end_check=True
-
-		if end_check:		
-			if self.first_connection or self.second_connection:
-			 	GLib.timeout_add(100,self.pulsate_checksystem)
-			 	return False
-			else:
-				msg_code=3
-				self.loadingBox.loading_spinner.stop()
-				msg_error=self.get_msg_text(msg_code)
-				self.write_log(msg_error+":"+self.connection[1])
-				self.loadingBox.loading_label.set_text(msg_error)
-				self.loadingBox.manage_loading_msg_box(False)
-				return False
-		
-		return True	 
-
-	#def pulsate_check_url
-			 
 	def checking_url1(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck1)
