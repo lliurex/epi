@@ -236,9 +236,9 @@ class EpiManager:
 				if type_epi!="localdeb":
 
 					pkg=item.get("name","")
-					pkginfo=showMethod(pkg,"")
 					info=""
 					try:
+						pkginfo=showMethod(pkg,"")
 						info=json.loads(pkginfo)[0]
 					except:
 						self._show_debug("get_store_info","pkg: %s; error parsing json"%(pkg))
