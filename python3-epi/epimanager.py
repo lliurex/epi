@@ -297,7 +297,7 @@ class EpiManager:
 							return "installed"
 						elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
 							return self._get_pkg_status(pkg,pkg_type)
-
+					return "available"		
 				except Exception as e:
 					return "available"
 						
@@ -347,15 +347,7 @@ class EpiManager:
 		except:
 			pass
 
-		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		poutput,perror=p.communicate()
-
-		if len(poutput)>0:
-			status="installed"	
-		else:
-			status="available"	
-
+		status=self._get_pkg_status(pkg,"localdeb")
 		data=[summary,description,status]
 		
 		return data					
@@ -1068,8 +1060,6 @@ class EpiManager:
 		pkgs={}
 		file_with_list=False	
 
-
-
 		if action=="install":
 			epi_type=self.type
 			if epi_type == "file":
@@ -1250,21 +1240,25 @@ class EpiManager:
 	def zerocenter_feedback(self,order,action,result=None):
 
 		zomando_name=self.zomando_name[order]
+		cmd=""
 
 		if zomando_name!="":
 			if action=="init":
 				cmd="zero-center add-pulsating-color " +zomando_name
-			elif action=="install":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
-					
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
-			elif action=="uninstall":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+			else:
+				if self.epiFiles[order]["selection_enabled"]["active"]:
+					if self.get_zmd_status(order)!=0:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+				elif action=="install":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+				elif action=="uninstall":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
 
 			os.system(cmd)		
 
