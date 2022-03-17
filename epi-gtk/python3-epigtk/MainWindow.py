@@ -189,19 +189,24 @@ class MainWindow:
 		self.stack.set_visible_child_name("loadingBox")	
 		self.stack.set_transition_duration(1000)
 		self.connection=[]
-		self.first_connection=""
-		self.second_connection=""
+		self.first_connection=False
+		self.second_connection=False
 
 		self.init_threads()
+
+		self.checking_system_t.start()
+		self.checking_system_t.launched=True	
 
 		if not self.no_check:
 			self.checking_url1_t.start()
 			self.checking_url1_t.launched=True
 			self.checking_url2_t.start()
 			self.checking_url2_t.launched=True
-			GLib.timeout_add(100,self.pulsate_check_url)
 		else:
-			GLib.timeout_add(100,self.pulsate_checksystem)
+			self.first_connection=True
+			self.second_connection=True
+
+		GLib.timeout_add(100,self.pulsate_checksystem)
 
 	#def init_process
 
@@ -235,38 +240,6 @@ class MainWindow:
 	
 	#def load_info
 
-	def pulsate_check_url(self):
-
-		end_check=False
-
-		if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
-			return True
-		else:
-			if not self.first_connection and not self.second_connection:
-				if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
-					return True
-				else:
-					end_check=True
-			else:
-				end_check=True
-
-		if end_check:		
-			if self.first_connection or self.second_connection:
-			 	GLib.timeout_add(100,self.pulsate_checksystem)
-			 	return False
-			else:
-				msg_code=3
-				self.loadingBox.loading_spinner.stop()
-				msg_error=self.get_msg_text(msg_code)
-				self.write_log(msg_error+":"+self.connection[1])
-				self.loadingBox.loading_label.set_text(msg_error)
-				self.loadingBox.manage_loading_msg_box(False)
-				return False
-		
-		return True	 
-
-	#def pulsate_check_url
-			 
 	def checking_url1(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck1)
@@ -283,54 +256,71 @@ class MainWindow:
 
 	def pulsate_checksystem(self):
 
+		end_check=False
 		error=False
-		aditional_info=""
+		url_error=False
 
-		if not self.checking_system_t.launched:
-			self.checking_system_t.start()
-			self.checking_system_t.launched=True
+		if not self.no_check:
+			if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
+				return True 
+			else:
+				if not self.first_connection and not self.second_connection:
+					if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
+						return True
+					else:
+						end_check=True
+				else:
+					end_check=True
+		else:
+			end_check=True
 
-		if self.checking_system_t.done:
-			if self.valid_json["status"]:	
-				if self.valid_script["status"]:		
-					if not self.required_root:
-						if len (self.lock_info)>0:
-							self.load_unlock_panel()
-							return False
-						else:
-							if self.test_install[0]!='':
-								if self.test_install[0]=='1':
-									error=True
-									msg_code=25
-								else:
-									self.load_depends_panel()
+		if end_check:
+			if self.checking_system_t.done:
+				if not self.first_connection and not self.second_connection:
+					msg_code=3
+					error=True
+					url_error=True
+				else:
+					if self.valid_json["status"]:	
+						if self.valid_script["status"]:		
+							if not self.required_root:
+								if len (self.lock_info)>0:
+									self.load_unlock_panel()
 									return False
-							else:		
-								self.load_info_panel()
-								return False
+								else:
+									if self.test_install[0]!='':
+										if self.test_install[0]=='1':
+											error=True
+											msg_code=25
+										else:
+											self.load_depends_panel()
+											return False
+									else:		
+										self.load_info_panel()
+										return False
+							else:
+								error=True
+								msg_code=2	
+						else:
+							error=True
+							if self.valid_script["error"]=="path":
+								msg_code=32
+							else:
+								msg_code=33				
 					else:
 						error=True
-						msg_code=2	
-				else:
-					error=True
-					if self.valid_script["error"]=="path":
-						msg_code=32
-					else:
-						msg_code=33				
-			else:
-				error=True
-				if self.valid_json["error"]=="path":
-					msg_code=1
-				elif self.valid_json["error"]=="json":
-					msg_code=18
-				else:
-					msg_code=34			
-		
+						if self.valid_json["error"]=="path":
+							msg_code=1
+						elif self.valid_json["error"]=="json":
+							msg_code=18
+						else:
+							msg_code=34			
+			
 		if error:
 			self.loadingBox.loading_spinner.stop()
 			msg_error=self.get_msg_text(msg_code)
-			if aditional_info!="":
-				self.write_log(msg_error+":"+aditional_info)
+			if url_error:
+				self.write_log(msg_error+":"+self.connection[1])
 			else:
 				self.write_log(msg_error)	
 			self.loadingBox.loading_label.set_text(msg_error)

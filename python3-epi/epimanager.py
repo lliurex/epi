@@ -32,7 +32,8 @@ class EpiManager:
 			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
 		except Exception as e:
 			self.dbusStore=None
-			print(e)
+			self._show_debug("storeProxy",str(e))
+		
 		self.dpkgUnlocker=DpkgUnlockerManager.DpkgUnlockerManager()
 		self.reposPath="/etc/apt/sources.list.d/"
 		self.sources_list="epi.list"
@@ -167,12 +168,16 @@ class EpiManager:
 		pkg_list=[]
 		self.pkg_info={}
 		tmp_list=self.epiFiles.copy()
+
+		if self.dbusStore:
+			self.showMethod=self.dbusStore.get_dbus_method('show')                            
 				
 		for item in tmp_list:
 			pkg_list=[]
 			pkg_list=tmp_list[item]["pkg_list"]
 			type_epi=tmp_list[item]["type"]
-			info=self.get_store_info(pkg_list,item,type_epi)
+			script=self.check_getStatus_byScript(item)
+			info=self.get_basic_info(pkg_list,item,type_epi,script)
 
 			cont=0
 
@@ -205,120 +210,107 @@ class EpiManager:
 		
 		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
 		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
-	#def get_pkg_info				
-							
+	
+	#def get_pkg_info
 
-	def get_store_info(self,pkg_list,order,type_epi):			
+	def get_basic_info(self,pkg_list,order,type_epi,script):			
 
-			#self.getStatus_byscript=False
-			pkg_info={}
-						
-			if self.dbusStore:
-				showMethod=self.dbusStore.get_dbus_method('show')                            
+		pkg_info={}
+					
+		for item in pkg_list:
+			app=item["name"]
+			name=""
+			summary=""
+			status=""
+			description=""
+			icon=""
+			debian_name=""
+			component=""
+			search=False
+
+			if type_epi=="mix":
+				pkg_type=item["type"]
 			else:
-				def showMethod(*args):
-					pass
-			for item in pkg_list:
-				app=item["name"]
-				name=""
-				summary=""
-				status=""
-				description=""
-				icon=""
-				debian_name=""
-				component=""
-				if type_epi=="mix":
-					pkg_type=item["type"]
-				else:
-					pkg_type=type_epi
+				pkg_type=type_epi
 
-				if type_epi!="localdeb":
+			if type_epi!="localdeb":
+				pkg=item.get("name","")
+				status=self.check_pkg_status(app,pkg_type,script)
+			else:
+				data=self.get_localdeb_info(app,order)	
+				summary=data[0]
+				description=data[1]
+				status=data[2]
+				name=item["name"]
+				debian_name=item["version"]["all"]	
+				search=True	
+			
+			pkg_info[app]={}
+			pkg_info[app]["debian_name"]=debian_name
+			pkg_info[app]["component"]=component
+			pkg_info[app]["status"]=status
+			pkg_info[app]["description"]=description
+			pkg_info[app]["icon"]=icon
+			pkg_info[app]["name"]=name
+			pkg_info[app]["summary"]=summary
+			pkg_info[app]["type"]=pkg_type
+			pkg_info[app]["search"]=search
 
-					pkg=item.get("name","")
-					pkginfo=showMethod(pkg,"")
-					info=""
-					try:
-						info=json.loads(pkginfo)[0]
-					except:
-						self._show_debug("get_store_info","pkg: %s; error parsing json"%(pkg))
+		return pkg_info
 
-					if info:
-						data={}
-						try:
-							data=json.loads(info)
-						except:
-							self._show_debug("get_store_info","pkg: %s; error parsing pkgdata json"%(pkg))
-						description=data.get("description","")
-						icon=data.get("icon","")
-						name=data.get("name","")
-						summary=data.get("summary","")
-						debian_name=data.get("package",data.get("pkgname",''))
-						component=data.get("component",'')
-						#Special check for zomandos
-						if (data.get("state",{}).get("package",1)=="0") and (data.get("state",{}).get("zomando",0)!="1"):
-							status="installed"
-					status=self.check_pkg_status(app,pkg_type,order)	
-				else:
-					data=self.get_localdeb_info(app,order)	
-					summary=data[0]
-					description=data[1]
-					status=data[2]
-					name=item["name"]
-					debian_name=item["version"]["all"]		
-				
-				pkg_info[app]={}
-				pkg_info[app]["debian_name"]=debian_name
-				pkg_info[app]["component"]=component
-				pkg_info[app]["status"]=status
-				pkg_info[app]["description"]=description
-				pkg_info[app]["icon"]=icon
-				pkg_info[app]["name"]=name
-				pkg_info[app]["summary"]=summary
-				pkg_info[app]["type"]=pkg_type
+	#def get_basic_info			
 
-			return pkg_info
+	def get_store_info(self,pkg):			
+
+		info=""
+		
+		self.pkg_info[pkg]["search"]=True
+
+		if self.dbusStore:
+			try:
+				pkginfo=self.showMethod(pkg,"")
+				info=json.loads(pkginfo)[0]
+
+				if info:
+					data=json.loads(info)
+					self.pkg_info[pkg]["description"]=data.get("description","")
+					self.pkg_info[pkg]["icon"]=data.get("icon","")
+					self.pkg_info[pkg]["name"]=data.get("name","")
+					self.pkg_info[pkg]["summary"]=data.get("summary","")
+					self.pkg_info[pkg]["debian_name"]=data.get("package",data.get("pkgname",''))
+					self.pkg_info[pkg]["component"]=data.get("component",'')
+			except:
+				self._show_debug("_get_store_info","pkg: %s; error parsing json"%(pkg))
+		
 
 	#def get_store_info			
 
-	def check_pkg_status(self,pkg,pkg_type,order=None):
+	def check_pkg_status(self,pkg,pkg_type,script):
 	
-		try:
-			if self.epiFiles[order]["script"]["getStatus"]:
-				self.getStatus_byscript=True
-		except Exception as e:
-			self.getStatus_byscript=False
-			pass
-
-		if self.getStatus_byscript:
-			if order !=None:
+		if script!="":
+			if pkg_type=="file":
 				try:
-					script=self.epiFiles[order]["script"]["name"]
-					if os.path.exists(script):
-						cmd=script +' getStatus ' + pkg;
-						p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-						poutput=p.communicate()
-						self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
+					cmd=script +' getStatus ' + pkg;
+					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+					poutput=p.communicate()
+					self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
 
-						if len(poutput)>0:
-							if poutput[0].decode("utf-8").split("\n")[0]=='0':
-								return "installed"
-							elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-								return self._get_pkg_status(pkg,pkg_type)
-
+					if len(poutput)>0:
+						if poutput[0].decode("utf-8").split("\n")[0]=='0':
+							return "installed"
+						elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
+							return self._get_pkg_status(pkg,pkg_type)
+					return "available"		
 				except Exception as e:
-					self.getStatus_byscript=False
-					
-					pass
-		else:					
-			return self._get_pkg_status(pkg,pkg_type)
-		
-				
-		return "available"	
+					return "available"
+						
+		return self._get_pkg_status(pkg,pkg_type)
 
 	#def check_pkg_status	
 
 	def _get_pkg_status(self,pkg,pkg_type):
 
+		cmd=""
 		if pkg_type in ["apt","deb","localdeb"]:
 			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
 		elif pkg_type=="snap":
@@ -333,6 +325,8 @@ class EpiManager:
 
 		if len(poutput)>0:
 			return "installed"
+		else:
+			return "available"
 
 	#def _get_pkg_status
 
@@ -356,15 +350,7 @@ class EpiManager:
 		except:
 			pass
 
-		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		poutput,perror=p.communicate()
-
-		if len(poutput)>0:
-			status="installed"	
-		else:
-			status="available"	
-
+		status=self._get_pkg_status(pkg,"localdeb")
 		data=[summary,description,status]
 		
 		return data					
@@ -1077,8 +1063,6 @@ class EpiManager:
 		pkgs={}
 		file_with_list=False	
 
-
-
 		if action=="install":
 			epi_type=self.type
 			if epi_type == "file":
@@ -1124,19 +1108,25 @@ class EpiManager:
 				os.remove(token)
 
 		elif epi_type !="file" or file_with_list:
+			if epi_type=="mix":
+				if action=="install":
+					order=self.epi_order
+				else:
+					order=0
+			else:
+				if epi_type=="file":
+					order=0
+				else:
+					order=""
+			
+			script=self.check_getStatus_byScript(order)
+
 			for item in pkgs:
 				if item["name"] in self.packages_selected:
 					if epi_type=="mix":
-						if action=="install":
-							status=self.check_pkg_status(item["name"],item["type"],self.epi_order)
-						else:
-							status=self.check_pkg_status(item["name"],item["type"],0)
-
+						status=self.check_pkg_status(item["name"],item["type"],script)
 					else:
-						if epi_type=="file":
-							status=self.check_pkg_status(item["name"],epi_type,0)
-						else:
-							status=self.check_pkg_status(item["name"],epi_type)
+						status=self.check_pkg_status(item["name"],epi_type,script)
 
 					dpkg_status[item["name"]]=status
 					if status!="installed":
@@ -1253,21 +1243,25 @@ class EpiManager:
 	def zerocenter_feedback(self,order,action,result=None):
 
 		zomando_name=self.zomando_name[order]
+		cmd=""
 
 		if zomando_name!="":
 			if action=="init":
 				cmd="zero-center add-pulsating-color " +zomando_name
-			elif action=="install":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
-					
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
-			elif action=="uninstall":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+			else:
+				if self.epiFiles[order]["selection_enabled"]["active"]:
+					if self.get_zmd_status(order)!=0:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+				elif action=="install":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+				elif action=="uninstall":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
 
 			os.system(cmd)		
 
@@ -1509,6 +1503,23 @@ class EpiManager:
 			return True
 
 	#def is_zmd_service
+
+	def check_getStatus_byScript(self,order):
+
+		script=""
+		if order!="":
+			try:
+				tmp_script=self.epiFiles[order]["script"]["name"]
+				if os.path.exists(tmp_script):
+					if self.epiFiles[order]["script"]["getStatus"]:
+						script=tmp_script
+			except Exception as e:
+				pass
+
+		return script
+
+	#def check_getStatus_byScript
+
 #class EpiManager
 
 
