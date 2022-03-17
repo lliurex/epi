@@ -93,9 +93,12 @@ class IconsManager:
 		if os.path.exists(os.path.join(path,icon)):
 			icon_file=os.path.join(path,icon)
 		else:
-			icon_file=self.get_icon(pkg,icon,component)
-			if icon_file=="" or "local_deb" in icon_file:
+			if component=="":
 				icon_file=self.package_icon
+			else:
+				icon_file=self.get_icon(pkg,icon,component)
+				if icon_file=="" or "local_deb" in icon_file:
+					icon_file=self.package_icon
 
 		return icon_file
 

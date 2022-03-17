@@ -15,7 +15,6 @@ import os
 import html2text
 import threading
 
-
 from . import settings
 import gettext
 gettext.textdomain(settings.TEXT_DOMAIN)
@@ -286,10 +285,10 @@ class EpiBox(Gtk.VBox):
 		info.set_name("INFO_APP_BUTTON")
 		info.connect("clicked",self.show_info_clicked,hbox)
 		
-		if self.core.epiManager.pkg_info[name]["summary"]!="":
-			info.set_tooltip_text(_("Press to view application information"))
-		else:
-			info.set_tooltip_text(_("Info not availabled"))
+		info.set_tooltip_text(_("Press to view application information"))
+		if self.core.epiManager.pkg_info[name]["search"]:
+			if self.core.epiManager.pkg_info[name]["summary"]=="":
+				info.set_tooltip_text(_("Info not availabled"))
 	
 		info.id=name
 		info.pkg=False
@@ -501,18 +500,59 @@ class EpiBox(Gtk.VBox):
 	def show_info_clicked(self,button,hbox):
 
 		try:
-			app=hbox.get_children()[2].id
+			self.app=hbox.get_children()[2].id
 		except:	
-			app=hbox.get_children()[2].get_text()
+			self.app=hbox.get_children()[2].get_text()
 
-		summary=self.core.epiManager.pkg_info[app]["summary"]
+		self.infoBtn=hbox.get_children()[4]
+
+		if not self.core.epiManager.pkg_info[self.app]["search"]:
+			load_msg=_("Searching information.Wait a moment...")
+			self.core.mainWindow.feedback_label.set_text(load_msg)
+			self.infoBtn.set_tooltip_text(load_msg)
+			self.get_store_info_t=threading.Thread(target=self.get_store_info,args=(self.app,))
+			self.get_store_info_t.daemon=True
+			self.get_store_info_t.start()
+			self.infoBtn.set_sensitive(False)
+			GLib.timeout_add(100,self.pulsate_get_store_info)
+		else:
+			self.show_info(self.core.epiManager.pkg_info[self.app]["summary"])
+	
+	#def show_info_clicked
+
+	def pulsate_get_store_info(self):
+
+		if self.get_store_info_t.is_alive():
+			return True
+
+		else:
+			self.core.mainWindow.feedback_label.set_text("")
+			self.infoBtn.set_sensitive(True)
+			summary=self.core.epiManager.pkg_info[self.app]["summary"]
+			if summary!="":
+				self.infoBtn.set_tooltip_text(_("Press to view application information"))
+				self.show_info(summary)
+			else:
+				self.infoBtn.set_tooltip_text(_("Information not availabled"))
+		
+		return False
+
+	#def pulsate_get_store_info
+
+	def get_store_info(self,pkg):
+
+		self.core.epiManager.get_store_info(pkg)
+
+	#def get_store_info
+
+	def show_info(self,summary):
 
 		if summary!="":
-			debian_name=self.core.epiManager.pkg_info[app]["debian_name"]
-			component=self.core.epiManager.pkg_info[app]["component"]
-			name=self.core.epiManager.pkg_info[app]["name"]
-			icon=self.core.epiManager.pkg_info[app]["icon"]
-			description=self.core.epiManager.pkg_info[app]["description"]
+			debian_name=self.core.epiManager.pkg_info[self.app]["debian_name"]
+			component=self.core.epiManager.pkg_info[self.app]["component"]
+			name=self.core.epiManager.pkg_info[self.app]["name"]
+			icon=self.core.epiManager.pkg_info[self.app]["icon"]
+			description=self.core.epiManager.pkg_info[self.app]["description"]
 
 			h=html2text.HTML2Text()
 			h.body_width=400
@@ -536,8 +576,8 @@ class EpiBox(Gtk.VBox):
 			self.core.mainWindow.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 			self.core.mainWindow.stack.set_visible_child_name("infoBox")
 
-	#def show_info_clicked
-	
+	#def show_info
+
 	def manage_application_cb(self,active):
 
 		for item in self.epi_list_box.get_children():
