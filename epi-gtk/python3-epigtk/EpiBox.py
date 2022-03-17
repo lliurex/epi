@@ -508,6 +508,7 @@ class EpiBox(Gtk.VBox):
 
 		if not self.core.epiManager.pkg_info[self.app]["search"]:
 			load_msg=_("Searching information.Wait a moment...")
+			self.core.mainWindow.manage_feedback_box(True)
 			self.core.mainWindow.feedback_label.set_text(load_msg)
 			self.infoBtn.set_tooltip_text(load_msg)
 			self.get_store_info_t=threading.Thread(target=self.get_store_info,args=(self.app,))

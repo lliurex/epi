@@ -1252,6 +1252,8 @@ class EpiManager:
 				if self.epiFiles[order]["selection_enabled"]["active"]:
 					if self.get_zmd_status(order)!=0:
 						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name
 				elif action=="install":
 					if result:
 						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
