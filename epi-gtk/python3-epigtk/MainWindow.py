@@ -3,9 +3,6 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Pango, GdkPixbuf, Gdk, Gio, GObject,GLib
-
-
-
 import signal
 import os
 import subprocess
@@ -15,8 +12,6 @@ import syslog
 import time
 import threading
 import tempfile
-
-
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -35,8 +30,6 @@ class MainWindow:
 		self.no_check=noCheck
 
 	#def init
-
-	
 	
 	def load_gui(self):
 		
@@ -104,7 +97,6 @@ class MainWindow:
 		self.stack.add_titled(self.terminalBox,"terminalBox","TerminalBox")
 
 		self.main_box.pack_start(self.stack,True,False,5)
-
 		
 		self.set_css_info()
 
@@ -113,7 +105,6 @@ class MainWindow:
 		self.init_threads()
 		
 		self.main_window.show_all()
-
 		self.next_button.hide()
 		self.apply_button.hide()
 		self.unlock_button.hide()
@@ -135,23 +126,18 @@ class MainWindow:
 		self.loadingBox.manage_loading_msg_box(True)
 		self.manage_feedback_box(True)
 
-
 		if self.epi_file!=None:
 			if self.epi_file!="--error":
 				self.init_process()
-				
 			else:	
 				self.deb_error()
 		else:
 			self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 			self.stack.set_visible_child_name("chooserBox")
 			
-		
-		
 	#def load_gui
 
 	def set_css_info(self):
-		
 		
 		self.style_provider=Gtk.CssProvider()
 		f=Gio.File.new_for_path(self.css_file)
@@ -162,7 +148,6 @@ class MainWindow:
 		self.feedback_label.set_name("MSG_LABEL")
 
 	#def set_css_info	
-				
 			
 	def connect_signals(self):
 		
@@ -174,7 +159,6 @@ class MainWindow:
 		self.next_button.connect("clicked",self.go_forward)
 		self.unlock_button.connect("clicked",self.unlock_clicked)
 	
-		
 	#def connect_signals
 
 	def go_forward(self,widget):
@@ -197,8 +181,8 @@ class MainWindow:
 		msg_error=self.get_msg_text(25)
 		self.loadingBox.loading_label.set_text(msg_error)
 		self.loadingBox.manage_loading_msg_box(False)
+	
 	#def deb_error	
-
 
 	def init_process(self):
 
@@ -209,21 +193,26 @@ class MainWindow:
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		self.stack.set_visible_child_name("loadingBox")	
 		self.stack.set_transition_duration(1000)
-		#GLib.timeout_add(100,self.pulsate_checksystem)
 		self.connection=[]
-		self.first_connection=""
-		self.second_connection=""
+		self.first_connection=False
+		self.second_connection=False
+
 		self.init_threads()
+
+		self.checking_system_t.start()
+		self.checking_system_t.launched=True	
+
 		if not self.no_check:
 			self.checking_url1_t.start()
 			self.checking_url1_t.launched=True
 			self.checking_url2_t.start()
 			self.checking_url2_t.launched=True
-			GLib.timeout_add(100,self.pulsate_check_url)
 		else:
-			GLib.timeout_add(100,self.pulsate_checksystem)
+			self.first_connection=True
+			self.second_connection=True
 
-	
+		GLib.timeout_add(100,self.pulsate_checksystem)
+
 	#def init_process
 
 	def init_threads(self):
@@ -247,159 +236,111 @@ class MainWindow:
 
 	#def init_threads	
 
-
 	def load_info(self):
 
 		self.epiBox.load_info()
 		
-		
 		if self.order>1:
 			self.show_depends=True
-			#self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
-			#self.epiBox.scrolledwindow.set_size_request(525,165)
-		'''
-		else:
-			if len(self.load_epi_conf[0]["pkg_list"])>1:
-				self.epiBox.scrolledwindow.set_size_request(525,160)
-			else:	
-				self.epiBox.scrolledwindow.set_size_request(525,90)
-		'''
 	
 	#def load_info
 
-	def pulsate_check_url(self):
-
-		end_check=False
-
-
-		if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
-			return True
-
-		else:
-			if not self.first_connection and not self.second_connection:
-				if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
-					return True
-				else:
-					end_check=True
-
-			else:
-				end_check=True
-
-
-		if end_check:		
-		
-			if self.first_connection or self.second_connection:
-			 	GLib.timeout_add(100,self.pulsate_checksystem)
-			 	return False
-			else:
-				msg_code=3
-				self.loadingBox.loading_spinner.stop()
-				#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
-				msg_error=self.get_msg_text(msg_code)
-				self.write_log(msg_error+":"+self.connection[1])
-				self.loadingBox.loading_label.set_text(msg_error)
-				self.loadingBox.manage_loading_msg_box(False)
-				return False
-		
-		return True	 
-
-	#def pulsate_check_url
-			 
 	def checking_url1(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck1)
 		self.first_connection=self.connection[0]
+	
 	#def checking_url1	
 
 	def checking_url2(self):
 
 		self.connection=self.core.epiManager.check_connection(self.core.epiManager.urltocheck2)
 		self.second_connection=self.connection[0]
+ 	
  	#def checking_url2
 
 	def pulsate_checksystem(self):
 
+		end_check=False
 		error=False
-		aditional_info=""
+		url_error=False
 
-		if not self.checking_system_t.launched:
-			self.checking_system_t.start()
-			self.checking_system_t.launched=True
+		if not self.no_check:
+			if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
+				return True 
+			else:
+				if not self.first_connection and not self.second_connection:
+					if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
+						return True
+					else:
+						end_check=True
+				else:
+					end_check=True
+		else:
+			end_check=True
 
-
-		if self.checking_system_t.done:
-
-			#if self.connection[0]:
-			if self.valid_json["status"]:	
-				if self.valid_script["status"]:		
-					
-					if not self.required_root:
-						if len (self.lock_info)>0:
-							self.load_unlock_panel()
-							return False
-															
-						else:
-							if self.test_install[0]!='':
-								if self.test_install[0]=='1':
-									error=True
-									msg_code=25
-								else:
-									self.load_depends_panel()
+		if end_check:
+			if self.checking_system_t.done:
+				if not self.first_connection and not self.second_connection:
+					msg_code=3
+					error=True
+					url_error=True
+				else:
+					if self.valid_json["status"]:	
+						if self.valid_script["status"]:		
+							if not self.required_root:
+								if len (self.lock_info)>0:
+									self.load_unlock_panel()
 									return False
-							else:		
-								self.load_info_panel()
-								return False
+								else:
+									if self.test_install[0]!='':
+										if self.test_install[0]=='1':
+											error=True
+											msg_code=25
+										else:
+											self.load_depends_panel()
+											return False
+									else:		
+										self.load_info_panel()
+										return False
+							else:
+								error=True
+								msg_code=2	
+						else:
+							error=True
+							if self.valid_script["error"]=="path":
+								msg_code=32
+							else:
+								msg_code=33				
 					else:
 						error=True
-						msg_code=2	
-					
-				else:
-					error=True
-					if self.valid_script["error"]=="path":
-						msg_code=32
-					else:
-						msg_code=33				
-			else:
-				error=True
-				if self.valid_json["error"]=="path":
-					msg_code=1
-				elif self.valid_json["error"]=="json":
-					msg_code=18
-				else:
-					msg_code=34			
-			'''		
-			else:
-				error=True
-				msg_code=3
-				aditional_info=self.connection[1]
-			'''					
-		
+						if self.valid_json["error"]=="path":
+							msg_code=1
+						elif self.valid_json["error"]=="json":
+							msg_code=18
+						else:
+							msg_code=34			
+			
 		if error:
 			self.loadingBox.loading_spinner.stop()
 			#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")	
 			msg_error=self.get_msg_text(msg_code)
-			if aditional_info!="":
-				self.write_log(msg_error+":"+aditional_info)
+			if url_error:
+				self.write_log(msg_error+":"+self.connection[1])
 			else:
 				self.write_log(msg_error)	
 			self.loadingBox.loading_label.set_text(msg_error)
 			self.loadingBox.manage_loading_msg_box(False)
 			return False
 
-
 		if self.checking_system_t.launched:
 			if not self.checking_system_t.done:
 				return True	
-
 
 	#def pulsate_checksystem			
 	
 	def checking_system(self):
 	
-		#time.sleep(1)
-		#self.connection=self.core.epiManager.check_connection()
-		
-		#if self.connection[0]:
 		self.valid_json=self.core.epiManager.read_conf(self.epi_file)
 		if self.valid_json["status"]:
 			self.valid_script=self.core.epiManager.check_script_file()
@@ -435,7 +376,6 @@ class MainWindow:
 				self.checking_system_t.done=True		
 		else:
 			self.checking_system_t.done=True	
-		#self.checking_system_t.done=True	
 
 	#def checking_system	
 
@@ -445,7 +385,6 @@ class MainWindow:
 
 		if "Lliurex-Up" in self.lock_info:
 			self.loadingBox.loading_spinner.hide()
-			#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
 			self.write_log("Lock info: The system is being updated")
 			msg=self.get_msg_text(19)
 			self.loadingBox.loading_label.set_text(msg)
@@ -466,13 +405,11 @@ class MainWindow:
 				self.loadingBox.loading_spinner.hide()
 				self.unlock_button.show()
 				msg=self.get_msg_text(22)
-				#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
 				self.loadingBox.loading_label.set_text(msg)
 				self.loadingBox.manage_loading_msg_box(False)
 
 	#def load_unlock_panel			
 				
-	
 	def is_worker(self):
 	
 		if self.retry<self.time_out:
@@ -486,7 +423,6 @@ class MainWindow:
 			if len(locks)>0:
 				self.loadingBox.loading_spinner.hide()
 				self.loadingBox.manage_loading_msg_box(False)
-				#self.loadingBox.loading_label.set_name("MSG_ERROR_LABEL")
 				if "Lliurex-Up" in self.lock_info:
 					self.write_log("Lock checking finished: The system is being updated")
 					msg=self.get_msg_text(19)
@@ -521,7 +457,6 @@ class MainWindow:
 	
 		self.unlock_button.set_sensitive(False)
 		msg=self.get_msg_text(23)
-		#self.loadingBox.loading_label.set_name("MSG_LABEL")
 		self.loadingBox.loading_label.set_text(msg)
 		self.init_threads()
 		self.loadingBox.loading_spinner.show()
@@ -529,8 +464,6 @@ class MainWindow:
 
 	#def unlock_clicked	
 		
-
-
 	def pulsate_unlock_process(self):
 
 		if not self.unlock_process_t.launched:
@@ -567,7 +500,6 @@ class MainWindow:
 
 	#def unlock_process				
 
-
 	def load_info_panel(self):
 
 		self.load_info()
@@ -576,7 +508,6 @@ class MainWindow:
 		if self.load_epi_conf[0]["status"]=="installed":
 			zmd_configured=self.core.epiManager.get_zmd_status(0)
 			if zmd_configured==1:
-				#self.epiBox.terminal_label.show()
 				msg_code=0
 				msg=self.get_msg_text(msg_code)
 				self.feedback_label.set_text(msg)
@@ -592,7 +523,6 @@ class MainWindow:
 				self.feedback_label.set_text(msg)
 				self.manage_feedback_box(False,"warning")
 
-
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
 
@@ -601,7 +531,6 @@ class MainWindow:
 	def load_depends_panel(self):
 
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-		#self.dependsBox.deb_depends_label.set_name("MSG_ERROR_LABEL")
 		if self.test_install[1]!="":
 			msg=self.get_msg_text(26)
 			msg_error=msg+"\n"+str(self.test_install[1])
@@ -613,7 +542,6 @@ class MainWindow:
 		self.dependsBox.depends_label.set_text(msg_error)
 		self.stack.set_visible_child_name("dependsBox")
 		
-
 	#def load_depends_panel
 		
 	def check_remove_script(self):
@@ -647,12 +575,10 @@ class MainWindow:
 
 				else:
 					self.uninstall_button.hide()		
-			
 		else:
 			self.uninstall_button.hide()	
 
 	#def show_remove_button			
-
 
 	def show_apply_uninstall_buttons(self):
 
@@ -666,9 +592,6 @@ class MainWindow:
 					self._get_label_install_button("eula")
 			else:	
 				self._get_label_install_button("install")
-
-			
-			#self.apply_button.set_sensitive(True)
 			
 			if self.core.epiManager.partial_installed:
 				if not self.epiBox.show_terminal:
@@ -676,16 +599,12 @@ class MainWindow:
 					#self.uninstall_button.set_sensitive(True)
 			else:	
 				self.uninstall_button.hide()
-
 		else:
 			self.eula_accepted=True
 			self._get_label_install_button("reinstall")
-			#self.apply_button.set_sensitive(True)
 			if self.remove_btn:
 				if not self.epiBox.show_terminal:
 					self.uninstall_button.show()
-					#self.uninstall_button.set_sensitive(True)
-
 			else:
 				self.uninstall_button.hide()			
 
@@ -740,12 +659,10 @@ class MainWindow:
 		self.check_postinstall_launched=False
 		self.check_postinstall_done=False
 
-
 	#def init_install_process	
 
 	def spinner_sync(self,order):
 
-		
 		if self.sp_cont>40:
 			self.sp_cont=0
 				
@@ -773,14 +690,12 @@ class MainWindow:
 		elif self.sp_cont==35:
 			self.img=self.sp8			
 
-	
 		elements=self.epiBox.update_icons[order]
 		for item in elements:
 			if item["pkg_name"] not in self.core.epiManager.blockedRemovePkgsList:
 				item['icon_status'].set_from_file(self.img)
 			
 	#def spinner_sync						
-
 
 	def apply_button_clicked(self,widget):
 
@@ -805,11 +720,9 @@ class MainWindow:
 				self.lock_quit=False
 				eula=False
 		
-					
 		if eula:
 					
 			if self.eula_accepted:
-
 				self.install_process()
 			else:
 				self.eulas_tocheck=self.required_eula.copy()
@@ -822,7 +735,6 @@ class MainWindow:
 
 	#def apply_button_clicked
 	
-
 	def accept_eula(self):
 
 		if not self.load_epi_conf[0]["selection_enabled"]["active"]:
@@ -850,10 +762,6 @@ class MainWindow:
 
 	def install_process(self):
 
-		'''
-		if not self.load_epi_conf[0]["selection_enabled"]["active"]:
-			self.main_window.resize(675,465)
-		'''
 		self.epiBox.manage_application_cb(False)
 		self.epiBox.select_pkg_btn.set_sensitive(False)
 		self.write_log("Packages selected to install: %s"%self.core.epiManager.packages_selected)
@@ -869,7 +777,6 @@ class MainWindow:
 		self.epiBox.view_terminal_btn.set_sensitive(True)
 		self.epiBox.view_terminal_btn.set_label(_("See installation details"))
 
-		
 		if self.install_dep:
 			if self.show_depends:
 				self.epiBox.epi_depend_label.set_text(_("(D) Addicitional application required"))
@@ -879,12 +786,10 @@ class MainWindow:
 		else:
 			self.order=0
 
-		#self.feedback_label.set_name("MSG_LABEL")
 		self.core.epiManager.zerocenter_feedback(self.order,"init")	
 		GLib.timeout_add(100,self.pulsate_install_package,self.order)
 
 	#def install_processs
-
 
 	def pulsate_install_package(self,order):
 		
@@ -902,7 +807,6 @@ class MainWindow:
 				
 			self.add_repository_keys(order)
 			
-		
 		if self.add_repository_keys_done:
 			if not self.update_keyring_launched:
 				self.update_keyring_launched=True 
@@ -937,8 +841,7 @@ class MainWindow:
 									self.check_preinstall()
 
 								if self.check_preinstall_done:
-									
-									
+
 									if self.preinstall_result:
 										if not self.check_arquitecture_launched:
 											msg=self.get_msg_text(30)
@@ -965,7 +868,6 @@ class MainWindow:
 													if not self.check_install_launched:
 														self.check_install_launched=True
 														self.check_install()
-
 														
 													if self.check_install_done:	
 														if self.installed:
@@ -999,7 +901,6 @@ class MainWindow:
 																			self.epiBox.search_entry.set_sensitive(True)
 																			self.lock_quit=False
 																			msg=self.get_msg_text(9)
-																			#self.epiBox.feedback_label.set_name("MSG_CORRECT_LABEL")
 																			self.manage_feedback_box(False,"success")
 																			self.feedback_label.set_text(msg)
 
@@ -1015,7 +916,6 @@ class MainWindow:
 																			return False
 																		return False
 																	
-
 																	else:
 																		error=True
 																		error_code=10
@@ -1024,18 +924,15 @@ class MainWindow:
 															error=True
 															error_code=11
 															params=[order,False,'install',self.dpkg_status]
-																
 									else:
 										error=True
 										error_code=12
 										params=[order,False,'install',None]
-																					
 						else:
 							error=True
 							error_code=13
 							params=[order,False,'install',None]
 										
-
 		if error:
 			self.epiBox.manage_application_cb(True)
 			self.epiBox.select_pkg_btn.set_sensitive(True)
@@ -1059,7 +956,6 @@ class MainWindow:
 				if os.path.exists(self.token_keys[1]):
 					return True
 				else:
-					
 					self.add_repository_keys_done=True
 					return True
 		
@@ -1124,7 +1020,6 @@ class MainWindow:
 		if self.check_install_launched:
 			if not self.check_install_done:
 				return True
-
 
 		if self.postinstall_app_launched:
 			
@@ -1194,12 +1089,10 @@ class MainWindow:
 		self.check_preinstall_done=True
 
 	#def check_preinstall		
-
 	
 	def preinstall_app(self):
 
 		command=self.core.epiManager.preinstall_app()
-
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"preinstall")
@@ -1234,21 +1127,13 @@ class MainWindow:
 		else:
 			self.check_update_repos_done=True	
 
-
 	#def check_update_repos
 
 	def install_app(self):
 
 	 	command=self.core.epiManager.install_app("gui")
-
 	 	length=len(command)
 	 	if length>0:
-	 		'''
-	 		if self.load_epi_conf[0]["required_dconf"]:
-	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde '+command
-	 		else:
-	 			command='LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive '+command
-			'''
 	 		command=self.create_process_token(command,"install")
 	 		length=len(command)
 	 		self.terminalBox.vterminal.feed_child(command,length)
@@ -1335,12 +1220,7 @@ class MainWindow:
 			response=dialog.run()
 			dialog.destroy()
 				
-
 			if response==Gtk.ResponseType.YES:
-				'''
-				if not self.load_epi_conf[0]["selection_enabled"]["active"]:
-					self.main_window.resize(675,465)
-				'''
 				self.epiBox.view_terminal_btn.set_sensitive(True)
 				self.epiBox.view_terminal_btn.set_label(_("See uninstall details"))
 				self.terminalBox.terminal_label.set_text(_("Uninstall process details"))
@@ -1357,11 +1237,9 @@ class MainWindow:
 				self.init_uninstall_process()
 				self.apply_button.set_sensitive(False)
 				self.uninstall_button.set_sensitive(False)
-				#self.epiBox.feedback_label.set_name("MSG_LABEL")
 				GLib.timeout_add(100,self.pulsate_uninstall_process,0)
 
 	#def uninstall_process		
-
 
 	def pulsate_uninstall_process(self,order):
 
@@ -1380,10 +1258,8 @@ class MainWindow:
 
 				if not self.remove_package_launched:
 					self.manage_feedback_box(True,"error")
-
 					msg=self.get_msg_text(15)
 					self.feedback_label.set_text(msg)
-
 					self.remove_package_launched=True
 					self.sp_cont=self.sp_cont+1
 					self.epiBox.view_terminal_btn.set_sensitive(True)
@@ -1411,6 +1287,7 @@ class MainWindow:
 							else:
 								msg=self.get_msg_text(16)
 								self.manage_feedback_box(False,"success")
+							
 							self.feedback_label.set_text(msg)					
 							params=[order,True,'remove',None]
 							self.update_icon(params)
@@ -1418,6 +1295,7 @@ class MainWindow:
 							self.show_apply_uninstall_buttons()
 							self.uninstall_button.set_sensitive(True)
 							self.apply_button.set_sensitive(True)
+							
 							if self.order==0:
 								self.install_dep=False
 							self.core.epiManager.zerocenter_feedback(0,"uninstall",True)
@@ -1482,7 +1360,6 @@ class MainWindow:
 	def uninstall_app(self,order):
 
 		command=self.core.epiManager.uninstall_app(order)
-
 		length=len(command)
 		if length>0:
 			command=self.create_process_token(command,"uninstall")
@@ -1528,11 +1405,8 @@ class MainWindow:
 						else:
 							#item['icon_package'].set_from_file(self.core.epiBox.package_installed)
 							item['icon_package'].set_from_file(item['icon_installed'])
-
-
 					else:
 						item['icon_package'].set_from_file(self.core.epiBox.package_installed_dep)
-
 				else:
 					if item["pkg_name"] in self.core.epiManager.blockedRemovePkgsList:
 						item['icon_status'].set_from_file(self.error_image)
@@ -1551,11 +1425,8 @@ class MainWindow:
 								item['icon_package'].set_from_pixbuf(item['icon'])
 							else:
 								item['icon_package'].set_from_file(item['icon'])
-
 					else:
 						item['icon_package'].set_from_file(self.core.epiBox.package_availabled_dep)
-
-
 		else:
 			if dpkg_status !=None and len(dpkg_status)>0:
 				for item in elements:
@@ -1570,9 +1441,7 @@ class MainWindow:
 									item["icon_package"].set_from_file(item["icon_installed"])	
 							else:
 								item["icon_package"].set_from_file(self.core.epiBox.package_installed_dep)	
-		
 						else:
-							#item["error"]=True
 							item['icon_status'].set_from_file(self.error_image)
 
 							if order==0:
@@ -1582,19 +1451,15 @@ class MainWindow:
 									item["icon_package"].set_from_file(item['icon'])
 							else:
 								item["icon_package"].set_from_file(self.core.epiBox.package_availabled_dep)
-
 					else:
 						if status=="availabled":
 							item["icon_status"].set_from_file(self.ok_image)
 						else:
 							item["error"]=True
 							item["icon_status"].set_from_file(self.error_image)	
-
 			else:
 				for item in elements:
-					#item['error']=True
 					item['icon_status'].set_from_file(self.error_image)			
-
 
 	#def update_icon
 															
@@ -1610,7 +1475,6 @@ class MainWindow:
 		self.show_apply_uninstall_buttons()
 
 	#def go_back	
-
 
 	def get_msg_text(self,code):
 
@@ -1697,11 +1561,9 @@ class MainWindow:
 			msg=_("Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package")
 		return msg
 
-	
 	#def get_msg_text
 
 	def create_process_token(self,command,action):
-
 
 		if action=="keys":
 			self.token_keys=tempfile.mkstemp('_keys')
@@ -1793,9 +1655,7 @@ class MainWindow:
 				self.feedback_info_img.hide()
 				self.feedback_warning_img.show()
 
-
 	#def manage_feedback_box
-
 
 	def quit(self,widget):
 
@@ -1825,7 +1685,6 @@ class MainWindow:
 
 		log_text=log_text.split("\n")
 
-		
 		if action=="install":
 			syslog.openlog("EPI")
 			syslog.syslog("Install Application")
@@ -1833,11 +1692,9 @@ class MainWindow:
 			syslog.openlog("EPI")
 			syslog.syslog("Uninstall Application")
 				
-		
 		for item in log_text:
 			if item!="":
 				self.write_log(item)
-																				
 		return
 
 	#def write_log_terminal	
@@ -1856,15 +1713,6 @@ class MainWindow:
 		Gtk.main()
 		
 	#def start_gui
-
-	
-
 	
 #class MainWindow
-'''
-
-if __name__=="__main__":
-	
-	lgd.start_gui()
-'''	
 from . import Core

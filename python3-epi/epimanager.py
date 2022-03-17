@@ -169,7 +169,8 @@ class EpiManager:
 			pkg_list=tmp_list[item]["pkg_list"]
 			type_epi=tmp_list[item]["type"]
 			script=self.check_getStatus_byScript(item)
-			info=self.get_store_info(pkg_list,item,type_epi,script)
+			info=self.get_basic_info(pkg_list,item,type_epi,script)
+
 			cont=0
 
 			for element in pkg_list:
@@ -202,78 +203,79 @@ class EpiManager:
 	
 	#def get_pkg_info				
 							
-	def get_store_info(self,pkg_list,order,type_epi,script):			
+	def get_basic_info(self,pkg_list,order,type_epi,script):			
 
-			pkg_info={}
-						
-			for item in pkg_list:
-				app=item["name"]
-				name=""
-				summary=""
-				status=""
-				description=""
-				icon=""
-				debian_name=""
-				component=""
-				if type_epi=="mix":
-					pkg_type=item["type"]
-				else:
-					pkg_type=type_epi
-
-				if type_epi!="localdeb":
-					try:
-						pkg=item["key_store"]
-						action="info"
-						self.storeManager.execute_action(action,pkg)
-						while self.storeManager.is_action_running(action):
-							time.sleep(0.2)
-
-						ret=self.storeManager.get_status(action)
-
-						if ret["status"]==0:
-							data=self.storeManager.get_result(action)
-
-							if len(data)>0:
-
-								description=data["info"][0]["description"]
-								icon=data["info"][0]["icon"]
-								name=data["info"][0]["name"]
-								summary=data["info"][0]["summary"]
-								debian_name=data["info"][0]["package"]
-								component=data["info"][0]["component"]
-
-								status=self.check_pkg_status(app,pkg_type,script)
-								if script=="" and status!="installed":
-									if (data["info"][0]["state"]) !="":
-										status=data["info"][0]["state"]
-
-							else:
-								status=self.check_pkg_status(app,pkg_type,script)		
-						else:
-							status=self.check_pkg_status(app,pkg_type,script)	
+		pkg_info={}
 					
-					except:
-						status=self.check_pkg_status(app,pkg_type,script)	
-				else:
-					data=self.get_localdeb_info(app,order)	
-					summary=data[0]
-					description=data[1]
-					status=data[2]
-					name=item["name"]
-					debian_name=item["version"]["all"]		
-				
-				pkg_info[app]={}
-				pkg_info[app]["debian_name"]=debian_name
-				pkg_info[app]["component"]=component
-				pkg_info[app]["status"]=status
-				pkg_info[app]["description"]=description
-				pkg_info[app]["icon"]=icon
-				pkg_info[app]["name"]=name
-				pkg_info[app]["summary"]=summary
-				pkg_info[app]["type"]=pkg_type
+		for item in pkg_list:
+			app=item["name"]
+			name=""
+			summary=""
+			status=""
+			description=""
+			icon=""
+			debian_name=""
+			component=""
+			search=False
 
-			return pkg_info
+			if type_epi=="mix":
+				pkg_type=item["type"]
+			else:
+				pkg_type=type_epi
 
+			if type_epi!="localdeb":
+				pkg=item.get("name","")
+				status=self.check_pkg_status(app,pkg_type,script)
+			else:
+				data=self.get_localdeb_info(app,order)	
+				summary=data[0]
+				description=data[1]
+				status=data[2]
+				name=item["name"]
+				debian_name=item["version"]["all"]	
+				search=True	
+			
+			pkg_info[app]={}
+			pkg_info[app]["debian_name"]=debian_name
+			pkg_info[app]["component"]=component
+			pkg_info[app]["status"]=status
+			pkg_info[app]["description"]=description
+			pkg_info[app]["icon"]=icon
+			pkg_info[app]["name"]=name
+			pkg_info[app]["summary"]=summary
+			pkg_info[app]["type"]=pkg_type
+			pkg_info[app]["search"]=search
+
+		return pkg_info
+
+	#def get_basic_info			
+
+	def get_store_info(self,pkg):			
+
+		self.pkg_info[pkg]["search"]=True
+
+		try:
+			pkg=item["key_store"]
+			action="info"
+			self.storeManager.execute_action(action,pkg)
+			while self.storeManager.is_action_running(action):
+				time.sleep(0.2)
+
+			ret=self.storeManager.get_status(action)
+
+			if ret["status"]==0:
+				data=self.storeManager.get_result(action)
+				if len(data)>0:
+					self.pkg_info["description"]=data["info"][0]["description"]
+					self.pkg_info["icon"]=data["info"][0]["icon"]
+					self.pkg_info["name"]=data["info"][0]["name"]
+					self.pkg_info["summary"]=data["info"][0]["summary"]
+					self.pkg_info["debian_name"]=data["info"][0]["package"]
+					self.pkg_info["component"]=data["info"][0]["component"]
+
+		except Exception as e:
+			self._show_debug("_get_store_info","pkg: %s; error getting info: %s"%(pkg,str(e)))
+			
 	#def get_store_info			
 
 	def check_pkg_status(self,pkg,pkg_type,script):
@@ -291,7 +293,7 @@ class EpiManager:
 							return "installed"
 						elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
 							return self._get_pkg_status(pkg,pkg_type)
-
+					return "available"		
 				except Exception as e:
 					return "available"
 						
@@ -341,15 +343,7 @@ class EpiManager:
 		except:
 			pass
 
-		cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		poutput,perror=p.communicate()
-
-		if len(poutput)>0:
-			status="installed"	
-		else:
-			status="available"	
-
+		status=self._get_pkg_status(pkg,"localdeb")
 		data=[summary,description,status]
 		
 		return data					
@@ -1226,21 +1220,27 @@ class EpiManager:
 	def zerocenter_feedback(self,order,action,result=None):
 
 		zomando_name=self.zomando_name[order]
+		cmd=""
 
 		if zomando_name!="":
 			if action=="init":
 				cmd="zero-center add-pulsating-color " +zomando_name
-			elif action=="install":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
-					
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
-			elif action=="uninstall":
-				if result:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
-				else:
-					cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+			else:
+				if self.epiFiles[order]["selection_enabled"]["active"]:
+					if self.get_zmd_status(order)!=0:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name
+				elif action=="install":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+				elif action=="uninstall":
+					if result:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+					else:
+						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
 
 			os.system(cmd)		
 
