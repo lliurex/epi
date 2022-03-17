@@ -1,3 +1,10 @@
+epi (0.3.32) bionic-updates; urgency=medium
+
+  * Added epic bash-completion
+  * Improved load process
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 17 Mar 2022 13:14:22 +0100
+
 epi (0.3.31) bionic-updates; urgency=medium
 
   * Show packages already installed in epic
