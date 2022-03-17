@@ -71,8 +71,6 @@ class EpiBox(Gtk.VBox):
 		self.pack_start(self.main_box,True,True,0)
 		self.set_css_info()
 		
-
-				
 	#def __init__
 
 	def set_css_info(self):
@@ -84,7 +82,6 @@ class EpiBox(Gtk.VBox):
 
 		Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(),self.style_provider,Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 		self.epi_list_label.set_name("OPTION_LABEL")
-		#self.terminal_label.set_name("MSG_LABEL")
 		self.epi_depend_label.set_name("DEPEND_LABEL")
 		self.search_entry.set_name("CUSTOM-ENTRY")
 		self.epi_list_box.set_name("LIST_BOX")
@@ -116,7 +113,6 @@ class EpiBox(Gtk.VBox):
 			pkg_order=0
 			show_cb=False
 			order=item
-			#if info[item]["type"]!="file":
 			if order==0:
 				if info[item]["selection_enabled"]["active"]:
 					self.search_entry.show()
@@ -171,13 +167,6 @@ class EpiBox(Gtk.VBox):
 				self.new_epi_box(params_to_draw)
 				pkg_order+=1
 				count-=1
-
-			'''	
-			else:
-				name=info[item]["name"]
-				self.new_epi_box(name,order)
-			'''
-		#self.get_icon_toupdate()	
 		
 	#def draw_pkg_list				
 
@@ -216,7 +205,6 @@ class EpiBox(Gtk.VBox):
 		entrypoint=params_to_draw[7]
 		default_pkg=params_to_draw[8]
 		count=params_to_draw[9]
-		#search=params_to_draw[6]
 		
 		vbox=Gtk.VBox()
 		hbox=Gtk.HBox()
@@ -256,7 +244,6 @@ class EpiBox(Gtk.VBox):
 		application_image.pkg_order=pkg_order
 		application_image.info=False
 		application_image.run=False
-		#application_image.installed=installed
 
 		if custom_name=='':
 			application_info="<span font='Roboto'><b>"+name+"</b></span>"
@@ -299,10 +286,11 @@ class EpiBox(Gtk.VBox):
 
 		info.set_name("INFO_APP_BUTTON")
 		info.connect("clicked",self.show_info_clicked,hbox)
-		if self.core.epiManager.pkg_info[name]["summary"]!="":
-			info.set_tooltip_text(_("Press to view application information"))
-		else:
-			info.set_tooltip_text(_("Info not availabled"))
+		
+		info.set_tooltip_text(_("Press to view application information"))
+		if self.core.epiManager.pkg_info[name]["search"]:
+			if self.core.epiManager.pkg_info[name]["summary"]=="":
+				info.set_tooltip_text(_("Info not availabled"))
 	
 		info.id=name
 		info.pkg=False
@@ -334,7 +322,6 @@ class EpiBox(Gtk.VBox):
 			run.info=False
 			run.run=True
 		
-		#state=Gtk.Image()
 		state=img_state
 		state.set_halign(Gtk.Align.CENTER)
 		state.set_valign(Gtk.Align.CENTER)
@@ -367,21 +354,18 @@ class EpiBox(Gtk.VBox):
 			list_separator.set_margin_right(20)
 		else:
 			list_separator.set_margin_right(15)
-		
 
 		if count!=1:
 			if order>0:
 				list_separator.set_name("WHITE_SEPARATOR")
 			else:
 				list_separator.set_name("SEPARATOR")
-			
 		else:
 			if order==0:
 				if not self.are_depends:
 					list_separator.set_name("WHITE_SEPARATOR")
 				else:
 					list_separator.set_name("SEPARATOR")
-				
 			else:
 				list_separator.set_name("WHITE_SEPARATOR")
 		
@@ -389,7 +373,6 @@ class EpiBox(Gtk.VBox):
 		vbox.pack_end(list_separator,False,False,0)
 		vbox.show_all()
 
-		
 		if show_cb:
 			application_cb.set_visible(True)
 			if name in self.core.epiManager.packages_selected:
@@ -412,8 +395,6 @@ class EpiBox(Gtk.VBox):
 			else:
 				run.set_visible(False)	
 		
-		#hbox.set_name("APP_BOX")
-
 		self.epi_list_box.pack_start(vbox,False,False,0)
 		self.epi_list_box.queue_draw()
 		self.epi_list_box.set_valign(Gtk.Align.FILL)
@@ -444,9 +425,7 @@ class EpiBox(Gtk.VBox):
 				icon=self.package_availabled
 				icon_installed=self.package_installed
 
-
 		img_state=Gtk.Image.new_from_file(self.initial)
-
 				
 		if self.core.epiManager.pkg_info[name]["status"]=="installed":
 			if order==0:
@@ -456,7 +435,6 @@ class EpiBox(Gtk.VBox):
 					img=Gtk.Image.new_from_pixbuf(icon_installed)	
 			else:
 				img=Gtk.Image.new_from_file(self.package_availabled_dep)
-
 
 		else:
 			if order==0:
@@ -514,7 +492,6 @@ class EpiBox(Gtk.VBox):
 
 					if element.run:
 						tmp["icon_run"]=element		
-
 					
 			if len(tmp)>0:
 
@@ -522,23 +499,63 @@ class EpiBox(Gtk.VBox):
 
 	#def get_icon_toupdate				
 
-
 	def show_info_clicked(self,button,hbox):
 
 		try:
-			app=hbox.get_children()[2].id
+			self.app=hbox.get_children()[2].id
 		except:	
-			app=hbox.get_children()[2].get_text()
+			self.app=hbox.get_children()[2].get_text()
 
-		summary=self.core.epiManager.pkg_info[app]["summary"]
+		self.infoBtn=hbox.get_children()[4]
+
+		if not self.core.epiManager.pkg_info[self.app]["search"]:
+			load_msg=_("Searching information.Wait a moment...")
+			self.core.mainWindow.manage_feedback_box(True)
+			self.core.mainWindow.feedback_label.set_text(load_msg)
+			self.infoBtn.set_tooltip_text(load_msg)
+			self.get_store_info_t=threading.Thread(target=self.get_store_info,args=(self.app,))
+			self.get_store_info_t.daemon=True
+			self.get_store_info_t.start()
+			self.infoBtn.set_sensitive(False)
+			GLib.timeout_add(100,self.pulsate_get_store_info)
+		else:
+			self.show_info(self.core.epiManager.pkg_info[self.app]["summary"])
+	
+	#def show_info_clicked
+
+	def pulsate_get_store_info(self):
+
+		if self.get_store_info_t.is_alive():
+			return True
+
+		else:
+			self.core.mainWindow.feedback_label.set_text("")
+			self.infoBtn.set_sensitive(True)
+			summary=self.core.epiManager.pkg_info[self.app]["summary"]
+			if summary!="":
+				self.infoBtn.set_tooltip_text(_("Press to view application information"))
+				self.show_info(summary)
+			else:
+				self.infoBtn.set_tooltip_text(_("Information not availabled"))
+		
+		return False
+
+	#def pulsate_get_store_info
+
+	def get_store_info(self,pkg):
+
+		self.core.epiManager.get_store_info(pkg)
+
+	#def get_store_info
+
+	def show_info(self,summary):
 
 		if summary!="":
-			debian_name=self.core.epiManager.pkg_info[app]["debian_name"]
-			component=self.core.epiManager.pkg_info[app]["component"]
-
-			name=self.core.epiManager.pkg_info[app]["name"]
-			icon=self.core.epiManager.pkg_info[app]["icon"]
-			description=self.core.epiManager.pkg_info[app]["description"]
+			debian_name=self.core.epiManager.pkg_info[self.app]["debian_name"]
+			component=self.core.epiManager.pkg_info[self.app]["component"]
+			name=self.core.epiManager.pkg_info[self.app]["name"]
+			icon=self.core.epiManager.pkg_info[self.app]["icon"]
+			description=self.core.epiManager.pkg_info[self.app]["description"]
 
 			h=html2text.HTML2Text()
 			h.body_width=400
