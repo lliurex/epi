@@ -1,3 +1,10 @@
+epi (0.4.28) focal; urgency=medium
+
+  * Show available epis in epic bash-completion.
+  * Improved load process
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 17 Mar 2022 10:42:21 +0100
+
 epi (0.4.27) focal; urgency=medium
 
   * Improve rebost integration
