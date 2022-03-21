@@ -288,7 +288,7 @@ class EpiBox(Gtk.VBox):
 		info.set_tooltip_text(_("Press to view application information"))
 		if self.core.epiManager.pkg_info[name]["search"]:
 			if self.core.epiManager.pkg_info[name]["summary"]=="":
-				info.set_tooltip_text(_("Info not availabled"))
+				info.set_tooltip_text(_("Information not availabled"))
 	
 		info.id=name
 		info.pkg=False
