@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-17 12:38+0100\n"
-"PO-Revision-Date: 2022-03-17 12:41+0100\n"
+"POT-Creation-Date: 2022-03-21 13:19+0100\n"
+"PO-Revision-Date: 2022-03-21 13:20+0100\n"
 "Last-Translator: empar <montoro_mde@gva.es>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.3\n"
 
 #: epi-gtk/python3-epigtk/MainWindow.py:685
 #: epi-gtk/python3-epigtk/MainWindow.py:692
@@ -358,6 +358,7 @@ msgstr "Selecciona les aplicacions que s'han d'instal·lar"
 #: epi-gtk/python3-epigtk/EpiBox.py:622 epi-gtk/python3-epigtk/EpiBox.py:589
 #: epi-gtk/python3-epigtk/EpiBox.py:623 epi-gtk/python3-epigtk/EpiBox.py:126
 #: epi-gtk/python3-epigtk/EpiBox.py:606 epi-gtk/python3-epigtk/EpiBox.py:640
+#: epi-gtk/python3-epigtk/EpiBox.py:607 epi-gtk/python3-epigtk/EpiBox.py:641
 msgid "Uncheck all packages"
 msgstr "Desmarca tots els paquets"
 
@@ -367,7 +368,8 @@ msgstr "Desmarca tots els paquets"
 #: epi-gtk/python3-epigtk/EpiBox.py:583 epi-gtk/python3-epigtk/EpiBox.py:626
 #: epi-gtk/python3-epigtk/EpiBox.py:584 epi-gtk/python3-epigtk/EpiBox.py:627
 #: epi-gtk/python3-epigtk/EpiBox.py:129 epi-gtk/python3-epigtk/EpiBox.py:601
-#: epi-gtk/python3-epigtk/EpiBox.py:644
+#: epi-gtk/python3-epigtk/EpiBox.py:644 epi-gtk/python3-epigtk/EpiBox.py:602
+#: epi-gtk/python3-epigtk/EpiBox.py:645
 msgid "Check all packages"
 msgstr "Marca tots els paquets"
 
@@ -376,7 +378,7 @@ msgid "Previous actions: executing "
 msgstr "Accions prèvies: executant "
 
 #: epi-gtk/python3-epigtk/EpiBox.py:303 epi-gtk/python3-epigtk/EpiBox.py:290
-#: epi-gtk/python3-epigtk/EpiBox.py:535
+#: epi-gtk/python3-epigtk/EpiBox.py:535 epi-gtk/python3-epigtk/EpiBox.py:536
 msgid "Press to view application information"
 msgstr "Premeu per a veure la informació de l'aplicació"
 
@@ -476,6 +478,7 @@ msgstr ""
 msgid "Searching information.Wait a moment..."
 msgstr "S'està buscant la informació. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/EpiBox.py:538
+#: epi-gtk/python3-epigtk/EpiBox.py:538 epi-gtk/python3-epigtk/EpiBox.py:293
+#: epi-gtk/python3-epigtk/EpiBox.py:539
 msgid "Information not availabled"
 msgstr "La informació no està disponible"
