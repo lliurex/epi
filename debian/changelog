@@ -1,3 +1,10 @@
+epi (0.3.33) bionic-updates; urgency=medium
+
+  * Fixed translations
+  * Improved some functions
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 28 Mar 2022 13:34:27 +0200
+
 epi (0.3.32) bionic-updates; urgency=medium
 
   * Added epic bash-completion
