@@ -280,19 +280,19 @@ class EpiManager:
 
 	def check_pkg_status(self,pkg,pkg_type,script):
 	
-		if script!="":
-			if pkg_type=="file":
+		if pkg_type=="file":
+			if script!="":
 				try:
 					cmd=script +' getStatus ' + pkg;
 					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 					poutput=p.communicate()
 					self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
 
-					if len(poutput)>0:
-						if poutput[0].decode("utf-8").split("\n")[0]=='0':
-							return "installed"
-						elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-							return self._get_pkg_status(pkg,pkg_type)
+					if poutput[0].decode("utf-8").split("\n")[0]=='0':
+						return "installed"
+					elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
+						return self._get_pkg_status(pkg,pkg_type)
+					
 					return "available"		
 				except Exception as e:
 					return "available"
@@ -311,12 +311,11 @@ class EpiManager:
 		elif pkg_type=="flatpak":
 			cmd='flatpak list | grep %s | cut -d " " -f 1'%pkg
 
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-		poutput,perror=p.communicate()
-
-		self._show_debug("_get_pkg_status","pkg: %s; result by command:poutput: %s; perror: %s"%(pkg,poutput,perror))
-
-		if len(poutput)>0:
+		p=subprocess.run(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+		code=p.returncode
+		self._show_debug("_get_pkg_status","pkg: %s; result by command: %s"%(pkg,p))
+		
+		if code==0:
 			return "installed"
 		else:
 			return "available"
@@ -421,23 +420,14 @@ class EpiManager:
 
 	def required_root (self):
 
-		cont=0
+		match=False
 		if not self.root:
 			for item in self.epiFiles:
-				if self.epiFiles[item]["type"]!="file":
-					cont=cont+1
-
-				else:
-					if self.epiFiles[item]["required_root"]:
-						cont=cont+1
-							
-			if cont>0:
-				return True
-			else:
-				return False	
-
-		else:
-			return False		
+				if self.epiFiles[item]["type"]!="file" or self.epiFiles[item]["required_root"]:
+					match=True
+					break 
+				
+		return match
 
 	#def required_root		
 

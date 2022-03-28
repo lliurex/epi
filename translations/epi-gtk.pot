@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-17 12:38+0100\n"
+"POT-Creation-Date: 2022-03-21 13:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -348,6 +348,7 @@ msgstr ""
 #: epi-gtk/python3-epigtk/EpiBox.py:622 epi-gtk/python3-epigtk/EpiBox.py:589
 #: epi-gtk/python3-epigtk/EpiBox.py:623 epi-gtk/python3-epigtk/EpiBox.py:126
 #: epi-gtk/python3-epigtk/EpiBox.py:606 epi-gtk/python3-epigtk/EpiBox.py:640
+#: epi-gtk/python3-epigtk/EpiBox.py:607 epi-gtk/python3-epigtk/EpiBox.py:641
 msgid "Uncheck all packages"
 msgstr ""
 
@@ -357,7 +358,8 @@ msgstr ""
 #: epi-gtk/python3-epigtk/EpiBox.py:583 epi-gtk/python3-epigtk/EpiBox.py:626
 #: epi-gtk/python3-epigtk/EpiBox.py:584 epi-gtk/python3-epigtk/EpiBox.py:627
 #: epi-gtk/python3-epigtk/EpiBox.py:129 epi-gtk/python3-epigtk/EpiBox.py:601
-#: epi-gtk/python3-epigtk/EpiBox.py:644
+#: epi-gtk/python3-epigtk/EpiBox.py:644 epi-gtk/python3-epigtk/EpiBox.py:602
+#: epi-gtk/python3-epigtk/EpiBox.py:645
 #: epi-gtk/python3-epigtk/rsrc/epi-gtk.ui:291
 msgid "Check all packages"
 msgstr ""
@@ -367,7 +369,7 @@ msgid "Previous actions: executing "
 msgstr ""
 
 #: epi-gtk/python3-epigtk/EpiBox.py:303 epi-gtk/python3-epigtk/EpiBox.py:290
-#: epi-gtk/python3-epigtk/EpiBox.py:535
+#: epi-gtk/python3-epigtk/EpiBox.py:535 epi-gtk/python3-epigtk/EpiBox.py:536
 msgid "Press to view application information"
 msgstr ""
 
@@ -470,6 +472,7 @@ msgstr ""
 msgid "Searching information.Wait a moment..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/EpiBox.py:538
+#: epi-gtk/python3-epigtk/EpiBox.py:538 epi-gtk/python3-epigtk/EpiBox.py:293
+#: epi-gtk/python3-epigtk/EpiBox.py:539
 msgid "Information not availabled"
 msgstr ""
