@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-17 09:26+0100\n"
-"PO-Revision-Date: 2022-03-17 09:30+0100\n"
+"POT-Creation-Date: 2022-03-21 13:14+0100\n"
+"PO-Revision-Date: 2022-03-21 13:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -350,6 +350,7 @@ msgstr "Seleccione las aplicaciones para instalar"
 #: epi-gtk/python3-epigtk/EpiBox.py:622 epi-gtk/python3-epigtk/EpiBox.py:589
 #: epi-gtk/python3-epigtk/EpiBox.py:623 epi-gtk/python3-epigtk/EpiBox.py:122
 #: epi-gtk/python3-epigtk/EpiBox.py:602 epi-gtk/python3-epigtk/EpiBox.py:635
+#: epi-gtk/python3-epigtk/EpiBox.py:604 epi-gtk/python3-epigtk/EpiBox.py:637
 msgid "Uncheck all packages"
 msgstr "Deseleccionar todos los paquetes"
 
@@ -359,7 +360,8 @@ msgstr "Deseleccionar todos los paquetes"
 #: epi-gtk/python3-epigtk/EpiBox.py:583 epi-gtk/python3-epigtk/EpiBox.py:626
 #: epi-gtk/python3-epigtk/EpiBox.py:584 epi-gtk/python3-epigtk/EpiBox.py:627
 #: epi-gtk/python3-epigtk/EpiBox.py:125 epi-gtk/python3-epigtk/EpiBox.py:597
-#: epi-gtk/python3-epigtk/EpiBox.py:639
+#: epi-gtk/python3-epigtk/EpiBox.py:639 epi-gtk/python3-epigtk/EpiBox.py:599
+#: epi-gtk/python3-epigtk/EpiBox.py:641
 msgid "Check all packages"
 msgstr "Seleccionar todos los paquetes"
 
@@ -368,7 +370,7 @@ msgid "Previous actions: executing "
 msgstr "Acciones previas: ejecutando "
 
 #: epi-gtk/python3-epigtk/EpiBox.py:303 epi-gtk/python3-epigtk/EpiBox.py:288
-#: epi-gtk/python3-epigtk/EpiBox.py:532
+#: epi-gtk/python3-epigtk/EpiBox.py:532 epi-gtk/python3-epigtk/EpiBox.py:534
 msgid "Press to view application information"
 msgstr "Haga clic para ver la información de la aplicación"
 
@@ -466,6 +468,7 @@ msgstr ""
 msgid "Searching information.Wait a moment..."
 msgstr "Buscando información. Espere un momento..."
 
-#: epi-gtk/python3-epigtk/EpiBox.py:535
+#: epi-gtk/python3-epigtk/EpiBox.py:535 epi-gtk/python3-epigtk/EpiBox.py:291
+#: epi-gtk/python3-epigtk/EpiBox.py:537
 msgid "Information not availabled"
 msgstr "Información no disponible"
