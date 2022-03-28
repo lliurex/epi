@@ -1,3 +1,10 @@
+epi (0.4.30) focal; urgency=medium
+
+  * Fixed translations
+  * Improved some functions
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 28 Mar 2022 13:19:07 +0200
+
 epi (0.4.29) focal; urgency=medium
 
   * Fixed hide current message when info btn is clicked
