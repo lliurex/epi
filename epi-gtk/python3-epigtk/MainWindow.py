@@ -507,21 +507,22 @@ class MainWindow:
 		self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 		if self.load_epi_conf[0]["status"]=="installed":
 			zmd_configured=self.core.epiManager.get_zmd_status(0)
-			if zmd_configured==1:
-				msg_code=0
-				msg=self.get_msg_text(msg_code)
-				self.feedback_label.set_text(msg)
-				self.manage_feedback_box(False,"info")
-			elif zmd_configured==0:
-				msg_code=35
-				msg=self.get_msg_text(msg_code)
-				self.feedback_label.set_text(msg)
-				self.manage_feedback_box(False,"warning")
-			elif zmd_configured==-1:
-				msg_code=36
-				msg=self.get_msg_text(msg_code)
-				self.feedback_label.set_text(msg)
-				self.manage_feedback_box(False,"warning")
+			if not self.load_epi_conf[0]["selection_enabled"]["active"]:
+				if zmd_configured==1:
+					msg_code=0
+					msg=self.get_msg_text(msg_code)
+					self.feedback_label.set_text(msg)
+					self.manage_feedback_box(False,"info")
+				elif zmd_configured==0:
+					msg_code=35
+					msg=self.get_msg_text(msg_code)
+					self.feedback_label.set_text(msg)
+					self.manage_feedback_box(False,"warning")
+				elif zmd_configured==-1:
+					msg_code=36
+					msg=self.get_msg_text(msg_code)
+					self.feedback_label.set_text(msg)
+					self.manage_feedback_box(False,"warning")
 
 		self.show_apply_uninstall_buttons()
 		self.stack.set_visible_child_name("epiBox")	
