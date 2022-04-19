@@ -1,4 +1,4 @@
-epi (0.3.34) bionic-update; urgency=medium
+epi (0.3.34) bionic-updates; urgency=medium
 
   * Hide warning about zmd execution if epi is a list
   
