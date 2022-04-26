@@ -26,8 +26,8 @@ class EpiManager:
 		else:	
 			self.debug=0
 		
-		storeBus=dbus.SystemBus()
 		try:
+			storeBus=dbus.SystemBus()
 			storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
 			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
 		except Exception as e:
