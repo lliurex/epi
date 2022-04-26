@@ -1,3 +1,9 @@
+epi (0.4.32) focal; urgency=medium
+
+  * Fixed Store dbus call
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 26 Apr 2022 13:59:38 +0200
+
 epi (0.4.31) focal; urgency=medium
 
   * Hide warning about zmd execution when epi is a list
