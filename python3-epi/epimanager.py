@@ -1331,7 +1331,7 @@ class EpiManager:
 									tmp[epi_name]["zomando"]=remote[2]
 									tmp[epi_name]["pkg_list"]=remote[0]
 									if not self.is_zmd_service(remote[2]):
-										if '_onStandalone' not in line:
+										if ('_onStandalone' not in line) and ('_onServer' not in line):
 											self.remote_available_epis.append(tmp)
 										self.cli_available_epis.append(tmp)
 									else:
