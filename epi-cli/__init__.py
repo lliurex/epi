@@ -195,24 +195,14 @@ class EPIC(object):
 
 		check=True
 		print ('  [EPIC]: Checking system...')
-
-		connection=self.pulsate_check_connection()
 		
-		if connection[0]:
-			if self.check_root:
-				self.lock_info=self.epicore.check_locks()
-				msg_log="Lock info :"+str(self.lock_info)
-			else:
-				self.lock_info={}
-				msg_log="Locks info: Not checked. User is not root"	
-			self.write_log(msg_log)
-			
+		if self.check_root:
+			self.lock_info=self.epicore.check_locks()
+			msg_log="Lock info :"+str(self.lock_info)
 		else:
-			msg_log="Internet connection not detected: "+connection[1] 
-			print ('  [EPIC]: '+msg_log)
-			self.write_log(msg_log)
-			check=False
-
+			self.lock_info={}
+			msg_log="Locks info: Not checked. User is not root"	
+		self.write_log(msg_log)
 		return check
 		
 
@@ -647,62 +637,70 @@ class EPIC(object):
 			msg_log='Installing application by CLI'
 			self.write_log(msg_log)
 			order=len(self.epicore.epiFiles)
-			if order>1:
-				print ('****************************************************************')
-				print ('*********************** INSTALLING DEPENDS *********************')
-				print ('****************************************************************')
-
-			for item in self.epicore.epiFiles:
-				order=order-1
-				self.epicore.zerocenter_feedback(order,'init')
-				if order==0:
+			print ('  [EPIC]: Checking internet connection. Wait a moment...')
+			connection=self.pulsate_check_connection()
+		
+			if connection[0]:
+				if order>1:
 					print ('****************************************************************')
-					print ('******************** INSTALLING APPLICATION ********************')
+					print ('*********************** INSTALLING DEPENDS *********************')
 					print ('****************************************************************')
 
-				result=self.add_repository_keys(order)
-				if result:
-					result=self.update_keyring()
-					result=self.download_app()
+				for item in self.epicore.epiFiles:
+					order=order-1
+					self.epicore.zerocenter_feedback(order,'init')
+					if order==0:
+						print ('****************************************************************')
+						print ('******************** INSTALLING APPLICATION ********************')
+						print ('****************************************************************')
+
+					result=self.add_repository_keys(order)
 					if result:
-						result=self.preinstall_app()
+						result=self.update_keyring()
+						result=self.download_app()
 						if result:
-							result=self.check_arquitecture()
+							result=self.preinstall_app()
 							if result:
-								result=self.check_update_repos()
+								result=self.check_arquitecture()
 								if result:
-									result=self.install_app()
+									result=self.check_update_repos()
 									if result:
-										result=self.postinstall_app()
+										result=self.install_app()
 										if result:
-											self.epicore.zerocenter_feedback(order,'install',result)
+											result=self.postinstall_app()
+											if result:
+												self.epicore.zerocenter_feedback(order,'install',result)
+											else:
+												error=True	
 										else:
-											error=True	
+											error=True
 									else:
-										error=True
+										error=True		
 								else:
-									error=True		
+									error=True
 							else:
 								error=True
+									
 						else:
 							error=True
-								
 					else:
 						error=True
-				else:
-					error=True
 
-				if error:
-					self.epicore.zerocenter_feedback(order,'install',result)
-					self.epicore.remove_repo_keys()
-					return 1
+					if error:
+						self.epicore.zerocenter_feedback(order,'install',result)
+						self.epicore.remove_repo_keys()
+						return 1
 
-			msg_log='Installation completed successfully'
-			print('  [EPIC]: '+msg_log)
-			self.write_log(msg_log)
-			self.epicore.remove_repo_keys()
-			return 0
-
+				msg_log='Installation completed successfully'
+				print('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				self.epicore.remove_repo_keys()
+				return 0
+			else:
+				msg_log="Internet connection not detected: "+connection[1] 
+				print ('  [EPIC]: '+msg_log)
+				self.write_log(msg_log)
+				return 1
 		else:
 			msg_log='Installation cancelled'
 			print ('  [EPIC]: '+msg_log)
