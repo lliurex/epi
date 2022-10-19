@@ -197,15 +197,6 @@ class MainWindow:
 		self.checking_system_t.start()
 		self.checking_system_t.launched=True	
 
-		if not self.no_check:
-			self.checking_url1_t.start()
-			self.checking_url1_t.launched=True
-			self.checking_url2_t.start()
-			self.checking_url2_t.launched=True
-		else:
-			self.first_connection=True
-			self.second_connection=True
-
 		GLib.timeout_add(100,self.pulsate_checksystem)
 
 	#def init_process
@@ -260,61 +251,41 @@ class MainWindow:
 		error=False
 		url_error=False
 
-		if not self.no_check:
-			if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
-				return True 
-			else:
-				if not self.first_connection and not self.second_connection:
-					if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
-						return True
-					else:
-						end_check=True
-				else:
-					end_check=True
-		else:
-			end_check=True
-
-		if end_check:
-			if self.checking_system_t.done:
-				if not self.first_connection and not self.second_connection:
-					msg_code=3
-					error=True
-					url_error=True
-				else:
-					if self.valid_json["status"]:	
-						if self.valid_script["status"]:		
-							if not self.required_root:
-								if len (self.lock_info)>0:
-									self.load_unlock_panel()
-									return False
-								else:
-									if self.test_install[0]!='':
-										if self.test_install[0]=='1':
-											error=True
-											msg_code=25
-										else:
-											self.load_depends_panel()
-											return False
-									else:		
-										self.load_info_panel()
-										return False
-							else:
-								error=True
-								msg_code=2	
+		if self.checking_system_t.done:
+			if self.valid_json["status"]:	
+				if self.valid_script["status"]:		
+					if not self.required_root:
+						if len (self.lock_info)>0:
+							self.load_unlock_panel()
+							return False
 						else:
-							error=True
-							if self.valid_script["error"]=="path":
-								msg_code=32
-							else:
-								msg_code=33				
+							if self.test_install[0]!='':
+								if self.test_install[0]=='1':
+									error=True
+									msg_code=25
+								else:
+									self.load_depends_panel()
+									return False
+							else:		
+								self.load_info_panel()
+								return False
 					else:
 						error=True
-						if self.valid_json["error"]=="path":
-							msg_code=1
-						elif self.valid_json["error"]=="json":
-							msg_code=18
-						else:
-							msg_code=34			
+						msg_code=2	
+				else:
+					error=True
+					if self.valid_script["error"]=="path":
+						msg_code=32
+					else:
+						msg_code=33				
+			else:
+				error=True
+				if self.valid_json["error"]=="path":
+					msg_code=1
+				elif self.valid_json["error"]=="json":
+					msg_code=18
+				else:
+					msg_code=34			
 			
 		if error:
 			self.loadingBox.loading_spinner.stop()
@@ -686,6 +657,7 @@ class MainWindow:
 		pkgs_not_selected=False
 		eula=True
 		self.manage_feedback_box(True)
+		self.feedback_label.set_text("")
 
 		if self.load_epi_conf[0]["selection_enabled"]["active"]:
 			count=0
@@ -706,6 +678,71 @@ class MainWindow:
 				self.lock_quit=False
 				eula=False
 					
+		if not pkgs_not_selected:
+			self.init_threads()
+			if not self.no_check:
+				self.checking_url1_t.start()
+				self.checking_url1_t.launched=True
+				self.checking_url2_t.start()
+				self.checking_url2_t.launched=True
+			else:
+				self.first_connection=True
+				self.second_connection=True
+
+			self.manage_feedback_box(True,"error")
+			msg=self.get_msg_text(40)
+			self.feedback_label.set_text(msg)
+			GLib.timeout_add(100,self.pulsate_check_connection,eula)
+
+	#def apply_button_clicked
+
+	def pulsate_check_connection(self,eula):
+
+		end_check=False
+		error=False
+		url_error=False
+
+		if not self.no_check:
+			if self.checking_url1_t.is_alive() and self.checking_url2_t.is_alive():
+				return True 
+			else:
+				if not self.first_connection and not self.second_connection:
+					if self.checking_url1_t.is_alive() or self.checking_url2_t.is_alive():
+						return True
+					else:
+						end_check=True
+				else:
+					end_check=True
+		else:
+			end_check=True
+
+		if end_check:
+			if not self.first_connection and not self.second_connection:
+				msg_code=3
+				error=True
+				url_error=True
+			else:
+				self.feedback_label.set_text("")
+				self.check_eulas(eula)
+				return False
+
+		if error:
+			self.epiBox.manage_application_cb(True)
+			self.epiBox.select_pkg_btn.set_sensitive(True)
+			self.epiBox.search_entry.set_sensitive(True)
+			self.lock_quit=False
+			self.terminalBox.manage_vterminal(False,True)
+			msg_error=self.get_msg_text(msg_code)
+			self.manage_feedback_box(False,"error")
+			self.feedback_label.set_text(msg_error)
+			return False
+
+		return True
+
+	#def pulsate_check_connection
+
+	def check_eulas(self,eula):
+
 		if eula:
 			if self.eula_accepted:
 				self.install_process()
@@ -720,7 +757,7 @@ class MainWindow:
 				self.eula_order=len(self.eulas_tocheck)-1
 				self.accept_eula()
 
-	#def apply_button_clicked
+	#def check_eulas
 	
 	def accept_eula(self):
 
@@ -1533,7 +1570,8 @@ class MainWindow:
 			msg=_("The selected applications cannot be uninstalled.\nIt is part of the system meta-package")
 		elif code==39:
 			msg=_("Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package")
-		
+		elif code==40:
+			msg=_("Checking internet connection. Wait a moment...")
 		return msg
 
 	#def get_msg_text
