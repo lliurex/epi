@@ -264,8 +264,12 @@ class MainWindow:
 									error=True
 									msg_code=25
 								else:
-									self.load_depends_panel()
-									return False
+									if self.test_install[1]!='':
+										self.load_depends_panel()
+										return False
+									else:
+										self.load_info_panel()
+										return False
 							else:		
 								self.load_info_panel()
 								return False

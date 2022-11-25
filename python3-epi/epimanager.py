@@ -482,7 +482,8 @@ class EpiManager:
 							if len(parse_test)>1:
 								test=parse_test.pop()
 								for item in parse_test:
-									pkg_list=pkg_list+"- "+item+"\n"
+									if item!="":
+										pkg_list=pkg_list+"- "+item+"\n"
 			except:
 				pass
 		
