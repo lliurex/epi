@@ -40,9 +40,9 @@ ApplicationWindow {
         id: mainLayout
         anchors.fill: parent
         anchors.margins: margin
-        Layout.minimumWidth:780
-        Layout.preferredWidth:780
-        Layout.minimumHeight:550
+        Layout.minimumWidth:800
+        Layout.preferredWidth:800
+        Layout.minimumHeight:570
 
         RowLayout {
             id: bannerBox
@@ -66,10 +66,10 @@ ApplicationWindow {
         StackView {
             id: mainView
             property int currentView:epiBridge.currentStack
-            Layout.minimumWidth:780
-            Layout.preferredWidth: 780
-            Layout.minimumHeight:430
-            Layout.preferredHeight:430
+            Layout.minimumWidth:800
+            Layout.preferredWidth: 800
+            Layout.minimumHeight:450
+            Layout.preferredHeight:450
             Layout.alignment:Qt.AlignHCenter|Qt.AlignVCenter
             Layout.leftMargin:0
             Layout.fillWidth:true

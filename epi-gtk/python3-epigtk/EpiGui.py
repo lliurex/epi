@@ -26,7 +26,6 @@ class GatherInfo(QThread):
 		
 	def run(self,*args):
 		
-		time.sleep(1)
 		self.ret=EpiGui.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug)
 
 	#def run
@@ -80,7 +79,8 @@ class EpiGui(QObject):
 
 	def _loadInfo(self):
 
-		if 	self.gatherInfo.ret[0]:	
+		if 	self.gatherInfo.ret[0]:
+			self._updatePackagesModel()
 			self.currentStack=2
 		else:
 			self.loadErrorCode=self.gatherInfo.ret[1]
@@ -132,11 +132,27 @@ class EpiGui(QObject):
 
 	#def _setLoadErrorCode
 
+	def _getPackagesModel(self):
+
+		return self._packagesModel
+
+	#def _getPackagesModel
+
+	def _updatePackagesModel(self):
+
+		ret=self._packagesModel.clear()
+		packagesEntries=EpiGui.epiGuiManager.packagesData
+		for item in packagesEntries:
+			if item["pkgId"]!="":
+				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"])
+
+	#def _updatePackagesModel
+
 	def _getShowStatusMessage(self):
 
 		return self._showStatusMessage
 
-	#def __getShowStatusMessage
+	#def _getShowStatusMessage
 
 	def _setShowStatusMessage(self,showStatusMessage):
 
@@ -259,6 +275,7 @@ class EpiGui(QObject):
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)
 
+	packagesModel=Property(QObject,_getPackagesModel,constant=True)
 
 #class EpiGui
 

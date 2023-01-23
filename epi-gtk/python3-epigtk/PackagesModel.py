@@ -6,18 +6,22 @@ from PySide2 import QtCore, QtGui, QtQml
 class PackagesModel(QtCore.QAbstractListModel):
 
 	PkgIdRole= QtCore.Qt.UserRole + 1000
-	PkgStatusRole = QtCore.Qt.UserRole + 1001
-	CustomNameRole=QtCore.Qt.UserRole+1002
-	IconRole=QtCore.Qt.UserRole+1003
-	DefaultPkgRole=QtCore.Qt.UserRole+1004
-	ShowCbRole=QtCore.Qt.UserRole+1005
-	OrderRole=QtCore.Qt.UserRole+1006
+	ShowCbRole=QtCore.Qt.UserRole+1001
+	IsCheckedRole=QtCore.Qt.UserRole+1002
+	CustomNameRole=QtCore.Qt.UserRole+1003
+	PkgIconRole=QtCore.Qt.UserRole+1004
+	StatusRole = QtCore.Qt.UserRole + 1005
+	IsVisibleRole=QtCore.Qt.UserRole+1006
+	IsRunningRole=QtCore.Qt.UserRole+1007
+	ResultProcessRole=QtCore.Qt.UserRole+1008
+	OrderRole=QtCore.Qt.UserRole+1009
 
 
 	def __init__(self,parent=None):
 		
 		super(PackagesModel, self).__init__(parent)
 		self._entries =[]
+	
 	#def __init__
 
 	def rowCount(self, parent=QtCore.QModelIndex()):
@@ -34,40 +38,49 @@ class PackagesModel(QtCore.QAbstractListModel):
 			item = self._entries[index.row()]
 			if role == PackagesModel.PkgIdRole:
 				return item["pkgId"]
-			elif role == PackagesModel.PkgStatusRole:
-				return item["pkgStatus"]
-			elif role == PackagesModel.CustomNameRole:
-				return item["customName"]
-			elif role == PackagesModel.IconRole:
-				return item["icon"]
-			elif role == PackagesModel.DefaultPkgRole:
-				return item["defaultPkg"]
 			elif role == PackagesModel.ShowCbRole:
 				return item["showCb"]
+			elif role == PackagesModel.IsCheckedRole:
+				return item["isChecked"]
+			elif role == PackagesModel.CustomNameRole:
+				return item["customName"]
+			elif role == PackagesModel.PkgIconRole:
+				return item["pkgIcon"]
+			elif role == PackagesModel.StatusRole:
+				return item["status"]
+			elif role == PackagesModel.IsVisibleRole:
+				return item["isVisible"]
+			elif role == PackagesModel.IsRunningRole:
+				return item["isRunning"]
+			elif role == PackagesModel.ResultProcessRole:
+				return item["resultProcess"]
 			elif role == PackagesModel.OrderRole:
-				return item["order"]
-	
+				return item["order"]	
+		
 		#def data
 
 	def roleNames(self):
 		
 		roles = dict()
 		roles[PackagesModel.PkgIdRole] = b"pkgId"
-		roles[PackagesModel.PkgStatusRole] = b"pkgStatus"
-		roles[PackagesModel.CustomNameRole] = b"customName"
-		roles[PackagesModel.IconRole] = b"icon"
-		roles[PackagesModel.defaultPkgRole] = b"defaultPkg"
 		roles[PackagesModel.ShowCbRole] = b"showCb"
+		roles[PackagesModel.IsCheckedRole] = b"isChecked"
+		roles[PackagesModel.CustomNameRole] = b"customName"
+		roles[PackagesModel.PkgIconRole] = b"pkgIcon"
+		roles[PackagesModel.StatusRole] = b"status"
+		roles[PackagesModel.IsVisibleRole] = b"isVisible"
+		roles[PackagesModel.IsRunningRole] = b"isRunning"
+		roles[PackagesModel.ResultProcessRole] = b"resultProcess"
 		roles[PackagesModel.OrderRole] = b"order"
 
 		return roles
 
 	#def roleName
 
-	def appendRow(self,pkgid,pkgst,cn,ic,dp,shc,o):
+	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr):
 		
 		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(),self.rowCount())
-		self._entries.append(dict(pkgId=pkgid, pkgstatus=pkgst, customName=cn, icon=ic, defaultPkg=dp, showCb=shc,order=o))
+		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr))
 		self.endInsertRows()
 
 	#def appendRow
@@ -76,7 +89,7 @@ class PackagesModel(QtCore.QAbstractListModel):
 		
 		if role == QtCore.Qt.EditRole:
 			row = index.row()
-			if param in ["pkgStatus","icon"]:
+			if param in ["pkgStatus","pkgIcon","isVisible","isRunning","resultProcess"]:
 				self._entries[row][param]=value
 				self.dataChanged.emit(index,index)
 				return True

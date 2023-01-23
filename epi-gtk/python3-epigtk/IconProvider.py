@@ -11,7 +11,7 @@ class IconProvider(QQuickImageProvider):
 
 		super(IconProvider,self).__init__(QQuickImageProvider.Image)
 		self.checkImage="/usr/lib/python3/dist-packages/epigtk/rsrc/check.png"
-		self.localPackage="/usr/lib/python3/dist-packages/epigtk/rsrc/local_deb.png"
+		self.localPackage="/usr/lib/python3/dist-packages/epigtk/rsrc/package.png"
 
 	#def __init__
 	
@@ -23,18 +23,20 @@ class IconProvider(QQuickImageProvider):
 
 	def createIcon(self,imagePath):
 
-		combineImage=QImage(48,48,QImage.Format_RGBA8888)
 		destImage=QImage()
 
-		if "_OK.png" in imagePath:
+		if "_OK" in imagePath:
 			isInstalled=True
-			appIcon=imagePath.split("_OK.png")[0]+".png"
+			appIcon=imagePath.split("_OK")[0]
 		else:
 			isInstalled=False
 			appIcon=imagePath
 
 		if os.path.exists(appIcon):
-			destImage.load(appIcon,"png")
+			if ".svg" in appIcon:
+				destImage.load(appIcon,"svg")
+			else:
+				destImage.load(appIcon,"png")
 		else:
 			destImage.load(self.localPackage,"png")
 		
@@ -43,14 +45,14 @@ class IconProvider(QQuickImageProvider):
 		lastImage=QImage()
 		lastImage.load(self.checkImage,"png")
 		p=QPainter()
-		p.begin(combineImage)
+		p.begin(destImage)
 		p.drawImage(0,0,destImage)
 		if isInstalled:
 			p.drawImage(30,30,lastImage)
-		p.end()
+			p.end()
 
-		return combineImage
-		
+		return destImage
+
 	#def createIcon
 
 #clas IconProvider

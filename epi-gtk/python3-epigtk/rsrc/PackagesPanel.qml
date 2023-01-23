@@ -14,7 +14,7 @@ Rectangle{
     }
 
     GridLayout{
-        id:generalLayout
+        id:generalPackagesLayout
         rows:1
         flow: GridLayout.TopToBottom
         rowSpacing:10
@@ -22,14 +22,14 @@ Rectangle{
         width:parent.width-10
         height:parent.height-25
         enabled:true
-        
-        RowLayout{
-           id: optionsGrid
-           Layout.topMargin: messageLabel.visible?0:50
 
-           
+        PackagesList{
+            id:packagesList
+            Layout.fillHeight:true
+            Layout.fillWidth:true
+            packagesModel:epiBridge.packagesModel
         }
+    
     }
-
 
 } 

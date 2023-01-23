@@ -23,6 +23,7 @@ class EpiGuiManager:
 	def __init__(self):
 
 		self.packagesData=[]
+		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
 		self.clearCache()
 
 	#def __init__
@@ -159,30 +160,49 @@ class EpiGuiManager:
 					pass
 				else:
 					tmp={}
-					tmp["packageId"]=element["name"]
-					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
+					tmp["pkgId"]=element["name"]
+					tmp["showCb"]=showCB
+
+					if defaultChecked:
+						tmp["isChecked"]=True
+					else:
+						try:
+							tmp["isChecked"]=element["default_pkg"]
+						except:
+							tmp["isChecked"]=False			
+					
 					if order!=0:
-						tmp["customName"]="Previous actions: executing %s"%self.info[item]["zomando"]
+						tmp["customName"]=self.info[item]["zomando"]
 					else:
 						try:
 							tmp["customName"]=element["custom_name"]
 						except:
 							tmp["customName"]=element["name"]
 
-					try:
-						tmp["icon"]="%s%s"%(self.info[item]["custom_icon_path"],element["custom_icon"])
-					except:
-						tmp["icon"]=""
-					if defaultChecked:
-						tmp["defaultPkg"]=True
-					else:
+					if order==0:
 						try:
-							tmp["defaultChecked"]=element["default_pkg"]
+							iconPath=self.info[item]["custom_icon_path"]
+							if iconPath!="":
+								if iconPath[-1]!="/":
+									iconPath="%s/"%iconPath
+								tmp["pkgIcon"]="%s%s"%(iconPath,element["custom_icon"])
+							else:
+								tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
 						except:
-							tmp["defaultChecked"]=False
+							tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
+					else:
+						tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_dep")
 
-					tmp["showCb"]=showCB
-					tmp["order"]=pkgOrder
+					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
+					
+					if order==0:
+						tmp["isVisible"]=True
+					else:
+						tmp["isVisible"]=False
+
+					tmp["isRunning"]=False
+					tmp["resultProcess"]=-1
+					tmp["order"]=order
 					self.packagesData.append(tmp)
 					
 				pkgOrder+=1
