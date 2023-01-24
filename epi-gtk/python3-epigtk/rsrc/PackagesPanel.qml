@@ -5,31 +5,33 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 
-Rectangle{
-    color:"transparent"
-    Text{ 
-        text:i18nd("epi-gtk","Applications availables")
-        font.family: "Quattrocento Sans Bold"
-        font.pointSize: 16
-    }
+GridLayout{
+    id:generalPkgLayout
+    rows:1
+    flow: GridLayout.TopToBottom
+    rowSpacing:10
+ 
+    StackView{
+        id:generalPkgView
+        property int currentPkgOption:epiBridge.currentPkgOption
+        Layout.fillHeight:true
+        Layout.fillWidth:true
+        Layout.alignment:Qt.AlignHCenter
+        initialItem:pkgInfoView
 
-    GridLayout{
-        id:generalPackagesLayout
-        rows:1
-        flow: GridLayout.TopToBottom
-        rowSpacing:10
-        anchors.left:parent.left
-        width:parent.width-10
-        height:parent.height-25
-        enabled:true
-
-        PackagesList{
-            id:packagesList
-            Layout.fillHeight:true
-            Layout.fillWidth:true
-            packagesModel:epiBridge.packagesModel
+        onCurrentPkgOptionChanged:{
+            switch(currentPkgOption){
+                case 0:
+                    generalPkgView.replace(pkgInfoView)
+                    break
+            }
         }
-    
-    }
 
+        Component{
+            id:pkgInfoView
+            PackagesInfo{
+               id:packagesInfo
+            }
+        }
+    }
 } 

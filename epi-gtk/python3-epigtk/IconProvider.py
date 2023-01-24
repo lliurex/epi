@@ -2,6 +2,7 @@
 
 from PySide2.QtCore import *
 from PySide2.QtGui import *
+from PySide2.QtSvg import *
 from PySide2.QtQuick import QQuickImageProvider
 import os
 
@@ -34,7 +35,14 @@ class IconProvider(QQuickImageProvider):
 
 		if os.path.exists(appIcon):
 			if ".svg" in appIcon:
-				destImage.load(appIcon,"svg")
+				tmpsvg=QSvgRenderer(appIcon)
+				tmpImage=QImage(48,48,QImage.Format_ARGB32)
+				tmpImage.fill("#00000000")
+				p=QPainter()
+				p.begin(tmpImage)
+				tmpsvg.render(p)
+				p.end()
+				destImage=tmpImage
 			else:
 				destImage.load(appIcon,"png")
 		else:

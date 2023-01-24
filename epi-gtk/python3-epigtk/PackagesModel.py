@@ -89,7 +89,7 @@ class PackagesModel(QtCore.QAbstractListModel):
 		
 		if role == QtCore.Qt.EditRole:
 			row = index.row()
-			if param in ["pkgStatus","pkgIcon","isVisible","isRunning","resultProcess"]:
+			if param in ["pkgStatus","pkgIcon","isVisible","isChecked","isRunning","resultProcess"]:
 				self._entries[row][param]=value
 				self.dataChanged.emit(index,index)
 				return True

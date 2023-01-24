@@ -29,6 +29,7 @@ DelegateModel {
             let item = allItems.get(index).model;
             let visible = item[role].toLowerCase().includes(search.toLowerCase());
             if (!visible) continue;
+            if (!item["isVisible"]) continue;
             allItems.setGroups(index, 1, [ "all", "visible" ]);
         }
 

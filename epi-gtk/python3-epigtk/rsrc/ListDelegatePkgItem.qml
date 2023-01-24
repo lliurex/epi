@@ -44,12 +44,14 @@ Components.ListItem{
             id:packageCheck
             checked:isChecked
             onToggled:{
-                console.log(pkgId)
+                console.log()
+                epiBridge.onCheckPkg([pkgId,checked])
             }
             anchors.left:parent.left
             anchors.leftMargin:5
             anchors.verticalCenter:parent.verticalCenter
             visible:showCb
+            enabled:!epiBridge.isProcessRunning
         }
 
         Image {
@@ -65,6 +67,7 @@ Components.ListItem{
                 }
             }
             anchors.verticalCenter:parent.verticalCenter
+            anchors.leftMargin:10
             cache:false
 
         } 
@@ -76,8 +79,8 @@ Components.ListItem{
             elide:Text.ElideMiddle
             clip: true
             font.family: "Quattrocento Sans Bold"
-            font.pointSize: 11
-            anchors.leftMargin:5
+            font.pointSize: 10
+            anchors.leftMargin:10
             anchors.left:packageIcon.right
             anchors.verticalCenter:parent.verticalCenter
         } 
@@ -101,18 +104,24 @@ Components.ListItem{
             }
             sourceSize.width:32
             sourceSize.height:32
-            anchors.leftMargin:5
-            anchors.left:pkgName.right
+            anchors.leftMargin:10
+            anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
         }
         Rectangle{
             color:"transparent"
             width:30
             height:30
-            anchors.leftMargin:5
-            anchors.left:resultImg.right
+            anchors.leftMargin:10
+            anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
-            visible:isRunning
+            visible:{
+                if (packageCheck.checked){
+                    epiBridge.isProcessRunning
+                }else{
+                    false
+                }
+            }
 
             AnimatedImage{
                 source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"

@@ -42,7 +42,7 @@ ApplicationWindow {
         anchors.margins: margin
         Layout.minimumWidth:800
         Layout.preferredWidth:800
-        Layout.minimumHeight:570
+        Layout.minimumHeight:580
 
         RowLayout {
             id: bannerBox
@@ -68,8 +68,8 @@ ApplicationWindow {
             property int currentView:epiBridge.currentStack
             Layout.minimumWidth:800
             Layout.preferredWidth: 800
-            Layout.minimumHeight:450
-            Layout.preferredHeight:450
+            Layout.minimumHeight:460
+            Layout.preferredHeight:460
             Layout.alignment:Qt.AlignHCenter|Qt.AlignVCenter
             Layout.leftMargin:0
             Layout.fillWidth:true

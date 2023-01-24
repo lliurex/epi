@@ -15,21 +15,23 @@ Rectangle{
 
     GridLayout{
         id:mainGrid
-        rows:2
+        rows:3
         flow: GridLayout.TopToBottom
         rowSpacing:10
         anchors.left:parent.left
         anchors.fill:parent
 
-        TextField{
+        PC3.TextField{
             id:pkgSearchEntry
             font.pointSize:10
             horizontalAlignment:TextInput.AlignLeft
             Layout.alignment:Qt.AlignRight
             Layout.topMargin:40
             focus:true
-            width:200
-            placeholderText:i18nd("epi-gtk","Search")
+            width:100
+            visible:epiBridge.selectPkg
+            enabled:!epiBridge.isProcessRunning
+            placeholderText:i18nd("epi-gtk","Search...")
             onTextChanged:{
                 filterModel.update()
             }
@@ -41,6 +43,14 @@ Rectangle{
             color:"white"
             Layout.fillHeight:true
             Layout.fillWidth:true
+            Layout.topMargin:{
+                if(epiBridge.selectPkg){
+                    0
+                }else{
+                    40
+                }
+            }
+
             border.color: "#d3d3d3"
 
             PC3.ScrollView{
@@ -66,6 +76,7 @@ Rectangle{
                         model:packagesModel
                         role:"customName"
                         search:pkgSearchEntry.text.trim()
+                        
                         delegate: ListDelegatePkgItem{
                             width:pkgTable.width
                             pkgId:model.pkgId
@@ -86,12 +97,42 @@ Rectangle{
                         anchors.centerIn: parent
                         width: parent.width - (units.largeSpacing * 4)
                         visible: listCount.count==0?true:false
-                        text: "No pacakges"
+                        text: "No packages foud"
                     }
 
                  } 
             }
         }
+
+        PC3.Button {
+            id:selectBtn
+            visible:epiBridge.selectPkg
+            focus:true
+            display:AbstractButton.TextBesideIcon
+            icon.name:{
+                if (epiBridge.uncheckAll){
+                    "list-remove"
+                }else{
+                    "list-add"
+                }
+            }
+            text:{
+                if (epiBridge.uncheckAll){
+                    i18nd("epi-gtk","Uncheck all packages")
+                }else{
+                    i18nd("epi-gtk","Check all packages")
+                }
+            }
+            enabled:!epiBridge.isProcessRunning
+            Layout.preferredHeight:40
+            Layout.rightMargin:10
+            Keys.onReturnPressed: selectBtn.clicked()
+            Keys.onEnterPressed: selectBtn.clicked()
+            onClicked:{
+                epiBridge.selectAll()
+                console.log("Seleccionar todo")
+            }
+        }      
     }
 
 }

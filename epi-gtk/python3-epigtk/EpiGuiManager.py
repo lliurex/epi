@@ -38,7 +38,7 @@ class EpiGuiManager:
 		if ret[0]:
 			ret=self._loadEpiFile()
 			if ret[0]:
-				ret=self._createPackagesModel()
+				ret=self._getEpiContent()
 		
 		return ret
 
@@ -129,11 +129,14 @@ class EpiGuiManager:
 
 	#def _localDebError
 	
-	def _createPackagesModel(self):
+	def _getEpiContent(self):
 
 		self.info=copy.deepcopy(self.loadEpiConf)
 		self.areDepends=False
 		self.searchEntry=False
+		self.selectPkg=False
+		self.uncheckAll=False
+		self.showRemoveBtn=False
 		defaultChecked=False
 
 		if len(self.info)>1:
@@ -143,7 +146,6 @@ class EpiGuiManager:
 			pkgOrder=0
 			showCB=False
 			order=item
-			self.uncheckAll=False
 			if order==0:
 				if self.info[item]["selection_enabled"]["active"]:
 					self.searchEntry=True
@@ -153,8 +155,14 @@ class EpiGuiManager:
 						defaultChecked=True
 						self.uncheckAll=True
 
+				try:
+					if self.info[item]["script"]["remove"]:
+						self.showRemoveBtn=True
+				except :
+					pass
 				
-			count=len(self.info[item]["pkg_list"])
+				self.totalPackages=len(self.info[item]["pkg_list"])
+			
 			for element in self.info[item]["pkg_list"]:
 				if order>0 and pkgOrder>0:
 					pass
@@ -165,11 +173,19 @@ class EpiGuiManager:
 
 					if defaultChecked:
 						tmp["isChecked"]=True
+						self._managePkgSelected(element["name"],True)
 					else:
-						try:
-							tmp["isChecked"]=element["default_pkg"]
-						except:
-							tmp["isChecked"]=False			
+						if not showCB:
+							tmp["isChecked"]=True
+							self._managePkgSelected(element["name"],True)
+						else:
+							try:
+								print(element["name"]+"-"+str(element["default_pkg"]))
+								tmp["isChecked"]=element["default_pkg"]
+								if tmp["isChecked"]:
+									self._managePkgSelected(element["name"],True)
+							except:
+								tmp["isChecked"]=False			
 					
 					if order!=0:
 						tmp["customName"]=self.info[item]["zomando"]
@@ -179,21 +195,29 @@ class EpiGuiManager:
 						except:
 							tmp["customName"]=element["name"]
 
+					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
 					if order==0:
 						try:
 							iconPath=self.info[item]["custom_icon_path"]
 							if iconPath!="":
 								if iconPath[-1]!="/":
 									iconPath="%s/"%iconPath
-								tmp["pkgIcon"]="%s%s"%(iconPath,element["custom_icon"])
+								if tmp["status"]=="installed":
+									tmp["pkgIcon"]="%s%s_OK"%(iconPath,element["custom_icon"])
+								else:	
+									tmp["pkgIcon"]="%s%s"%(iconPath,element["custom_icon"])
+							else:
+								if tmp["status"]=="installed":
+									tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_install.png")
+								else:
+									tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
+						except:
+							if tmp["status"]=="installed":
+								tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_install.png")
 							else:
 								tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
-						except:
-							tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
 					else:
 						tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_dep")
-
-					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
 					
 					if order==0:
 						tmp["isVisible"]=True
@@ -203,21 +227,84 @@ class EpiGuiManager:
 					tmp["isRunning"]=False
 					tmp["resultProcess"]=-1
 					tmp["order"]=order
-					self.packagesData.append(tmp)
-					
+					if order!=0:
+						if tmp["status"]!="installed":
+							self.packagesData.append(tmp)
+					else:
+						self.packagesData.append(tmp)
 				pkgOrder+=1
-		print(self.packagesData)
+		
 		return [True,""]
 
 	#def _createPackagesModel
 
+	def onCheckedPackages(self,pkgId,isChecked):
+
+		if isChecked:
+			self._managePkgSelected(pkgId,True)
+		else:
+			self._managePkgSelected(pkgId,False)
+
+		if len(self.epiManager.packages_selected)==self.totalPackages:
+			self.uncheckAll=True
+		else:
+			self.uncheckAll=False
+
+		self.updatePackagesModel("isChecked",pkgId,isChecked)			
+	
+	#def onCheckedPackages
+
+	def selectAll(self):
+
+		if self.uncheckAll:
+			active=False
+		else:
+			active=True
+
+		pkgList=copy.deepcopy(self.packagesData)
+		for item in pkgList:
+			if item["isChecked"]!=active:
+				self._managePkgSelected(item["pkgId"],active)
+				self.updatePackagesModel("isChecked",item["pkgId"],active)
+		
+		self.uncheckAll=active
+		
+	#def selectAll		
+
+	def updatePackagesModel(self,param,pkgId,value):
+
+		for item in self.packagesData:
+			if item["pkgId"]==pkgId:
+				if item[param]!=value:
+					item[param]=value
+				break
+
+	#def updatePackagesModel
+
+	def _managePkgSelected(self,pkgId,active=True):
+
+		if active:
+			if pkgId not in self.epiManager.packages_selected:
+				self.epiManager.packages_selected.append(pkgId)
+		else:
+			if pkgId in self.epiManager.packages_selected:
+				self.epiManager.packages_selected.remove(pkgId)
+
+	#def _managePkgSelected
+
 	def clearCache(self):
 
 		clear=False
-		versionFile="/root/.epi-gui.conf"
-		cachePath1="/root/.cache/epi-gtk"
+		user=os.environ["USER"]
 		installedVersion=self.getPackageVersion()
-
+	
+		if user=="root":
+			versionFile="/root/.epi-gui.conf"
+			cachePath1="/root/.cache/epi-gtk"
+		else:
+			versionFile="/home/%s/.config/epi-gui.conf"%user
+			cachePath1="/home/%s/.cache/epi-gtk"%user
+		
 		if not os.path.exists(versionFile):
 			with open(versionFile,'w') as fd:
 				fd.write(installedVersion)

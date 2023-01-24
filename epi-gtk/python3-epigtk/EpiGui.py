@@ -49,9 +49,15 @@ class EpiGui(QObject):
 		self._closeGui=False
 		self._closePopUp=True
 		self._loadErrorCode=""
-		self._showStatusMessage=[True,"","Success"]
+		self._showStatusMessage=[False,"","Success"]
 		self._currentStack=0
 		self._currentOptionsStack=0
+		self._currentPkgOption=0
+		self._uncheckAll=True
+		self._selectPkg=False
+		self._showRemoveBtn=False
+		self._isProcessRunning=False
+		self._enableActionBtn=False
 		self._showDialog=False
 		self._endProcess=True
 		self._endCurrentCommand=False
@@ -81,14 +87,17 @@ class EpiGui(QObject):
 
 		if 	self.gatherInfo.ret[0]:
 			self._updatePackagesModel()
+			self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
+			self.selectPkg=EpiGui.epiGuiManager.selectPkg
+			self.showRemoveBtn=EpiGui.epiGuiManager.showRemoveBtn
+			if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
+				self.enableActionBtn=True
 			self.currentStack=2
 		else:
 			self.loadErrorCode=self.gatherInfo.ret[1]
 			self.currentStack=1
 
 	#def _loadInfo
-
-	#def _loadConfig
 
 	def _getCurrentStack(self):
 
@@ -118,6 +127,20 @@ class EpiGui(QObject):
 
 	#def _setCurrentOptionsStack
 
+	def _getCurrentPkgOption(self):
+
+		return self._currentPkgOption
+
+	#def _getCurrentPkgOption
+
+	def _setCurrentPkgOption(self,currentPkgOption):
+
+		if self._currentPkgOption!=currentPkgOption:
+			self._currentPkgOption=currentPkgOption
+			self.on_currentPkgOption.emit()
+
+	#def _setCurrentPkgOption
+
 	def _getLoadErrorCode(self):
 
 		return self._loadErrorCode
@@ -131,6 +154,76 @@ class EpiGui(QObject):
 			self.on_loadErrorCode.emit()
 
 	#def _setLoadErrorCode
+
+	def _getUncheckAll(self):
+
+		return self._uncheckAll
+
+	#def _getUncheckAll
+
+	def _setUncheckAll(self,uncheckAll):
+
+		if self._uncheckAll!=uncheckAll:
+			self._uncheckAll=uncheckAll
+			self.on_uncheckAll.emit()
+
+	#def _setUncheckAll 
+
+	def _getSelectPkg(self):
+
+		return self._selectPkg
+
+	#def _getSelectPkg
+
+	def _setSelectPkg(self,selectPkg):
+
+		if self._selectPkg!=selectPkg:
+			self._selectPkg=selectPkg
+			self.on_selectPkg.emit()
+
+	#def _setSelectPkg 
+
+	def _getEnableActionBtn(self):
+
+		return self._enableActionBtn
+
+	#def _getEnableActionBtn
+
+	def _setEnableActionBtn(self,enableActionBtn):
+
+		if self._enableActionBtn!=enableActionBtn:
+			self._enableActionBtn=enableActionBtn
+			self.on_enableActionBtn.emit()
+
+	#def _setEnableActionBtn
+
+	def _getShowRemoveBtn(self):
+
+		return self._showRemoveBtn
+
+	#def _getShowRemoveBtn
+
+	def _setShowRemoveBtn(self,showRemoveBtn):
+
+		if self._showRemoveBtn!=showRemoveBtn:
+			self._showRemoveBtn=showRemoveBtn
+			self.on_showRemoveBtn.emit()
+
+	#def _setShowRemoveBtn
+
+	def _getIsProcessRunning(self):
+
+		return self._isProcessRunning
+
+	#def _getIsProcessRunning
+
+	def _setIsProcessRunning(self, isProcessRunning):
+
+		if self._isProcessRunning!=isProcessRunning:
+			self._isProcessRunning=isProcessRunning
+			self.on_isProcessRunning.emit()
+
+	#def _setIsProcessRunning
 
 	def _getPackagesModel(self):
 
@@ -241,6 +334,64 @@ class EpiGui(QObject):
 	
 	#def manageTransitions
 
+	@Slot('QVariantList')
+	def onCheckPkg(self,info):
+
+		EpiGui.epiGuiManager.onCheckedPackages(info[0],info[1])
+		self._refreshInfo()
+
+	#def onCheckPkg
+
+	@Slot()
+	def selectAll(self):
+
+		EpiGui.epiGuiManager.selectAll()
+		self._refreshInfo()
+		
+	#def selectAll
+
+	def _refreshInfo(self):
+
+		self._updatePackagesModelInfo("isChecked")
+		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
+		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
+			self.enableActionBtn=True
+		else:
+			self.enableActionBtn=False
+
+	#def _refreshInfo
+
+	@Slot()
+	def installPkg(self):
+
+		if not self.isProcessRunning:
+			self.isProcessRunning=True
+		else:
+			self.isProcessRunning=False
+	
+	#def installPkg
+
+	@Slot()
+	def uninstallPkg(self):
+
+		if not self.isProcessRunning:
+			self.isProcessRunning=True
+		else:
+			self.isProcessRunning=False
+
+	#def uninstallPkg
+
+	def _updatePackagesModelInfo(self,param):
+
+		updatedInfo=EpiGui.epiGuiManager.packagesData
+
+		if len(updatedInfo)>0:
+			for i in range(len(updatedInfo)):
+				index=self._packagesModel.index(i)
+				self._packagesModel.setData(index,param,updatedInfo[i][param])
+	
+	#def _updatePackagesModelInfo
+
 	@Slot()
 	def closeApplication(self):
 
@@ -254,9 +405,27 @@ class EpiGui(QObject):
 	on_currentOptionsStack=Signal()
 	currentOptionsStack=Property(int,_getCurrentOptionsStack,_setCurrentOptionsStack, notify=on_currentOptionsStack)
 
+	on_currentPkgOption=Signal()
+	currentPkgOption=Property(int,_getCurrentPkgOption,_setCurrentPkgOption,notify=on_currentPkgOption)
+	
 	on_loadErrorCode=Signal()
 	loadErrorCode=Property(int,_getLoadErrorCode,_setLoadErrorCode,notify=on_loadErrorCode)
 	
+	on_uncheckAll=Signal()
+	uncheckAll=Property(bool,_getUncheckAll,_setUncheckAll,notify=on_uncheckAll)
+
+	on_selectPkg=Signal()
+	selectPkg=Property(bool,_getSelectPkg,_setSelectPkg,notify=on_selectPkg)
+
+	on_enableActionBtn=Signal()
+	enableActionBtn=Property(bool,_getEnableActionBtn,_setEnableActionBtn,notify=on_enableActionBtn)
+
+	on_showRemoveBtn=Signal()
+	showRemoveBtn=Property(bool,_getShowRemoveBtn,_setShowRemoveBtn,notify=on_showRemoveBtn)
+
+	on_isProcessRunning=Signal()
+	isProcessRunning=Property(bool,_getIsProcessRunning,_setIsProcessRunning,notify=on_isProcessRunning)
+
 	on_showStatusMessage=Signal()
 	showStatusMessage=Property('QVariantList',_getShowStatusMessage,_setShowStatusMessage,notify=on_showStatusMessage)
 

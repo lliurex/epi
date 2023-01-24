@@ -12,9 +12,9 @@ GridLayout{
     columnSpacing:10
 
     Rectangle{
-        width:195
-        Layout.minimumHeight:430
-        Layout.preferredHeight:430
+        width:130
+        Layout.minimumHeight:460
+        Layout.preferredHeight:460
         Layout.fillHeight:true
         border.color: "#d3d3d3"
 
@@ -26,8 +26,8 @@ GridLayout{
 
             MenuOptionBtn {
                 id:packagesOption
-                optionText:i18nd("epi-gtk","Information")
-                optionIcon:"/usr/share/icons/breeze/actions/16/run-build.svg"
+                optionText:i18nd("epi-gtk","Init")
+                optionIcon:"/usr/share/icons/breeze/places/16/user-home.svg"
                 Connections{
                     function onMenuOptionClicked(){
                         epiBridge.manageTransitions(0)
@@ -108,17 +108,29 @@ GridLayout{
 
             PC3.Button {
                 id:uninstallBtn
-                visible:true
+                visible:epiBridge.showRemoveBtn
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:"delete"
                 text:i18nd("epi-gtk","Uninstall")
+                enabled:{
+                    if (epiBridge.enableActionBtn){
+                        if (!epiBridge.isProcessRunning){
+                            true
+                        }else{
+                            false
+                        }
+                    }else{
+                        false
+                    }
+                }
+
                 Layout.preferredHeight:40
                 Layout.rightMargin:10
                 Keys.onReturnPressed: uninstallBtn.clicked()
                 Keys.onEnterPressed: uninstallBtn.clicked()
                 onClicked:{
-                    console.log("Desintalar")
+                    epiBridge.uninstallPkg()
                 }
             }
 
@@ -141,12 +153,23 @@ GridLayout{
                 display:AbstractButton.TextBesideIcon
                 icon.name:"dialog-ok"
                 text:i18nd("epi-gtk","Install")
+                enabled:{
+                    if (epiBridge.enableActionBtn){
+                        if (!epiBridge.isProcessRunning){
+                            true
+                        }else{
+                            false
+                        }
+                    }else{
+                        false
+                    }
+                }
                 Layout.preferredHeight:40
                 Layout.rightMargin:10
                 Keys.onReturnPressed: installBtn.clicked()
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
-                    console.log("Instalar")
+                    epiBridge.installPkg()
                 }
             }
         }
