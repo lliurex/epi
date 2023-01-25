@@ -32,9 +32,28 @@ class GatherInfo(QThread):
 
 #class GatherInfo
 
+class UnlockProcess(QThread):
+
+	def __init__(self,*args):
+
+		QThread.__init__(self)
+
+	#def __init__
+		
+	def run(self,*args):
+		
+		self.ret=EpiGui.epiGuiManager.execUnlockProcess()
+
+	#def run
+
+#def UnlockProcess
+
 class EpiGui(QObject):
 
 	epiGuiManager=EpiGuiManager.EpiGuiManager()
+	MSG_LOADING_INFO=0
+	MSG_LOADING_WAIT=1
+	MSG_LOADING_UNLOCK=2
 
 	def __init__(self):
 
@@ -48,6 +67,7 @@ class EpiGui(QObject):
 		self._packagesModel=PackagesModel.PackagesModel()
 		self._closeGui=False
 		self._closePopUp=True
+		self._loadMsgCode=EpiGui.MSG_LOADING_INFO
 		self._loadErrorCode=""
 		self._showStatusMessage=[False,"","Success"]
 		self._currentStack=0
@@ -63,6 +83,8 @@ class EpiGui(QObject):
 		self._endCurrentCommand=False
 		self._currentCommand=""
 		self.moveToStack=""
+		self.waitMaxRetry=1
+		self.waitRetryCount=0
 		debug=False
 		noCheck=False
 		epiFile=""
@@ -86,18 +108,67 @@ class EpiGui(QObject):
 	def _loadInfo(self):
 
 		if 	self.gatherInfo.ret[0]:
-			self._updatePackagesModel()
-			self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
-			self.selectPkg=EpiGui.epiGuiManager.selectPkg
-			self.showRemoveBtn=EpiGui.epiGuiManager.showRemoveBtn
-			if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
-				self.enableActionBtn=True
-			self.currentStack=2
+			self._showInfo()
 		else:
-			self.loadErrorCode=self.gatherInfo.ret[1]
-			self.currentStack=1
+			if self.gatherInfo.ret[2]=="End":
+				self.loadErrorCode=self.gatherInfo.ret[1]
+				self.currentStack=1
+			elif self.gatherInfo.ret[2]=="Wait":
+				self.loadMsgCode=EpiGui.MSG_LOADING_WAIT
+				self.waitUnlockTimer=QTimer()
+				self.waitUnlockTimer.timeout.connect(self._getLockInfo)
+				self.waitUnlockTimer.start(5000)
+			elif self.gatherInfo.ret[2]=="Lock":
+				self.showDialog=True
 
 	#def _loadInfo
+
+	def _showInfo(self):
+
+		self._updatePackagesModel()
+		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
+		self.selectPkg=EpiGui.epiGuiManager.selectPkg
+		self.showRemoveBtn=EpiGui.epiGuiManager.showRemoveBtn
+		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
+			self.enableActionBtn=True
+		self.currentStack=2
+
+	#def _showInfo
+
+	def _getLockInfo(self):
+
+		EpiGui.epiGuiManager.checkLockInfo()
+		ret=EpiGui.epiGuiManager.getLockInfo()
+
+		if self.waitRetryCount<self.waitMaxRetry:
+			if not ret[0]:
+				self.waitRetryCount+=1
+			else:
+				self.waitUnlockTimer.stop()
+				self._showInfo()
+		else:
+			self.waitUnlockTimer.stop()
+			if ret[0]:
+				self._showInfo()
+			else:
+				self.loadErrorCode=ret[1]
+				self.currentStack=1
+
+	#def _getLockInfo
+
+	def _getLoadMsgCode(self):
+
+		return self._loadMsgCode
+
+	#def _getLoadMsgCode
+
+	def _setLoadMsgCode(self,loadMsgCode):
+
+		if self._loadMsgCode!=loadMsgCode:
+			self._loadMsgCode=loadMsgCode
+			self.on_loadMsgCode.emit()
+
+	#def _setLoadMsgCode
 
 	def _getCurrentStack(self):
 
@@ -323,7 +394,28 @@ class EpiGui(QObject):
 			self._closeGui=closeGui		
 			self.on_closeGui.emit()
 
-	#def _setCloseGui	
+	#def _setCloseGui
+
+	@Slot()
+	def launchUnlockProcess(self):
+
+		self.showDialog=False
+		self.loadMsgCode=EpiGui.MSG_LOADING_UNLOCK
+		self.unlockProcessT=UnlockProcess()
+		self.unlockProcessT.start()
+		self.unlockProcessT.finished.connect(self._unlockProcessT)
+
+	#def launchUnlockProcess
+
+	def _unlockProcessT(self):
+
+		if self.unlockProcessT.ret[0]:
+			self._showInfo()
+		else:
+			self.loadErrorCode=self.unlockProcessT.ret[1]
+			self.currentStack=1
+
+	#def _unlockProcessT	
 
 	@Slot(int)
 	def manageTransitions(self,stack):
@@ -364,12 +456,22 @@ class EpiGui(QObject):
 	@Slot()
 	def installPkg(self):
 
-		if not self.isProcessRunning:
-			self.isProcessRunning=True
-		else:
-			self.isProcessRunning=False
+		self.isProcessRunning=True
+		if EpiGui.epiGuiManager.noCheck:
+			EpiGui.epiGuiManager.checkInternetConnection()
+			self.checkConnectionTimer=QTimer()
+			self.checkConnectionTimer.timeout.connect(self._checkConnectionInfo)
+			self.checkConnectionTimer.start(1000)
 	
 	#def installPkg
+
+	def _checkConnectionInfo(self):
+
+		if EpiGui.epiGuiManager.endCheck:
+			self.checkConnectionTimer.stop()
+			if not EpiGui.epiGuiManager.retConnection[0]:
+
+	#def _checkConnectionInfo
 
 	@Slot()
 	def uninstallPkg(self):
@@ -398,6 +500,9 @@ class EpiGui(QObject):
 		self.closeGui=True
 
 	#def closeApplication
+	
+	on_loadMsgCode=Signal()
+	loadMsgCode=Property(int,_getLoadMsgCode,_setLoadMsgCode,notify=on_loadMsgCode)
 	
 	on_currentStack=Signal()
 	currentStack=Property(int,_getCurrentStack,_setCurrentStack, notify=on_currentStack)

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Dialogs 1.3
 
 
 Rectangle{
@@ -34,11 +35,49 @@ Rectangle{
 
             Text{
                 id:loadtext
-                text:i18nd("lliurex-access-control", "Loading. Wait a moment...")
+                text:getMsg()
                 font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10
                 Layout.alignment:Qt.AlignHCenter
             }
         }
+    }
+
+    CustomDialog{
+        id:unlockDialog
+        dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
+        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Unlock process")
+        dialogVisible:epiBridge.showDialog
+        dialogMsg:i18nd("epi-gtk","Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem") 
+        dialogWidth:550
+        btnAcceptVisible:false
+        btnCancelText:i18nd("epi-gtk","Unlock")
+        btnCancelIcon:"dialog-ok"
+
+        Connections{
+            target:unlockDialog
+            function onCancelDialogClicked(){
+                epiBridge.launchUnlockProcess()
+            } 
+
+        }
+
+    }
+
+    function getMsg(){
+
+        var msg=""
+        switch(epiBridge.loadMsgCode){
+            case 0:
+                msg=i18nd("epi-gkt","Loading information. Wait a moment...")
+                break;
+            case 1:
+                msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Checking if they have finished")
+                break;
+            case 2:
+                msg=i18nd("epi-gtk","Executing the unlocking process. Wait a moment...")
+                break
+        }
+        return msg
     }
 }

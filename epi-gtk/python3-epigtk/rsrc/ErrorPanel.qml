@@ -11,6 +11,7 @@ Rectangle{
         rows: 1
         flow: GridLayout.TopToBottom
         anchors.centerIn:parent
+        anchors.fill:parent
 
         Kirigami.InlineMessage {
             id: errorLabel
@@ -19,7 +20,8 @@ Rectangle{
             type:Kirigami.MessageType.Error;
             Layout.minimumWidth:555
             Layout.fillWidth:true
-            Layout.rightMargin:10
+            Layout.rightMargin:15
+            Layout.leftMargin:15
             
         }
     }
@@ -49,7 +51,11 @@ Rectangle{
             case -7:
                 msg=i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
                 break;
-          
+            case -10:
+                msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
+                break;
+            case -13:
+                msg=i18nd("epi-gtk","The unlocking process has failed")
         }
         return msg
     }

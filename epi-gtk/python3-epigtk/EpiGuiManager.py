@@ -7,6 +7,8 @@ import shutil
 import sys
 import syslog
 import copy
+import threading
+
 
 class EpiGuiManager:
 
@@ -19,11 +21,17 @@ class EpiGuiManager:
 	ERROR_LOADING_LOCAL_DEB=-7
 	ERROR_DEPENDS_LOCAL_DEB=-8
 	ERROR_LOCAL_DEB_PROBLEMS=-9
+	ERROR_LOCK_UPDATED=-10
+	ERROR_LOCK_WAIT=-11
+	ERROR_LOCK_LOCKED=-12
+	ERROR_LOCK_PROCESS=-13
+	ERROR_INTERNET_CONNECTION=-14
 
 	def __init__(self):
 
 		self.packagesData=[]
 		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
+		self.lockInfo={}
 		self.clearCache()
 
 	#def __init__
@@ -37,33 +45,31 @@ class EpiGuiManager:
 
 		if ret[0]:
 			ret=self._loadEpiFile()
-			if ret[0]:
-				ret=self._getEpiContent()
-		
+	
 		return ret
 
 	#def initProcess
 
 	def _checkEpiFile(self):
 
-		ret=["",""]
+		ret=["","",""]
 		validJson=self.epiManager.read_conf(self.epiFile)
 		if validJson["status"]:
 			validScript=self.epiManager.check_script_file()
 			if validScript["status"]:
-				ret=[True,'']
+				ret=[True,'','']
 			else:
 				if validScript["error"]=="path":
-					ret=[False,EpiGuiManager.ERROR_SCRIPT_FILE_NOT_EXISTS]
+					ret=[False,EpiGuiManager.ERROR_SCRIPT_FILE_NOT_EXISTS,'End']
 				else:
-					ret=[False,EpiGuiManager.ERROR_SCRIPT_FILE_NOT_EXECUTE]
+					ret=[False,EpiGuiManager.ERROR_SCRIPT_FILE_NOT_EXECUTE,'End']
 		else:
 			if validJson["error"]=="path":
-				ret=[False,EpiGuiManager.ERROR_EPI_FILE_NOT_EXISTS]
+				ret=[False,EpiGuiManager.ERROR_EPI_FILE_NOT_EXISTS,'End']
 			elif validJson["error"]=="json":
-				ret=[False,EpiGuiManager.ERROR_EPI_JSON]
+				ret=[False,EpiGuiManager.ERROR_EPI_JSON,'End']
 			else:
-				ret=[False,EpiGuiManager.ERROR_EPI_EMPTY_FILE]
+				ret=[False,EpiGuiManager.ERROR_EPI_EMPTY_FILE,'End']
 
 		return ret
 
@@ -73,7 +79,7 @@ class EpiGuiManager:
 
 		epiLoaded=self.epiManager.epiFiles
 		order=len(epiLoaded)
-		ret=[True,""]
+		ret=[True,"",""]
 
 		if order>0:
 			checkRoot=self.epiManager.check_root()
@@ -85,12 +91,9 @@ class EpiGuiManager:
 				self.eulaAccepted=False
 			if checkRoot:
 				if not self.noCheck:	
-					self.lockInfo=self.epiManager.check_locks()
-				else:
-					self.lockInfo={}
+					self.checkLockInfo()
 				self.writeLog("Locks info: "+ str(self.lockInfo))
 			else:
-				self.lockInfo={}
 				self.writeLog("Locks info: Not checked. User is not root")
 					
 			testInstall=self.epiManager.test_install()
@@ -100,27 +103,69 @@ class EpiGuiManager:
 			self.loadEpiConf=epiLoaded
 			self.order=order
 
+		self._getEpiContent()
+
 		if requiredRoot:
-			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT]
-		else:
-			if testInstall[0]!="":
-				if testInstall[0]=="1":
-					ret=[False,EpiGuiManager.ERROR_LOADING_LOCAL_DEB]
-				else:
-					if testInstall[1]!="":
-						return self._localDebError(testInstall)
+			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End']
+		elif len(self.lockInfo)>0:
+			ret=self.getLockInfo()
+		elif testInstall[0]!="":
+			if testInstall[0]=="1":
+				ret=[False,EpiGuiManager.ERROR_LOADING_LOCAL_DEB,'End']
+			else:
+				if testInstall[1]!="":
+					return self._localDebError(testInstall)
 		
 		return ret
 
 	#def _loadEpiFile
 
+	def checkLockInfo(self):
+
+		self.lockInfo=self.epiManager.check_locks()
+
+	#def checkLockInfo
+
+	def getLockInfo(self):
+
+		ret=[True,'','']
+
+		if len(self.lockInfo)>0:
+			if "Lliurex-Up" in self.lockInfo:
+				self.writeLog("Lock info: The system is being updated")
+				ret=[False,EpiGuiManager.ERROR_LOCK_UPDATED,'End']
+			else:
+				if self.lockInfo["wait"]:
+					self.writeLog("Lock info: Apt or Dpkg are being executed. Checking if they have finished...")
+					ret=[False,EpiGuiManager.ERROR_LOCK_WAIT,'Wait']
+				else:
+					self.writeLog("Lock info: Apt or Dpkg seems locked. Unlock process need")
+					ret=[False,EpiGuiManager.ERROR_LOCK_LOCKED,'Lock']
+
+		return ret
+
+	#def _getLockInfo
+
+	def execUnlockProcess(self):
+
+		ret=self.epiManager.unlock_process()
+
+		if ret==0:
+			self.writeLog("Unlock process ok")
+			return [True,""]
+		else:
+			self.writeLog("Unlock process failed: %s"%str(self.unlock_result))
+			return [False,EpiGuiManager.ERROR_LOCK_PROCESS] 
+
+	#def execUnlockProcess
+
 	def _localDebError(self,testInstall):
 
 		if self.testInstall[1]!="":
-			ret=[False,EpiGuiManager.ERROR_DEPENDS_LOCAL_DEB]
+			ret=[False,EpiGuiManager.ERROR_DEPENDS_LOCAL_DEB,'localDeb']
 			self.msgLocalDebError=msg+"\n"+str(self.testInstall[1])
 		else:
-			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS]
+			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,'localDeb']
 			self.msgLocalDebError=msg+"\n"+str(self.testinstall[0])
 
 		self.writeLog("Test to install local deb: Unable to install package:"+str(self.testInstall))
@@ -234,8 +279,6 @@ class EpiGuiManager:
 						self.packagesData.append(tmp)
 				pkgOrder+=1
 		
-		return [True,""]
-
 	#def _createPackagesModel
 
 	def onCheckedPackages(self,pkgId,isChecked):
@@ -291,6 +334,60 @@ class EpiGuiManager:
 				self.epiManager.packages_selected.remove(pkgId)
 
 	#def _managePkgSelected
+
+	def checkInternetConnection(self):
+
+		self.checkingUrl1_t=threading.Thread(target=self._checkingUrl1)
+		self.checkingUrl2_t=threading.Thread(target=self._checkingUrl2)
+		self.checkingUrl1_t.daemon=True
+		self.checkingUrl2_t.daemon=True
+		self.checkingUrl1_t.start()
+		self.checkingUrl2_t.start()
+
+	#def checkInternetConnection
+
+	def _checkingUrl1(self):
+
+		self.connection=self.epiManager.check_connection(self.epiManager.urltocheck1)
+		self.firstConnection=self.connection[0]
+	
+	#def _checkingUrl1	
+
+	def _checkingUrl2(self):
+
+		self.connection=self.epiManager.check_connection(self.epiManager.urltocheck2)
+		self.secondConnection=self.connection[0]
+ 	
+ 	#def _checkingUrl2
+
+ 	def getResultCheckConnection(self):
+
+ 		self.endCheck=False
+		error=False
+		urlError=False
+		self.retConnection=[True,""]
+
+		if self.checkingUrl1_t.is_alive() and self.checkingUrl2_t.is_alive():
+			pass		
+		else:
+			if not self.firstConnection and not self.secondConnection:
+				if self.checkingUrl1_t.is_alive() or self.checkingUrl2_t.is_alive():
+					pass
+				else:
+					self.endCheck=True
+			else:
+				self.endCheck=True
+		else:
+			self.endCheck=True
+
+		if self.endCheck:
+			if not self.firstConnection and not self.secondConnection:
+				error=True
+				msgError=EpiGuiManager.ERROR_INTERNET_CONNECTION
+				self.writeLog("%s:%s"%(msgError,self.connection[1]))
+				self.retConnection=[error,msgError]
+
+	#def getResultCheckConnection
 
 	def clearCache(self):
 
