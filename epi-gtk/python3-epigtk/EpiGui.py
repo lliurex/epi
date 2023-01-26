@@ -54,6 +54,7 @@ class EpiGui(QObject):
 	MSG_LOADING_INFO=0
 	MSG_LOADING_WAIT=1
 	MSG_LOADING_UNLOCK=2
+	MSG_FEEDBACK_INTERNET=3
 
 	def __init__(self):
 
@@ -69,16 +70,18 @@ class EpiGui(QObject):
 		self._closePopUp=True
 		self._loadMsgCode=EpiGui.MSG_LOADING_INFO
 		self._loadErrorCode=""
-		self._showStatusMessage=[False,"","Success"]
+		self._showStatusMessage=[False,"","Ok"]
 		self._currentStack=0
 		self._currentOptionsStack=0
 		self._currentPkgOption=0
+		self._feedbackCode=""
 		self._uncheckAll=True
 		self._selectPkg=False
 		self._showRemoveBtn=False
 		self._isProcessRunning=False
 		self._enableActionBtn=False
 		self._showDialog=False
+		self._eulaUrl=""
 		self._endProcess=True
 		self._endCurrentCommand=False
 		self._currentCommand=""
@@ -131,6 +134,10 @@ class EpiGui(QObject):
 		self.showRemoveBtn=EpiGui.epiGuiManager.showRemoveBtn
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableActionBtn=True
+		
+		if EpiGui.epiGuiManager.initialStatusCode[0]!="":
+			self.showStatusMessage=[True,EpiGui.epiGuiManager.initialStatusCode[0],EpiGui.epiGuiManager.initialStatusCode[1]]
+		
 		self.currentStack=2
 
 	#def _showInfo
@@ -197,6 +204,20 @@ class EpiGui(QObject):
 			self.on_currentOptionsStack.emit()
 
 	#def _setCurrentOptionsStack
+
+	def _getFeedbackCode(self):
+
+		return self._feedbackCode
+
+	#def _getFeedbackCode
+
+	def _setFeedbackCode(self,feedbackCode):
+
+		if self._feedbackCode!=feedbackCode:
+			self._feedbackCode=feedbackCode
+			self.on_feedbackCode.emit()
+
+	#def _setFeedbackCode
 
 	def _getCurrentPkgOption(self):
 
@@ -340,6 +361,20 @@ class EpiGui(QObject):
 	
 	#def _setShowDialog
 
+	def _getEulaUrl(self):
+
+		return self._eulaUrl
+
+	#def _getEulaUrl
+
+	def _setEulaUrl(self,eulaUrl):
+
+		if self._eulaUrl!=eulaUrl:
+			self._eulaUrl=eulaUrl
+			self.on_eulaUrl.emit()
+
+	#def _setEulaUrl
+
 	def _getEndProcess(self):
 
 		return self._endProcess
@@ -454,24 +489,53 @@ class EpiGui(QObject):
 	#def _refreshInfo
 
 	@Slot()
-	def installPkg(self):
+	def initInstallProcess(self):
 
+		self.showStatusMessage=[False,"","Ok"]
 		self.isProcessRunning=True
-		if EpiGui.epiGuiManager.noCheck:
+		if not EpiGui.epiGuiManager.noCheck:
+			self.feedbackCode=EpiGui.MSG_FEEDBACK_INTERNET
 			EpiGui.epiGuiManager.checkInternetConnection()
 			self.checkConnectionTimer=QTimer()
 			self.checkConnectionTimer.timeout.connect(self._checkConnectionInfo)
 			self.checkConnectionTimer.start(1000)
+		else:
+			self._checkEulas(self)
 	
 	#def installPkg
 
 	def _checkConnectionInfo(self):
 
+		EpiGui.epiGuiManager.getResultCheckConnection()
 		if EpiGui.epiGuiManager.endCheck:
 			self.checkConnectionTimer.stop()
-			if not EpiGui.epiGuiManager.retConnection[0]:
+			self.feedbackCode=0
+			self.isProcessRunning=False
+			if EpiGui.epiGuiManager.retConnection[0]:
+				self.showStatusMessage=[True,EpiGui.epiGuiManager.retConnection[1],"Error"]
+			else:
+				self._checkEulas()
 
 	#def _checkConnectionInfo
+
+	def _checkEulas(self):
+
+		if not EpiGui.epiGuiManager.eulaAccepted:
+			EpiGui.epiGuiManager.getEulasToCheck()
+			if len(EpiGui.epiGuiManager.eulasToShow)>0:
+				self._acceptEula()
+	
+	#def _checkEulas
+	
+	def _acceptEula(self):
+
+		if not self.selectPkg:
+			if len(EpiGui.epiGuiManager.eulasToCheck)>0:
+				self.eulaUrl=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["eula"]
+				self.currentPkgOption=1
+					
+
+	#def _acceptEula
 
 	@Slot()
 	def uninstallPkg(self):
@@ -516,6 +580,9 @@ class EpiGui(QObject):
 	on_loadErrorCode=Signal()
 	loadErrorCode=Property(int,_getLoadErrorCode,_setLoadErrorCode,notify=on_loadErrorCode)
 	
+	on_feedbackCode=Signal()
+	feedbackCode=Property(int,_getFeedbackCode,_setFeedbackCode,notify=on_feedbackCode)
+
 	on_uncheckAll=Signal()
 	uncheckAll=Property(bool,_getUncheckAll,_setUncheckAll,notify=on_uncheckAll)
 
@@ -537,6 +604,9 @@ class EpiGui(QObject):
 	on_showDialog=Signal()
 	showDialog=Property(bool,_getShowDialog,_setShowDialog,notify=on_showDialog)
 	
+	on_eulaUrl=Signal()
+	eulaUrl=Property(str,_getEulaUrl,_setEulaUrl,notify=on_eulaUrl)
+
 	on_endProcess=Signal()
 	endProcess=Property(bool,_getEndProcess,_setEndProcess, notify=on_endProcess)
 

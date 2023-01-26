@@ -24,6 +24,9 @@ GridLayout{
                 case 0:
                     generalPkgView.replace(pkgInfoView)
                     break
+                case 1:
+                    generalPkgView.replace(pkgEulaView)
+                    break
             }
         }
 
@@ -31,6 +34,14 @@ GridLayout{
             id:pkgInfoView
             PackagesInfo{
                id:packagesInfo
+            }
+        }
+
+        Component{
+            id:pkgEulaView
+            EulaPanel{
+                id:eulaPanel
+                eulaUrl:epiBridge.eulaUrl
             }
         }
     }

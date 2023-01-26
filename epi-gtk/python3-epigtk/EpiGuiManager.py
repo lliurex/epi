@@ -27,11 +27,22 @@ class EpiGuiManager:
 	ERROR_LOCK_PROCESS=-13
 	ERROR_INTERNET_CONNECTION=-14
 
+	INFO_ALREADY_INSTALLED=4
+	INFO_ZMD_NOT_EXECUTED=5
+	INFO_EPI_FAILED=6
+
+
 	def __init__(self):
 
 		self.packagesData=[]
+		self.packagesSelected=[]
 		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
 		self.lockInfo={}
+		self.initialStatusCode=["","Info"]
+		self.firstConnection=False
+		self.secondConnection=False
+		self.eulaAccepted=True
+
 		self.clearCache()
 
 	#def __init__
@@ -104,7 +115,8 @@ class EpiGuiManager:
 			self.order=order
 
 		self._getEpiContent()
-
+		self._getInitialStatus()
+		
 		if requiredRoot:
 			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End']
 		elif len(self.lockInfo)>0:
@@ -279,7 +291,21 @@ class EpiGuiManager:
 						self.packagesData.append(tmp)
 				pkgOrder+=1
 		
-	#def _createPackagesModel
+	#def _getEpiContent
+
+	def _getInitialStatus(self):
+
+		if self.loadEpiConf[0]["status"]=="installed":
+			zmdConfigured=self.epiManager.get_zmd_status(0)
+			if not self.loadEpiConf[0]["selection_enabled"]["active"]:
+				if zmdConfigured==1:
+					self.initialStatusCode=[EpiGuiManager.INFO_ALREADY_INSTALLED,"Info"]
+				elif zmdConfigured==0:
+					self.initialStatusCode=[EpiGuiManager.INFO_ZMD_NOT_EXECUTED,"Warning"]
+				elif zmdConfigured==-1:
+					self.initialStatusCode=[EpiGuiManager.INFO_EPI_FAILED,"Warning"]
+
+	#def _getInitialStatus
 
 	def onCheckedPackages(self,pkgId,isChecked):
 
@@ -312,7 +338,7 @@ class EpiGuiManager:
 		
 		self.uncheckAll=active
 		
-	#def selectAll		
+	#def selectAll
 
 	def updatePackagesModel(self,param,pkgId,value):
 
@@ -333,6 +359,8 @@ class EpiGuiManager:
 			if pkgId in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.remove(pkgId)
 
+		self.packagesSelected=copy.deepcopy(self.epiManager.packages_selected)
+	
 	#def _managePkgSelected
 
 	def checkInternetConnection(self):
@@ -350,44 +378,55 @@ class EpiGuiManager:
 
 		self.connection=self.epiManager.check_connection(self.epiManager.urltocheck1)
 		self.firstConnection=self.connection[0]
-	
+
 	#def _checkingUrl1	
 
 	def _checkingUrl2(self):
 
 		self.connection=self.epiManager.check_connection(self.epiManager.urltocheck2)
 		self.secondConnection=self.connection[0]
- 	
- 	#def _checkingUrl2
 
- 	def getResultCheckConnection(self):
+	#def _checkingUrl2
+
+	def getResultCheckConnection(self):
 
  		self.endCheck=False
-		error=False
-		urlError=False
-		self.retConnection=[True,""]
+ 		error=False
+ 		urlError=False
+ 		self.retConnection=[False,""]
 
-		if self.checkingUrl1_t.is_alive() and self.checkingUrl2_t.is_alive():
-			pass		
-		else:
-			if not self.firstConnection and not self.secondConnection:
-				if self.checkingUrl1_t.is_alive() or self.checkingUrl2_t.is_alive():
-					pass
-				else:
-					self.endCheck=True
-			else:
-				self.endCheck=True
-		else:
-			self.endCheck=True
+ 		if self.checkingUrl1_t.is_alive() and self.checkingUrl2_t.is_alive():
+ 			pass
+ 		else:
+ 			if not self.firstConnection and not self.secondConnection:
+ 				if self.checkingUrl1_t.is_alive() or self.checkingUrl2_t.is_alive():
+ 					pass
+ 				else:
+ 					self.endCheck=True
+ 			else:
+ 				self.endCheck=True
 
-		if self.endCheck:
-			if not self.firstConnection and not self.secondConnection:
-				error=True
-				msgError=EpiGuiManager.ERROR_INTERNET_CONNECTION
-				self.writeLog("%s:%s"%(msgError,self.connection[1]))
-				self.retConnection=[error,msgError]
+ 		if self.endCheck:
+ 			if not self.firstConnection and not self.secondConnection:
+ 				error=True
+ 				msgError=EpiGuiManager.ERROR_INTERNET_CONNECTION
+ 				self.writeLog("%s:%s"%(msgError,self.connection[1]))
+ 				self.retConnection=[error,msgError]
 
 	#def getResultCheckConnection
+
+	def getEulasToCheck(self):
+
+		self.eulasToCheck=copy.deepcopy(self.requiredEula)
+		
+		for item in range(len(self.eulasToCheck)-1, -1, -1):
+			if self.eulasToCheck[item]["pkg_name"] not in self.packagesSelected:
+				self.eulasToCheck.pop(item)
+				
+		self.eulasToShow=self.eulasToCheck.copy()
+		self.eulaOrder=len(self.eulasToCheck)-1		
+
+	#def getEulasToCheck
 
 	def clearCache(self):
 

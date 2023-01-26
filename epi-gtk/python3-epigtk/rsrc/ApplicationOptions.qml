@@ -85,14 +85,8 @@ GridLayout{
          Kirigami.InlineMessage {
             id: messageLabel
             visible:epiBridge.showStatusMessage[0]
-            text:i18nd("epi-gtk","Test Text")
-            type: {
-                if (epiBridge.showStatusMessage[1]==""){
-                    Kirigami.MessageType.Positive;
-                }else{
-                    Kirigami.MessageType.Error;
-                }
-            }
+            text:getFeedBackText(epiBridge.showStatusMessage[1])
+            type:getMsgType()
             Layout.minimumWidth:555
             Layout.fillWidth:true
             Layout.rightMargin:10
@@ -136,7 +130,7 @@ GridLayout{
 
             Text{
                 id:feedBackText
-                text:getFeedBackText(1)
+                text:getFeedBackText(epiBridge.feedbackCode)
                 visible:true
                 font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10
@@ -169,7 +163,7 @@ GridLayout{
                 Keys.onReturnPressed: installBtn.clicked()
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
-                    epiBridge.installPkg()
+                    epiBridge.initInstallProcess()
                 }
             }
         }
@@ -207,26 +201,39 @@ GridLayout{
 
         var msg="";
         switch (code){
-            case 1:
-                msg=i18nd("epi-gtk","Removing Lliurex-Up lock file...");
-                break;
-            case 2:
-                msg=i18nd("epi-gtk","Removing Dpkg lock file...");
+            case -14:
+                msg=i18nd("epi-gtk","Internet connection not detected")
                 break;
             case 3:
-                msg=i18nd("epi-gtk","Removing Apt lock file...");
+                msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
                 break;
-             case 4:
-                msg=i18nd("epi-gtk","Fixing the system...");
+            case 4:
+                msg=i18nd("epi-gtk","Application already installed");
                 break;
-           
+            case 5:
+                msg=i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
+            case 6:
+                msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
+                break;
             default:
                 break;
         }
         return msg;
-
     }
 
-    
+    function getMsgType(){
+
+        switch(epiBridge.showStatusMessage[2]){
+            case "Ok":
+                return Kirigami.MessageType.Positive;
+            case "Error":
+                return Kirigami.MessageType.Error;
+            case "Info":
+                return Kirigami.MessageType.Information;
+            case "Warning":
+                return Kirigami.MessageType.Warning;
+        }
+    }
+
 }
 

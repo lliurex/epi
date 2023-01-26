@@ -16,7 +16,9 @@ _ = gettext.gettext
 import epigtk.EpiGui as EpiGui
 import epigtk.IconProvider as IconProvider
 
-app = QApplication()
+os.environ["QTWEBENGINE_CHROMIUM_FLAGS"]="--no-sandbox"
+
+app = QApplication(sys.argv)
 engine = QQmlApplicationEngine()
 engine.clearComponentCache()
 context=engine.rootContext()
