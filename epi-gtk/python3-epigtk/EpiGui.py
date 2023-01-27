@@ -55,6 +55,8 @@ class EpiGui(QObject):
 	MSG_LOADING_WAIT=1
 	MSG_LOADING_UNLOCK=2
 	MSG_FEEDBACK_INTERNET=3
+	MSG_FEEDBACK_EULA=7
+	MSG_FEEDBACK_INSTALL_1=8
 
 	def __init__(self):
 
@@ -70,6 +72,7 @@ class EpiGui(QObject):
 		self._closePopUp=True
 		self._loadMsgCode=EpiGui.MSG_LOADING_INFO
 		self._loadErrorCode=""
+		self._localDebError=""
 		self._showStatusMessage=[False,"","Ok"]
 		self._currentStack=0
 		self._currentOptionsStack=0
@@ -80,8 +83,10 @@ class EpiGui(QObject):
 		self._showRemoveBtn=False
 		self._isProcessRunning=False
 		self._enableActionBtn=False
+		self._enablePkgList=True
 		self._showDialog=False
 		self._eulaUrl=""
+		self._currentEulaPkg=""
 		self._endProcess=True
 		self._endCurrentCommand=False
 		self._currentCommand=""
@@ -115,6 +120,10 @@ class EpiGui(QObject):
 		else:
 			if self.gatherInfo.ret[2]=="End":
 				self.loadErrorCode=self.gatherInfo.ret[1]
+				self.currentStack=1
+			elif self.gatherInfo.ret[2]=="LocalDeb":
+				self.loadErrorCode=self.gatherInfo.ret[1]
+				self.localDebError=self.gatherInfo.ret[3]
 				self.currentStack=1
 			elif self.gatherInfo.ret[2]=="Wait":
 				self.loadMsgCode=EpiGui.MSG_LOADING_WAIT
@@ -176,6 +185,20 @@ class EpiGui(QObject):
 			self.on_loadMsgCode.emit()
 
 	#def _setLoadMsgCode
+
+	def _getLocalDebError(self):
+
+		return self._localDebError
+
+	#def _getLocalDebError
+
+	def _setLocalDebError(self,localDebError):
+
+		if self._localDebError!=localDebError:
+			self._localDebError=localDebError
+			self.on_localDebError.emit()
+
+	#def _setLocalDebError
 
 	def _getCurrentStack(self):
 
@@ -289,6 +312,20 @@ class EpiGui(QObject):
 
 	#def _setEnableActionBtn
 
+	def _getEnablePkgList(self):
+
+		return self._enablePkgList
+
+	#def _getEnablePkgList
+
+	def _setEnablePkgList(self,enablePkgList):
+
+		if self._enablePkgList!=enablePkgList:
+			self._enablePkgList=enablePkgList
+			self.on_enablePkgList.emit()
+
+	#def setEnablePkgList
+
 	def _getShowRemoveBtn(self):
 
 		return self._showRemoveBtn
@@ -374,6 +411,20 @@ class EpiGui(QObject):
 			self.on_eulaUrl.emit()
 
 	#def _setEulaUrl
+
+	def _getCurrentEulaPkg(self):
+
+		return self._currentEulaPkg
+
+	#def _getCurrentEulaPkg
+
+	def _setCurrentEulaPkg(self,currentEulaPkg):
+
+		if self._currentEulaPkg!=currentEulaPkg:
+			self._currentEulaPkg=currentEulaPkg
+			self.on_currentEulaPkg.emit()
+
+	#def _setCurrentEulaPkg
 
 	def _getEndProcess(self):
 
@@ -492,7 +543,8 @@ class EpiGui(QObject):
 	def initInstallProcess(self):
 
 		self.showStatusMessage=[False,"","Ok"]
-		self.isProcessRunning=True
+		self.enablePkgList=False
+		self.enableActionBtn=False
 		if not EpiGui.epiGuiManager.noCheck:
 			self.feedbackCode=EpiGui.MSG_FEEDBACK_INTERNET
 			EpiGui.epiGuiManager.checkInternetConnection()
@@ -500,9 +552,9 @@ class EpiGui(QObject):
 			self.checkConnectionTimer.timeout.connect(self._checkConnectionInfo)
 			self.checkConnectionTimer.start(1000)
 		else:
-			self._checkEulas(self)
+			self._getEulas()
 	
-	#def installPkg
+	#def initInstallProcess
 
 	def _checkConnectionInfo(self):
 
@@ -510,42 +562,70 @@ class EpiGui(QObject):
 		if EpiGui.epiGuiManager.endCheck:
 			self.checkConnectionTimer.stop()
 			self.feedbackCode=0
-			self.isProcessRunning=False
 			if EpiGui.epiGuiManager.retConnection[0]:
+				self.enableActionBtn=True
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.retConnection[1],"Error"]
 			else:
-				self._checkEulas()
+				self._getEulas()
 
 	#def _checkConnectionInfo
 
-	def _checkEulas(self):
+	def _getEulas(self):
 
 		if not EpiGui.epiGuiManager.eulaAccepted:
 			EpiGui.epiGuiManager.getEulasToCheck()
 			if len(EpiGui.epiGuiManager.eulasToShow)>0:
-				self._acceptEula()
+				self._manageEulas()
 	
-	#def _checkEulas
-	
-	def _acceptEula(self):
+	#def _getEulas
 
-		if not self.selectPkg:
-			if len(EpiGui.epiGuiManager.eulasToCheck)>0:
-				self.eulaUrl=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["eula"]
-				self.currentPkgOption=1
-					
+	def _manageEulas(self):
 
-	#def _acceptEula
+		if len(EpiGui.epiGuiManager.eulasToCheck)>0:
+			self.enableActionBtn=True
+			self.eulaUrl=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["eula"]
+			self.feedbackCode=EpiGui.MSG_FEEDBACK_EULA
+			self.currentEulaPkg=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["pkg_name"]
+			self.currentPkgOption=1
+		else:
+			self.currentPkgOption=0
+			self.currentEulaPkg=""
+			if EpiGui.epiGuiManager.eulaAccepted:
+				self.enableActionBtn=False
+				self.feedbackCode=EpiGui.MSG_FEEDBACK_INSTALL_1
+				self.isProcessRunning=True
+			else:
+				self.feedbackCode=""
+				self.enablePkgList=True
+				if not self.selectPkg:
+					self.enableActionBtn=True
+
+	#def _manageEulas
 
 	@Slot()
-	def uninstallPkg(self):
+	def acceptEula(self):
 
-		if not self.isProcessRunning:
-			self.isProcessRunning=True
-		else:
-			self.isProcessRunning=False
+		EpiGui.epiGuiManager.acceptEula()
+		self._manageEulas()
 
-	#def uninstallPkg
+	#def acceptEula	
+
+	@Slot()
+	def rejectEula(self):
+
+		EpiGui.epiGuiManager.rejectEula()
+		if self.selectPkg:
+			self._refreshInfo()
+		self._manageEulas()
+
+	#def rejectEula
+
+	@Slot()
+	def launchUninstallProcess(self):
+
+		print("uninstal..")
+
+	#def launchUninstallProcess
 
 	def _updatePackagesModelInfo(self,param):
 
@@ -580,6 +660,9 @@ class EpiGui(QObject):
 	on_loadErrorCode=Signal()
 	loadErrorCode=Property(int,_getLoadErrorCode,_setLoadErrorCode,notify=on_loadErrorCode)
 	
+	on_localDebError=Signal()
+	localDebError=Property(str,_getLocalDebError,_setLocalDebError,notify=on_localDebError)
+
 	on_feedbackCode=Signal()
 	feedbackCode=Property(int,_getFeedbackCode,_setFeedbackCode,notify=on_feedbackCode)
 
@@ -592,6 +675,9 @@ class EpiGui(QObject):
 	on_enableActionBtn=Signal()
 	enableActionBtn=Property(bool,_getEnableActionBtn,_setEnableActionBtn,notify=on_enableActionBtn)
 
+	on_enablePkgList=Signal()
+	enablePkgList=Property(bool,_getEnablePkgList,_setEnablePkgList,notify=on_enablePkgList)
+	
 	on_showRemoveBtn=Signal()
 	showRemoveBtn=Property(bool,_getShowRemoveBtn,_setShowRemoveBtn,notify=on_showRemoveBtn)
 
@@ -606,6 +692,9 @@ class EpiGui(QObject):
 	
 	on_eulaUrl=Signal()
 	eulaUrl=Property(str,_getEulaUrl,_setEulaUrl,notify=on_eulaUrl)
+
+	on_currentEulaPkg=Signal()
+	currentEulaPkg=Property(str,_getCurrentEulaPkg,_setCurrentEulaPkg,notify=on_currentEulaPkg)
 
 	on_endProcess=Signal()
 	endProcess=Property(bool,_getEndProcess,_setEndProcess, notify=on_endProcess)

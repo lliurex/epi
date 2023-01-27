@@ -105,18 +105,26 @@ GridLayout{
                 visible:epiBridge.showRemoveBtn
                 focus:true
                 display:AbstractButton.TextBesideIcon
-                icon.name:"delete"
-                text:i18nd("epi-gtk","Uninstall")
+                icon.name:{
+                   if (epiBridge.currentPkgOption==0){
+                        "remove"
+                    }else{
+                        "dialog-cancel"
+                    }
+                }
+                text:{
+                    if (epiBridge.currentPkgOption==0){
+                        i18nd("epi-gtk","Uninstall")
+                    }else{
+                        i18nd("epi-gtk","Reject Eula")
+                    }
+                }
                 enabled:{
                     if (epiBridge.enableActionBtn){
-                        if (!epiBridge.isProcessRunning){
-                            true
-                        }else{
-                            false
-                        }
-                    }else{
+                        true
+                   }else{
                         false
-                    }
+                   }
                 }
 
                 Layout.preferredHeight:40
@@ -124,7 +132,11 @@ GridLayout{
                 Keys.onReturnPressed: uninstallBtn.clicked()
                 Keys.onEnterPressed: uninstallBtn.clicked()
                 onClicked:{
-                    epiBridge.uninstallPkg()
+                    if (epiBridge.currentPkgOption==0){
+                        uninstallDialog.open()
+                    }else{
+                        epiBridge.rejectEula()
+                    }
                 }
             }
 
@@ -146,15 +158,17 @@ GridLayout{
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:"dialog-ok"
-                text:i18nd("epi-gtk","Install")
+                text:{
+                    if (epiBridge.currentPkgOption==0){
+                        i18nd("epi-gtk","Install")
+                    }else{
+                        i18nd("epi-gtk","Accept Eula")
+                    }
+                }
                 enabled:{
                     if (epiBridge.enableActionBtn){
-                        if (!epiBridge.isProcessRunning){
-                            true
-                        }else{
-                            false
-                        }
-                    }else{
+                        true
+                  }else{
                         false
                     }
                 }
@@ -163,12 +177,39 @@ GridLayout{
                 Keys.onReturnPressed: installBtn.clicked()
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
-                    epiBridge.initInstallProcess()
+                    if (epiBridge.currentPkgOption==0){
+                        epiBridge.initInstallProcess()
+                    }else{
+                        epiBridge.acceptEula()
+                    }
+     
                 }
             }
         }
     }
    
+    CustomDialog{
+        id:uninstallDialog
+        dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
+        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Uninstall process")
+        dialogMsg:i18nd("epi-gtk","Do you want uninstall the application?") 
+        dialogWidth:300
+        btnAcceptVisible:true
+        btnCancelText:i18nd("epi-gtk","Cancel")
+        btnCancelIcon:"dialog-cancel"
+
+        Connections{
+            target:uninstallDialog
+            function onDialogApplyClicked(){
+                uninstallDialog.close()
+                epiBridge.launchUninstallProcess()
+            }
+            function onCancelDialogClicked(){
+                uninstallDialog.close()
+            } 
+
+        }        
+    }
 
     Timer{
         id:timer
@@ -214,6 +255,9 @@ GridLayout{
                 msg=i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
             case 6:
                 msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
+                break;
+            case 7:
+                msg=i18nd("epi-gtk","Showing the end user license agreement for: ")+epiBridge.currentEulaPkg;
                 break;
             default:
                 break;

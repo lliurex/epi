@@ -51,7 +51,7 @@ Components.ListItem{
             anchors.leftMargin:5
             anchors.verticalCenter:parent.verticalCenter
             visible:showCb
-            enabled:!epiBridge.isProcessRunning
+            enabled:epiBridge.enablePkgList
         }
 
         Image {

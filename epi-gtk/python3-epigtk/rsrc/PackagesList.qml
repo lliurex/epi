@@ -30,7 +30,7 @@ Rectangle{
             focus:true
             width:100
             visible:epiBridge.selectPkg
-            enabled:!epiBridge.isProcessRunning
+            enabled:epiBridge.enablePkgList
             placeholderText:i18nd("epi-gtk","Search...")
             onTextChanged:{
                 filterModel.update()
@@ -123,7 +123,7 @@ Rectangle{
                     i18nd("epi-gtk","Check all packages")
                 }
             }
-            enabled:!epiBridge.isProcessRunning
+            enabled:epiBridge.enablePkgList
             Layout.preferredHeight:40
             Layout.rightMargin:10
             Keys.onReturnPressed: selectBtn.clicked()

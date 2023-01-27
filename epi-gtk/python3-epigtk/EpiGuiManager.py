@@ -90,7 +90,7 @@ class EpiGuiManager:
 
 		epiLoaded=self.epiManager.epiFiles
 		order=len(epiLoaded)
-		ret=[True,"",""]
+		ret=[True,"","",""]
 
 		if order>0:
 			checkRoot=self.epiManager.check_root()
@@ -118,12 +118,12 @@ class EpiGuiManager:
 		self._getInitialStatus()
 		
 		if requiredRoot:
-			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End']
+			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End',""]
 		elif len(self.lockInfo)>0:
 			ret=self.getLockInfo()
 		elif testInstall[0]!="":
 			if testInstall[0]=="1":
-				ret=[False,EpiGuiManager.ERROR_LOADING_LOCAL_DEB,'End']
+				ret=[False,EpiGuiManager.ERROR_LOADING_LOCAL_DEB,'End',""]
 			else:
 				if testInstall[1]!="":
 					return self._localDebError(testInstall)
@@ -173,14 +173,12 @@ class EpiGuiManager:
 
 	def _localDebError(self,testInstall):
 
-		if self.testInstall[1]!="":
-			ret=[False,EpiGuiManager.ERROR_DEPENDS_LOCAL_DEB,'localDeb']
-			self.msgLocalDebError=msg+"\n"+str(self.testInstall[1])
+		if testInstall[1]!="":
+			ret=[False,EpiGuiManager.ERROR_DEPENDS_LOCAL_DEB,'LocalDeb',str(testInstall[1])]
 		else:
-			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,'localDeb']
-			self.msgLocalDebError=msg+"\n"+str(self.testinstall[0])
+			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,'LocalDeb',str(testinstall[0])]
 
-		self.writeLog("Test to install local deb: Unable to install package:"+str(self.testInstall))
+		self.writeLog("Test to install local deb: Unable to install package:"+str(testInstall))
 	
 		return ret
 
@@ -237,7 +235,6 @@ class EpiGuiManager:
 							self._managePkgSelected(element["name"],True)
 						else:
 							try:
-								print(element["name"]+"-"+str(element["default_pkg"]))
 								tmp["isChecked"]=element["default_pkg"]
 								if tmp["isChecked"]:
 									self._managePkgSelected(element["name"],True)
@@ -422,11 +419,37 @@ class EpiGuiManager:
 		for item in range(len(self.eulasToCheck)-1, -1, -1):
 			if self.eulasToCheck[item]["pkg_name"] not in self.packagesSelected:
 				self.eulasToCheck.pop(item)
-				
+		
 		self.eulasToShow=self.eulasToCheck.copy()
-		self.eulaOrder=len(self.eulasToCheck)-1		
-
+		self.eulaOrder=len(self.eulasToCheck)-1	
+		self.writeLog("Required Eulas: %s"%(str(self.eulasToCheck)))		
+	
 	#def getEulasToCheck
+
+	def acceptEula(self):
+
+		self.eulaAccepted=True
+		pkgId=self.eulasToShow[self.eulaOrder]["pkg_name"]
+		self.eulasToCheck.pop(self.eulaOrder)
+		self.eulasToShow.pop(self.eulaOrder)
+		self.eulaOrder-=1
+		self.writeLog("Accepted EULA of: %s"%pkgId)
+
+	#def acceptEula
+
+	def rejectEula(self):
+
+		pkgId=self.eulasToShow[self.eulaOrder]["pkg_name"]
+		if self.selectPkg:
+			self._managePkgSelected(pkgId,False)
+			self.updatePackagesModel("isChecked",pkgId,False)
+		
+		self.eulasToCheck.pop(self.eulaOrder)
+		self.eulasToShow.pop(self.eulaOrder)
+		self.eulaOrder-=1
+		self.writeLog("Rejected EULA of: %s"%pkgId)
+
+	#def rejectEula
 
 	def clearCache(self):
 

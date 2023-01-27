@@ -5,24 +5,40 @@ import org.kde.kirigami 2.16 as Kirigami
 
 Rectangle{
     visible: true
-
+    
     GridLayout{
         id: loadGrid
-        rows: 1
+        rows: 2
+        rowSpacing:10
         flow: GridLayout.TopToBottom
         anchors.centerIn:parent
-        anchors.fill:parent
 
         Kirigami.InlineMessage {
             id: errorLabel
             visible:true
             text:getErrorText(epiBridge.loadErrorCode)
             type:Kirigami.MessageType.Error;
-            Layout.minimumWidth:555
+            Layout.minimumWidth:770
             Layout.fillWidth:true
             Layout.rightMargin:15
             Layout.leftMargin:15
-            
+        }
+
+        Text{
+            id:loadtext
+            text:i18nd("epi-gtk","Addittional information:\n")+epiBridge.localDebError
+            visible:{
+                if (epiBridge.localDebError!=""){
+                    true
+                }else{
+                    false
+                }
+            }
+            font.family: "Quattrocento Sans Bold"
+            font.pointSize: 10
+            Layout.alignment:Qt.AlignLeft
+            Layout.leftMargin:15
+            Layout.fillWidth:true
         }
     }
 
@@ -50,6 +66,12 @@ Rectangle{
                 break;
             case -7:
                 msg=i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
+                break;
+            case -8:
+                msg=i18nd("epi-gtk","The package will not be able to be installed. Problems with dependencies")
+                break;
+            case -9:
+                msg=i18nd("epi-gtk","The package will not be able to be installed. Error has been detected")
                 break;
             case -10:
                 msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
