@@ -1,3 +1,10 @@
+epi (0.4.34) focal; urgency=medium
+
+  * Fixed lis of meta-packages.
+  * Fixed local deb installation
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 30 Jan 2023 11:45:26 +0100
+
 epi (0.4.33) focal; urgency=medium
 
   * Checked internet connection only in install process
