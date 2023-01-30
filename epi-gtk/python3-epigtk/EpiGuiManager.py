@@ -8,6 +8,7 @@ import sys
 import syslog
 import copy
 import threading
+import tempfile
 
 
 class EpiGuiManager:
@@ -26,6 +27,8 @@ class EpiGuiManager:
 	ERROR_LOCK_LOCKED=-12
 	ERROR_LOCK_PROCESS=-13
 	ERROR_INTERNET_CONNECTION=-14
+	ERROR_UNINSTALL_STOP_META=-15
+
 
 	INFO_ALREADY_INSTALLED=4
 	INFO_ZMD_NOT_EXECUTED=5
@@ -42,6 +45,7 @@ class EpiGuiManager:
 		self.firstConnection=False
 		self.secondConnection=False
 		self.eulaAccepted=True
+		self.stopUninstall=[False,""]
 
 		self.clearCache()
 
@@ -192,7 +196,9 @@ class EpiGuiManager:
 		self.selectPkg=False
 		self.uncheckAll=False
 		self.showRemoveBtn=False
+		self.pkgsInstalled=[]
 		defaultChecked=False
+		self.wikiUrl=""
 
 		if len(self.info)>1:
 			self.areDepends=True
@@ -216,8 +222,9 @@ class EpiGuiManager:
 				except :
 					pass
 				
+				self.wikiUrl=self.info[item]["wiki"]
 				self.totalPackages=len(self.info[item]["pkg_list"])
-			
+				
 			for element in self.info[item]["pkg_list"]:
 				if order>0 and pkgOrder>0:
 					pass
@@ -250,6 +257,11 @@ class EpiGuiManager:
 							tmp["customName"]=element["name"]
 
 					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
+					
+					if tmp["status"]=="installed":
+						if tmp["pkgId"] not in self.pkgsInstalled:
+							self.pkgsInstalled.append(tmp["pkgId"])
+
 					if order==0:
 						try:
 							iconPath=self.info[item]["custom_icon_path"]
@@ -286,6 +298,7 @@ class EpiGuiManager:
 							self.packagesData.append(tmp)
 					else:
 						self.packagesData.append(tmp)
+				
 				pkgOrder+=1
 		
 	#def _getEpiContent
@@ -356,7 +369,7 @@ class EpiGuiManager:
 			if pkgId in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.remove(pkgId)
 
-		self.packagesSelected=copy.deepcopy(self.epiManager.packages_selected)
+		#self.packagesSelected=copy.deepcopy(self.epiManager.packages_selected)
 	
 	#def _managePkgSelected
 
@@ -417,7 +430,7 @@ class EpiGuiManager:
 		self.eulasToCheck=copy.deepcopy(self.requiredEula)
 		
 		for item in range(len(self.eulasToCheck)-1, -1, -1):
-			if self.eulasToCheck[item]["pkg_name"] not in self.packagesSelected:
+			if self.eulasToCheck[item]["pkg_name"] not in self.epiManager.packages_selected:
 				self.eulasToCheck.pop(item)
 		
 		self.eulasToShow=self.eulasToCheck.copy()
@@ -487,6 +500,67 @@ class EpiGuiManager:
 				shutil.rmtree(cachePath1)
 
 	#def clearCache
+
+	def checkRemoveMeta(self):
+
+		self.stopUninstall=[False,""]
+		self.metaRemovedWarning=self.epiManager.check_remove_meta()
+		self.writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blockedRemovePkgsList)
+
+		if self.metaRemovedWarning:
+			if len(self.epiManager.packages_selected)==len(self.epiManager.blockedRemovePkgsList):
+				self.stopUninstall=[True,EpiGuiManager.ERROR_UNINSTALL_STOP_META]
+				self.writeLog("Uninstall blocked due to remove metapackage warning")
+
+	#def checkRemoveMeta
+
+	def getUninstallCommand(self):
+
+		command=self.epiManager.uninstall_app(order)
+		length=len(command)
+
+		if length>0:
+			command=self.createProcessToken(command,"uninstall")
+
+		return command
+
+	#def getUninstallCommand
+
+	def createProcessToken(self,command,action):
+
+		if action=="keys":
+			self.tokenKeys=tempfile.mkstemp('_keys')
+			removeTmp=' rm -f ' + self.tokenKeys[1] + ';'+'\n'
+		elif action=="keyring":
+			self.tokenKeyring=tempfile.mkstemp('_keyring')
+			removeTmp=' rm -f ' + self.tokenKeyring[1] + ';'+'\n'
+		elif action=="download":
+			self.tokenDownload=tempfile.mkstemp('_download')
+			removeTmp=' rm -f ' + self.tokenDownload[1] + ';'+'\n'
+		elif action=="preinstall":
+			self.tokenPreinstall=tempfile.mkstemp('_preinstall')	
+			removeTmp=' rm -f ' + self.tokenPreinstall[1] + ';'+'\n'
+		elif action=="arquitecture":
+			self.tokenArquitecture=tempfile.mkstemp('_arquitecture')	
+			removeTmp=' rm -f ' + self.tokenArquitecture[1] + ';'+'\n'	
+		elif action=="updaterepos":
+			self.tokenUpdaterepos=tempfile.mkstemp('_updaterepos')	
+			removeTmp=' rm -f ' + self.tokenUpdaterepos[1] + ';'+'\n'	
+		elif action=="install":
+			self.tokenInstall=tempfile.mkstemp('_install')
+			removeTmp=' rm -f ' + self.tokenInstall[1] +';'+'\n'
+		elif action=="postinstall":	
+			self.tokenPostinstall=tempfile.mkstemp('_postinstall')
+			removeTmp=' rm -f ' + self.tokenPostinstall[1] +';'+'\n'
+		elif action=="uninstall":
+			self.tokenUninstall=tempfile.mkstemp('_uninstall')
+			removeTmp=' rm -f ' + self.tokenUninstall[1] +';'+'\n'
+
+		cmd=command+remove_tmp
+		
+		return cmd
+
+	#def createProcessToken
 
 	def getPackageVersion(self):
 

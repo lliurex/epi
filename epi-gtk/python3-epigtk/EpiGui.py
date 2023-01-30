@@ -7,6 +7,7 @@ import signal
 import copy
 import time
 import sys
+import pwd
 
 from . import EpiGuiManager
 from . import PackagesModel
@@ -48,6 +49,22 @@ class UnlockProcess(QThread):
 
 #def UnlockProcess
 
+class CheckMetaProtection(QThread):
+
+	def __init__(self, *args):
+
+		QThread.__init__(self)
+
+	#def __init__
+
+	def run(self):
+
+		EpiGui.epiGuiManager.checkRemoveMeta()
+
+	#def run
+
+#class CheckMetaProtection
+
 class EpiGui(QObject):
 
 	epiGuiManager=EpiGuiManager.EpiGuiManager()
@@ -57,6 +74,7 @@ class EpiGui(QObject):
 	MSG_FEEDBACK_INTERNET=3
 	MSG_FEEDBACK_EULA=7
 	MSG_FEEDBACK_INSTALL_1=8
+	MSG_FEEDBACK_UNINSTALL_CHECK=9
 
 	def __init__(self):
 
@@ -87,6 +105,7 @@ class EpiGui(QObject):
 		self._showDialog=False
 		self._eulaUrl=""
 		self._currentEulaPkg=""
+		self._wikiUrl=""
 		self._endProcess=True
 		self._endCurrentCommand=False
 		self._currentCommand=""
@@ -107,40 +126,45 @@ class EpiGui(QObject):
 
 		if epiFile!=None:
 			if epiFile!="error":
-				self.gatherInfo=GatherInfo(epiFile,noCheck,debug)
-				self.gatherInfo.start()
-				self.gatherInfo.finished.connect(self._loadInfo)
+				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug)
+				self.gatherInfoT.start()
+				self.gatherInfoT.finished.connect(self._gatherInfoRet)
 
 	#def initBridge
 
-	def _loadInfo(self):
+	def _gatherInfoRet(self):
 
-		if 	self.gatherInfo.ret[0]:
+		if 	self.gatherInfoT.ret[0]:
 			self._showInfo()
 		else:
-			if self.gatherInfo.ret[2]=="End":
-				self.loadErrorCode=self.gatherInfo.ret[1]
+			if self.gatherInfoT.ret[2]=="End":
+				self.loadErrorCode=self.gatherInfoT.ret[1]
 				self.currentStack=1
-			elif self.gatherInfo.ret[2]=="LocalDeb":
-				self.loadErrorCode=self.gatherInfo.ret[1]
-				self.localDebError=self.gatherInfo.ret[3]
+			elif self.gatherInfoT.ret[2]=="LocalDeb":
+				self.loadErrorCode=self.gatherInfoT.ret[1]
+				self.localDebError=self.gatherInfoT.ret[3]
 				self.currentStack=1
-			elif self.gatherInfo.ret[2]=="Wait":
+			elif self.gatherInfoT.ret[2]=="Wait":
 				self.loadMsgCode=EpiGui.MSG_LOADING_WAIT
 				self.waitUnlockTimer=QTimer()
-				self.waitUnlockTimer.timeout.connect(self._getLockInfo)
+				self.waitUnlockTimer.timeout.connect(self._waitUnlockTimerRet)
 				self.waitUnlockTimer.start(5000)
 			elif self.gatherInfo.ret[2]=="Lock":
 				self.showDialog=True
 
-	#def _loadInfo
+	#def _gatherInfoRet
 
 	def _showInfo(self):
 
 		self._updatePackagesModel()
 		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
 		self.selectPkg=EpiGui.epiGuiManager.selectPkg
-		self.showRemoveBtn=EpiGui.epiGuiManager.showRemoveBtn
+		self.wikiUrl=EpiGui.epiGuiManager.wikiUrl
+
+		if EpiGui.epiGuiManager.showRemoveBtn:
+			if EpiGui.epiGuiManager.pkgsInstalled:
+				self.showRemoveBtn=True
+		
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableActionBtn=True
 		
@@ -151,7 +175,7 @@ class EpiGui(QObject):
 
 	#def _showInfo
 
-	def _getLockInfo(self):
+	def _waitUnlockTimerRet(self):
 
 		EpiGui.epiGuiManager.checkLockInfo()
 		ret=EpiGui.epiGuiManager.getLockInfo()
@@ -170,7 +194,7 @@ class EpiGui(QObject):
 				self.loadErrorCode=ret[1]
 				self.currentStack=1
 
-	#def _getLockInfo
+	#def _waitUnlockTimerRet
 
 	def _getLoadMsgCode(self):
 
@@ -426,6 +450,20 @@ class EpiGui(QObject):
 
 	#def _setCurrentEulaPkg
 
+	def _getWikiUrl(self):
+
+		return self._wikiUrl
+
+	#def _getWikiUrl
+
+	def _setWikiUrl(self,wikiUrl):
+
+		if self._wikiUrl!=wikiUrl:
+			self._wikiUrl=wikiUrl
+			self.on_wikiUrl.emit()
+
+	#def _setWikiUrl
+
 	def _getEndProcess(self):
 
 		return self._endProcess
@@ -489,11 +527,11 @@ class EpiGui(QObject):
 		self.loadMsgCode=EpiGui.MSG_LOADING_UNLOCK
 		self.unlockProcessT=UnlockProcess()
 		self.unlockProcessT.start()
-		self.unlockProcessT.finished.connect(self._unlockProcessT)
+		self.unlockProcessT.finished.connect(self._unlockProcessRet)
 
 	#def launchUnlockProcess
 
-	def _unlockProcessT(self):
+	def _unlockProcessRet(self):
 
 		if self.unlockProcessT.ret[0]:
 			self._showInfo()
@@ -549,14 +587,14 @@ class EpiGui(QObject):
 			self.feedbackCode=EpiGui.MSG_FEEDBACK_INTERNET
 			EpiGui.epiGuiManager.checkInternetConnection()
 			self.checkConnectionTimer=QTimer()
-			self.checkConnectionTimer.timeout.connect(self._checkConnectionInfo)
+			self.checkConnectionTimer.timeout.connect(self._checkConnectionTimerRet)
 			self.checkConnectionTimer.start(1000)
 		else:
 			self._getEulas()
 	
 	#def initInstallProcess
 
-	def _checkConnectionInfo(self):
+	def _checkConnectionTimerRet(self):
 
 		EpiGui.epiGuiManager.getResultCheckConnection()
 		if EpiGui.epiGuiManager.endCheck:
@@ -568,7 +606,7 @@ class EpiGui(QObject):
 			else:
 				self._getEulas()
 
-	#def _checkConnectionInfo
+	#def _checkConnectionTimerRet
 
 	def _getEulas(self):
 
@@ -623,9 +661,27 @@ class EpiGui(QObject):
 	@Slot()
 	def launchUninstallProcess(self):
 
-		print("uninstal..")
+		self.enableActionBtn=False
+		self.enablePkgList=False
+		self.showStatusMessage=[False,"","Ok"]
+
+		self.feedbackCode=EpiGui.MSG_FEEDBACK_UNINSTALL_CHECK
+		self.checkMetaProtectionT=CheckMetaProtection()
+		self.checkMetaProtectionT.start()
+		self.checkMetaProtectionT.finished.connect(self._checkMetaProtectionRet)
 
 	#def launchUninstallProcess
+
+	def _checkMetaProtectionRet(self):
+
+		if EpiGui.epiGuiManager.stopUninstall[0]:
+			self.enableActionBtn=True
+			self.enablePkgList=True
+			self.feedbackCode=""
+			self.showStatusMessage=[True,EpiGui.epiGuiManager.stopUninstall[1],"Error"]
+
+
+	#def _checkMetaProtectionRet
 
 	def _updatePackagesModelInfo(self,param):
 
@@ -637,6 +693,34 @@ class EpiGui(QObject):
 				self._packagesModel.setData(index,param,updatedInfo[i][param])
 	
 	#def _updatePackagesModelInfo
+
+	@Slot()
+	def openHelp(self):
+
+		runPkexec=False
+
+		if 'PKEXEC_UID' in os.environ:
+			runPkexec=True
+
+		self.helpCmd='xdg-open %s'%self.wikiUrl
+
+		if runPkexec:
+			user=pwd.getpwuid(int(os.environ["PKEXEC_UID"])).pw_name
+			self.helpCmd="su -c '%s' %s"%(self.helpCmd,user)
+		else:
+			self.helpCmd="su -c '%s' $USER"%self.helpCmd
+		
+		self.openHelp_t=threading.Thread(target=self._openHelpRet)
+		self.openHelp_t.daemon=True
+		self.openHelp_t.start()
+
+	#def openHelp
+
+	def _openHelpRet(self):
+
+		os.system(self.helpCmd)
+
+	#def _openHelpRet
 
 	@Slot()
 	def closeApplication(self):
@@ -695,6 +779,9 @@ class EpiGui(QObject):
 
 	on_currentEulaPkg=Signal()
 	currentEulaPkg=Property(str,_getCurrentEulaPkg,_setCurrentEulaPkg,notify=on_currentEulaPkg)
+
+	on_wikiUrl=Signal()
+	wikiUrl=Property(str,_getWikiUrl,_setWikiUrl,notify=on_wikiUrl)
 
 	on_endProcess=Signal()
 	endProcess=Property(bool,_getEndProcess,_setEndProcess, notify=on_endProcess)

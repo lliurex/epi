@@ -10,6 +10,8 @@ Item {
 
 	property alias optionIcon:menuOptionIcon.source
 	property alias optionText:menuOptionText.text
+  property alias optionVisible:menuOption.visible
+
 	signal menuOptionClicked()
 
 	Rectangle{
@@ -18,6 +20,7 @@ Item {
 		height:35
 		color:"transparent"
 		border.color:"transparent"
+    visible:optionVisible
 
 		Row{
 			spacing:5

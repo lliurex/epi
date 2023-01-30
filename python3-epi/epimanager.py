@@ -58,7 +58,8 @@ class EpiManager:
 					"required_dconf":False,
 					"selection_enabled":{"active":False,"all_selected":False},
 					"custom_icon_path":"",
-					"check_zomando_state":True
+					"check_zomando_state":True,
+					"wiki":""
 					}
 
 		self.packages_selected=[]

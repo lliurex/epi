@@ -28,6 +28,7 @@ GridLayout{
                 id:packagesOption
                 optionText:i18nd("epi-gtk","Init")
                 optionIcon:"/usr/share/icons/breeze/places/16/user-home.svg"
+                optionVisible:true
                 Connections{
                     function onMenuOptionClicked(){
                         epiBridge.manageTransitions(0)
@@ -39,6 +40,7 @@ GridLayout{
                 id:detailsOption
                 optionText:i18nd("epi-gtk","Process details")
                 optionIcon:"/usr/share/icons/breeze/apps/16/utilities-terminal.svg"
+                optionVisible:true
                 enabled:true
                 Connections{
                     function onMenuOptionClicked(){
@@ -51,9 +53,16 @@ GridLayout{
                 id:helpOption
                 optionText:i18nd("epi-gtk","Help")
                 optionIcon:"/usr/share/icons/breeze/actions/16/help-contents.svg"
+                optionVisible:{
+                    if (epiBridge.wikiUrl!=""){
+                        true
+                    }else{
+                        false
+                    }
+                }
                 Connections{
                     function onMenuOptionClicked(){
-                        console.log("Ayuda");
+                        epiBridge.openHelp()
                     }
                 }
             }
@@ -102,7 +111,17 @@ GridLayout{
 
             PC3.Button {
                 id:uninstallBtn
-                visible:epiBridge.showRemoveBtn
+                visible:{
+                    if (epiBridge.currentPkgOption==0){
+                        if (epiBridge.showRemoveBtn){
+                            true
+                        }else{
+                            false
+                        }
+                    }else{
+                        true
+                    }
+                }
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:{
@@ -245,6 +264,9 @@ GridLayout{
             case -14:
                 msg=i18nd("epi-gtk","Internet connection not detected")
                 break;
+            case -15:
+                msg=i18nd("epi-gtk","The selected applications cannot be uninstalled.\nIt is part of the system meta-package");
+                break;
             case 3:
                 msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
                 break;
@@ -258,6 +280,9 @@ GridLayout{
                 break;
             case 7:
                 msg=i18nd("epi-gtk","Showing the end user license agreement for: ")+epiBridge.currentEulaPkg;
+                break;
+            case 9:
+                msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...");
                 break;
             default:
                 break;
