@@ -72,7 +72,7 @@ class EpiManager:
 		self.init_n4d_client()
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
-		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
+		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-meta-desktop","lliurex-meta-desktop-lite","lliurex-meta-music","lliurex-meta-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
 
@@ -482,7 +482,8 @@ class EpiManager:
 							if len(parse_test)>1:
 								test=parse_test.pop()
 								for item in parse_test:
-									pkg_list=pkg_list+"- "+item+"\n"
+									if item!="":
+										pkg_list=pkg_list+"- "+item+"\n"
 			except:
 				pass
 		

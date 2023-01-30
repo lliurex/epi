@@ -42,6 +42,8 @@ def _get_deb_info(deb):
 			subprocess.run(['tar','Jxf',"control.tar.xz"])
 		elif os.path.isfile("control.tar.gz"):
 			subprocess.run(['tar','zxf',"control.tar.gz"])
+		elif os.path.isfile("control.tar.zst"):
+			subprocess.run(['tar','xvf',"control.tar.zst"])
 	except:
 		_debug("Failed to uncompress deb")
 		retCode=1
