@@ -435,7 +435,7 @@ class MainWindow:
 						self.loadingBox.loading_label.set_text(msg)
 						return False
 					else:
-						self.unlock_button.show("Lock checking finished: Apt or Dpkg are blocked")
+						self.unlock_button.show()
 						msg=self.get_msg_text(22)
 						self.loadingBox.loading_label.set_text(msg)
 						return False
