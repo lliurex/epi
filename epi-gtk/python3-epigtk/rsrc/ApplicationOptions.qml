@@ -41,7 +41,7 @@ GridLayout{
                 optionText:i18nd("epi-gtk","Process details")
                 optionIcon:"/usr/share/icons/breeze/apps/16/utilities-terminal.svg"
                 optionVisible:true
-                enabled:true
+                enabled:epiBridge.enableKonsole
                 Connections{
                     function onMenuOptionClicked(){
                         epiBridge.manageTransitions(1)
@@ -139,7 +139,7 @@ GridLayout{
                     }
                 }
                 enabled:{
-                    if (epiBridge.enableActionBtn){
+                    if (epiBridge.enableRemoveBtn){
                         true
                    }else{
                         false
@@ -185,7 +185,7 @@ GridLayout{
                     }
                 }
                 enabled:{
-                    if (epiBridge.enableActionBtn){
+                    if (epiBridge.enableApplyBtn){
                         true
                   }else{
                         false
@@ -221,6 +221,7 @@ GridLayout{
             target:uninstallDialog
             function onDialogApplyClicked(){
                 uninstallDialog.close()
+                applyChanges()
                 epiBridge.launchUninstallProcess()
             }
             function onCancelDialogClicked(){
@@ -243,9 +244,9 @@ GridLayout{
    
     function applyChanges(){
         delay(100, function() {
-            if (epiBridge.endProcess){
+            if (epiBridge.endProccess){
                 timer.stop()
-                feedBackText.visible=false
+                /*feedBackText.visible=false*/
                 
             }else{
                 if (epiBridge.endCurrentCommand){
@@ -267,6 +268,9 @@ GridLayout{
             case -15:
                 msg=i18nd("epi-gtk","The selected applications cannot be uninstalled.\nIt is part of the system meta-package");
                 break;
+            case -16:
+                msg=i18nd("epi-gtk","Uninstalled process ending with errors");
+                break;
             case 3:
                 msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
                 break;
@@ -283,6 +287,15 @@ GridLayout{
                 break;
             case 9:
                 msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...");
+                break;
+            case 10:
+                msg=i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
+                break;
+            case 11:
+                msg=i18nd("epi-gtk","Applications successfully uninstalled");
+                break;
+            case 12:
+                msg=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package");
                 break;
             default:
                 break;

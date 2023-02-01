@@ -89,6 +89,7 @@ Rectangle{
                             isRunning:model.isRunning
                             resultProcess:model.resultProcess
                             order:model.order
+                            showSpinner:model.showSpinner
                         }
                     }
 

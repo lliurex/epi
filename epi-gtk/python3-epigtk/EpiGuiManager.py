@@ -28,11 +28,21 @@ class EpiGuiManager:
 	ERROR_LOCK_PROCESS=-13
 	ERROR_INTERNET_CONNECTION=-14
 	ERROR_UNINSTALL_STOP_META=-15
+	ERROR_UNINSTALL_FAILED=-16
 
-
+	MSG_LOADING_INFO=0
+	MSG_LOADING_WAIT=1
+	MSG_LOADING_UNLOCK=2
+	MSG_FEEDBACK_INTERNET=3
 	INFO_ALREADY_INSTALLED=4
 	INFO_ZMD_NOT_EXECUTED=5
 	INFO_EPI_FAILED=6
+	MSG_FEEDBACK_EULA=7
+	MSG_FEEDBACK_INSTALL_1=8
+	MSG_FEEDBACK_UNINSTALL_CHECK=9
+	MSG_FEEDBACk_UNINSTALL_RUN=10
+	SUCCESS_UNINSTALL_PROCESS=11
+	WARNING_UNINSTALL_PROCESS=12
 
 
 	def __init__(self):
@@ -46,7 +56,9 @@ class EpiGuiManager:
 		self.secondConnection=False
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
+		self.konsoleLog="/tmp/EPI_konsoleLog.txt"
 
+		self._clearEnvirontment()
 		self.clearCache()
 
 	#def __init__
@@ -107,9 +119,9 @@ class EpiGuiManager:
 			if checkRoot:
 				if not self.noCheck:	
 					self.checkLockInfo()
-				self.writeLog("Locks info: "+ str(self.lockInfo))
+				self._writeLog("Locks info: "+ str(self.lockInfo))
 			else:
-				self.writeLog("Locks info: Not checked. User is not root")
+				self._writeLog("Locks info: Not checked. User is not root")
 					
 			testInstall=self.epiManager.test_install()
 			self.loadEpiConf=self.epiManager.epiFiles
@@ -148,14 +160,14 @@ class EpiGuiManager:
 
 		if len(self.lockInfo)>0:
 			if "Lliurex-Up" in self.lockInfo:
-				self.writeLog("Lock info: The system is being updated")
+				self._writeLog("Lock info: The system is being updated")
 				ret=[False,EpiGuiManager.ERROR_LOCK_UPDATED,'End']
 			else:
 				if self.lockInfo["wait"]:
-					self.writeLog("Lock info: Apt or Dpkg are being executed. Checking if they have finished...")
+					self._writeLog("Lock info: Apt or Dpkg are being executed. Checking if they have finished...")
 					ret=[False,EpiGuiManager.ERROR_LOCK_WAIT,'Wait']
 				else:
-					self.writeLog("Lock info: Apt or Dpkg seems locked. Unlock process need")
+					self._writeLog("Lock info: Apt or Dpkg seems locked. Unlock process need")
 					ret=[False,EpiGuiManager.ERROR_LOCK_LOCKED,'Lock']
 
 		return ret
@@ -167,10 +179,10 @@ class EpiGuiManager:
 		ret=self.epiManager.unlock_process()
 
 		if ret==0:
-			self.writeLog("Unlock process ok")
+			self._writeLog("Unlock process ok")
 			return [True,""]
 		else:
-			self.writeLog("Unlock process failed: %s"%str(self.unlock_result))
+			self._writeLog("Unlock process failed: %s"%str(self.unlock_result))
 			return [False,EpiGuiManager.ERROR_LOCK_PROCESS] 
 
 	#def execUnlockProcess
@@ -182,7 +194,7 @@ class EpiGuiManager:
 		else:
 			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,'LocalDeb',str(testinstall[0])]
 
-		self.writeLog("Test to install local deb: Unable to install package:"+str(testInstall))
+		self._writeLog("Test to install local deb: Unable to install package:"+str(testInstall))
 	
 		return ret
 
@@ -232,6 +244,7 @@ class EpiGuiManager:
 					tmp={}
 					tmp["pkgId"]=element["name"]
 					tmp["showCb"]=showCB
+					tmp["showSpinner"]=True
 
 					if defaultChecked:
 						tmp["isChecked"]=True
@@ -262,29 +275,8 @@ class EpiGuiManager:
 						if tmp["pkgId"] not in self.pkgsInstalled:
 							self.pkgsInstalled.append(tmp["pkgId"])
 
-					if order==0:
-						try:
-							iconPath=self.info[item]["custom_icon_path"]
-							if iconPath!="":
-								if iconPath[-1]!="/":
-									iconPath="%s/"%iconPath
-								if tmp["status"]=="installed":
-									tmp["pkgIcon"]="%s%s_OK"%(iconPath,element["custom_icon"])
-								else:	
-									tmp["pkgIcon"]="%s%s"%(iconPath,element["custom_icon"])
-							else:
-								if tmp["status"]=="installed":
-									tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_install.png")
-								else:
-									tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
-						except:
-							if tmp["status"]=="installed":
-								tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_install.png")
-							else:
-								tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package.png")
-					else:
-						tmp["pkgIcon"]="%s%s"%(self.defaultIconPath,"package_dep")
-					
+					tmp["pkgIcon"]=self._getPkgIcon(order,pkgOrder,tmp["status"])
+						
 					if order==0:
 						tmp["isVisible"]=True
 					else:
@@ -302,6 +294,39 @@ class EpiGuiManager:
 				pkgOrder+=1
 		
 	#def _getEpiContent
+
+	def _getPkgIcon(self,order,pkgIndex,status):
+
+		if order==0:
+			try:
+				iconPath=self.info[order]["custom_icon_path"]
+				if iconPath!="":
+					if iconPath[-1]!="/":
+						iconPath="%s/"%iconPath
+					if status=="installed":
+						pkgIcon="%s%s_OK"%(iconPath,self.info[order]["pkg_list"][pkgIndex]["custom_icon"])
+					else:	
+						pkgIcon="%s%s"%(iconPath,self.info[order]["pkg_list"][pkgIndex]["custom_icon"])
+				else:
+					if status=="installed":
+						pkgIcon="%s%s"%(self.defaultIconPath,"package_install.png")
+					else:
+						pkgIcon="%s%s"%(self.defaultIconPath,"package.png")
+			except Exception as e:
+				print("ERROR: %s"%str(e))
+				if status=="installed":
+					pkgIcon="%s%s"%(self.defaultIconPath,"package_install.png")
+				else:
+					pkgIcon="%s%s"%(self.defaultIconPath,"package.png")
+		else:
+			if status=="installed":
+				pkgIcon="%s%s"%(self.defaultIconPath,"package_install_dep.png")
+			else:
+				pkgIcon="%s%s"%(self.defaultIconPath,"package_dep.png")
+	
+		return pkgIcon
+
+	#def _getPkgIcon
 
 	def _getInitialStatus(self):
 
@@ -329,7 +354,9 @@ class EpiGuiManager:
 		else:
 			self.uncheckAll=False
 
-		self.updatePackagesModel("isChecked",pkgId,isChecked)			
+		tmpParam={}
+		tmpParam["isChecked"]=isChecked
+		self._updatePackagesModel(tmpParam,pkgId)			
 	
 	#def onCheckedPackages
 
@@ -341,24 +368,32 @@ class EpiGuiManager:
 			active=True
 
 		pkgList=copy.deepcopy(self.packagesData)
+		tmpParam={}
+		tmpParam["isChecked"]=active
 		for item in pkgList:
 			if item["isChecked"]!=active:
 				self._managePkgSelected(item["pkgId"],active)
-				self.updatePackagesModel("isChecked",item["pkgId"],active)
+				self._updatePackagesModel(tmpParam,item["pkgId"])
 		
 		self.uncheckAll=active
 		
 	#def selectAll
 
-	def updatePackagesModel(self,param,pkgId,value):
+	def _updatePackagesModel(self,param,pkgId):
 
 		for item in self.packagesData:
 			if item["pkgId"]==pkgId:
-				if item[param]!=value:
-					item[param]=value
+				for element in param:
+					if item[element]!=param[element]:
+						item[element]=param[element]
+						if element=="status":
+							item["resultProcess"]=0
+					else:
+						if element=="status":
+							item["resultProcess"]=1 
 				break
 
-	#def updatePackagesModel
+	#def _updatePackagesModel
 
 	def _managePkgSelected(self,pkgId,active=True):
 
@@ -420,7 +455,7 @@ class EpiGuiManager:
  			if not self.firstConnection and not self.secondConnection:
  				error=True
  				msgError=EpiGuiManager.ERROR_INTERNET_CONNECTION
- 				self.writeLog("%s:%s"%(msgError,self.connection[1]))
+ 				self._writeLog("%s:%s"%(msgError,self.connection[1]))
  				self.retConnection=[error,msgError]
 
 	#def getResultCheckConnection
@@ -435,7 +470,7 @@ class EpiGuiManager:
 		
 		self.eulasToShow=self.eulasToCheck.copy()
 		self.eulaOrder=len(self.eulasToCheck)-1	
-		self.writeLog("Required Eulas: %s"%(str(self.eulasToCheck)))		
+		self._writeLog("Required Eulas: %s"%(str(self.eulasToCheck)))		
 	
 	#def getEulasToCheck
 
@@ -446,7 +481,7 @@ class EpiGuiManager:
 		self.eulasToCheck.pop(self.eulaOrder)
 		self.eulasToShow.pop(self.eulaOrder)
 		self.eulaOrder-=1
-		self.writeLog("Accepted EULA of: %s"%pkgId)
+		self._writeLog("Accepted EULA of: %s"%pkgId)
 
 	#def acceptEula
 
@@ -455,12 +490,14 @@ class EpiGuiManager:
 		pkgId=self.eulasToShow[self.eulaOrder]["pkg_name"]
 		if self.selectPkg:
 			self._managePkgSelected(pkgId,False)
-			self.updatePackagesModel("isChecked",pkgId,False)
+			tmpParam={}
+			tmpParam["isChecked"]=False
+			self._updatePackagesModel(tmpParam,pkgId)
 		
 		self.eulasToCheck.pop(self.eulaOrder)
 		self.eulasToShow.pop(self.eulaOrder)
 		self.eulaOrder-=1
-		self.writeLog("Rejected EULA of: %s"%pkgId)
+		self._writeLog("Rejected EULA of: %s"%pkgId)
 
 	#def rejectEula
 
@@ -468,7 +505,7 @@ class EpiGuiManager:
 
 		clear=False
 		user=os.environ["USER"]
-		installedVersion=self.getPackageVersion()
+		installedVersion=self._getPackageVersion()
 	
 		if user=="root":
 			versionFile="/root/.epi-gui.conf"
@@ -503,30 +540,52 @@ class EpiGuiManager:
 
 	def checkRemoveMeta(self):
 
+		self._clearEnvirontment()
+		self._writeLog("Packages selected to uninstall: %s"%self.epiManager.packages_selected)
 		self.stopUninstall=[False,""]
 		self.metaRemovedWarning=self.epiManager.check_remove_meta()
-		self.writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blockedRemovePkgsList)
+		self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blockedRemovePkgsList)
+
+		tmpParam={}
+		tmpParam["resultProcess"]=-1
 
 		if self.metaRemovedWarning:
 			if len(self.epiManager.packages_selected)==len(self.epiManager.blockedRemovePkgsList):
 				self.stopUninstall=[True,EpiGuiManager.ERROR_UNINSTALL_STOP_META]
-				self.writeLog("Uninstall blocked due to remove metapackage warning")
+				self._writeLog("Uninstall blocked due to remove metapackage warning")
+			
+		for item in self.packagesData:
+			tmpParam["showSpinner"]=True
+			if self.metaRemovedWarning:
+				if item["pkgId"] in self.epiManager.blockedRemovePkgsList:
+					tmpParam["showSpinner"]=False
+				
+			self._updatePackagesModel(tmpParam,item["pkgId"])
 
 	#def checkRemoveMeta
 
+	def initUnInstallProcess(self):
+
+		self.removePkgLaunched=False
+		self.removePkgDone=False
+		self.checkRemoveLaunched=False
+		self.checkRemoveDone=False
+		
+	#def initUnInstallProcess
+
 	def getUninstallCommand(self):
 
-		command=self.epiManager.uninstall_app(order)
+		command=self.epiManager.uninstall_app(0)
 		length=len(command)
 
 		if length>0:
-			command=self.createProcessToken(command,"uninstall")
+			command=self._createProcessToken(command,"uninstall")
 
 		return command
 
 	#def getUninstallCommand
 
-	def createProcessToken(self,command,action):
+	def _createProcessToken(self,command,action):
 
 		if action=="keys":
 			self.tokenKeys=tempfile.mkstemp('_keys')
@@ -556,13 +615,60 @@ class EpiGuiManager:
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
 			removeTmp=' rm -f ' + self.tokenUninstall[1] +';'+'\n'
 
-		cmd=command+remove_tmp
-		
+		cmd='%s 2>&1 | tee -a %s; %s;\n'%(command,self.konsoleLog,removeTmp)
+
 		return cmd
 
-	#def createProcessToken
+	#def _createProcessToken
 
-	def getPackageVersion(self):
+	def checkRemove(self):
+
+		self.remove=["","",""]
+
+		uninstallStatus,remove=self.epiManager.check_install_remove("uninstall")
+		self._updateProcessModelInfo(uninstallStatus)
+		self.checkRemoveDone=True
+
+		if remove:
+			if len(self.epiManager.blockedRemovePkgsList)>0:
+				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS
+				typeMsg="Warning"
+			else:
+				msgCode=EpiGuiManager.SUCCESS_UNINSTALL_PROCESS
+				typeMsg="Ok"
+
+			self.epiManager.zerocenter_feedback(0,"uninstall",True)
+
+		else:
+			msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
+			typeMsg="Error"
+			self.epiManager.zerocenter_feedback(0,"uninstall",False)
+
+		self.remove=[remove,msgCode,typeMsg]
+		self._writeLog("Uninstall process. Result: %s - Code:%s"%(typeMsg,msgCode))
+		self._writeLogTerminal("Unistall")
+
+	#def checkRemove
+
+	def _updateProcessModelInfo(self,uninstallStatus):
+
+		pkgIndex=0
+		for element in self.info[0]["pkg_list"]:
+			if element["name"] in self.epiManager.packages_selected:
+				tmpParam={}
+				tmpParam["status"]=uninstallStatus[element["name"]]
+				tmpParam["pkgIcon"]=self._getPkgIcon(0,pkgIndex,tmpParam["status"])
+				tmpParam["showSpinner"]=True
+				self._updatePackagesModel(tmpParam,element["name"])
+				if uninstallStatus[element["name"]]!='installed':
+					if element["name"] in self.pkgsInstalled:
+						self.pkgsInstalled.remove(element["name"])
+
+			pkgIndex+=1	
+	
+	#def _updateProcessModelInfo
+
+	def _getPackageVersion(self):
 
 		command = "LANG=C LANGUAGE=en apt-cache policy epi-gtk"
 		p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE)
@@ -577,13 +683,40 @@ class EpiGuiManager:
 
 		return installed
 
-	#def getPackageVersion
+	#def _getPackageVersion
 
-	def writeLog(self,msg):
+	def _writeLog(self,msg):
 
 		syslog.openlog("EPI")
 		syslog.syslog(msg)	
 
-	#def writeLog			
+	#def _writeLog
+
+	def _writeLogTerminal(self,process):
+
+		syslog.openlog("EPI")
+		syslog.syslog("%s process details"%process)
+		content=""
+		
+		if os.path.exists(self.konsoleLog):
+			with open(self.konsoleLog,'r') as fd:
+				content=fd.readlines()
+
+		if len(content)>0:
+			for line in content:
+				self._writeLog(line)
+		else:
+			self._writeLog("KonsoleLog is empty")
+
+		os.remove(self.konsoleLog)
+		
+	#def _writeLogTerminal
+
+	def _clearEnvirontment(self):
+
+		if os.path.exists(self.konsoleLog):
+			os.remove(self.konsoleLog)
+
+	#def _clearEnvirontment			
 
 #class EpiGuiManager

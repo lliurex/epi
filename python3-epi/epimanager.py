@@ -73,7 +73,7 @@ class EpiManager:
 		self.init_n4d_client()
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
-		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-desktop","lliurex-desktop-lite","lliurex-music","lliurex-infantil"]
+		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-meta-desktop","lliurex-meta-desktop-lite","lliurex-meta-music","lliurex-meta-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
 
@@ -1217,13 +1217,13 @@ class EpiManager:
 			self.token_result_remove=tempfile.mkstemp("_result_remove")
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
-				cmd=script + " remove "
+				cmd='(('+script + " remove "
 
 				for pkg in self.packages_selected:
 					if pkg not in self.blockedRemovePkgsList:
 						cmd+="%s "%pkg
 
-				cmd+='; echo $? >' + self.token_result_remove[1] + ';'
+				cmd+='); echo $? >' + self.token_result_remove[1] + ')'
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 

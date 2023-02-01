@@ -10,11 +10,12 @@ class PackagesModel(QtCore.QAbstractListModel):
 	IsCheckedRole=QtCore.Qt.UserRole+1002
 	CustomNameRole=QtCore.Qt.UserRole+1003
 	PkgIconRole=QtCore.Qt.UserRole+1004
-	StatusRole = QtCore.Qt.UserRole + 1005
+	StatusRole=QtCore.Qt.UserRole+1005
 	IsVisibleRole=QtCore.Qt.UserRole+1006
 	IsRunningRole=QtCore.Qt.UserRole+1007
 	ResultProcessRole=QtCore.Qt.UserRole+1008
 	OrderRole=QtCore.Qt.UserRole+1009
+	ShowSpinnerRole = QtCore.Qt.UserRole + 1010
 
 
 	def __init__(self,parent=None):
@@ -55,8 +56,9 @@ class PackagesModel(QtCore.QAbstractListModel):
 			elif role == PackagesModel.ResultProcessRole:
 				return item["resultProcess"]
 			elif role == PackagesModel.OrderRole:
-				return item["order"]	
-		
+				return item["order"]
+			elif role == PackagesModel.ShowSpinnerRole:
+				return item["showSpinner"]	
 		#def data
 
 	def roleNames(self):
@@ -72,15 +74,16 @@ class PackagesModel(QtCore.QAbstractListModel):
 		roles[PackagesModel.IsRunningRole] = b"isRunning"
 		roles[PackagesModel.ResultProcessRole] = b"resultProcess"
 		roles[PackagesModel.OrderRole] = b"order"
+		roles[PackagesModel.ShowSpinnerRole] = b"showSpinner"
 
 		return roles
 
 	#def roleName
 
-	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr):
+	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr,ss):
 		
 		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(),self.rowCount())
-		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr))
+		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr,showSpinner=ss))
 		self.endInsertRows()
 
 	#def appendRow
@@ -89,7 +92,7 @@ class PackagesModel(QtCore.QAbstractListModel):
 		
 		if role == QtCore.Qt.EditRole:
 			row = index.row()
-			if param in ["pkgStatus","pkgIcon","isVisible","isChecked","isRunning","resultProcess"]:
+			if param in ["status","showSpinner","pkgIcon","isVisible","isChecked","resultProcess"]:
 				self._entries[row][param]=value
 				self.dataChanged.emit(index,index)
 				return True

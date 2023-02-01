@@ -68,13 +68,6 @@ class CheckMetaProtection(QThread):
 class EpiGui(QObject):
 
 	epiGuiManager=EpiGuiManager.EpiGuiManager()
-	MSG_LOADING_INFO=0
-	MSG_LOADING_WAIT=1
-	MSG_LOADING_UNLOCK=2
-	MSG_FEEDBACK_INTERNET=3
-	MSG_FEEDBACK_EULA=7
-	MSG_FEEDBACK_INSTALL_1=8
-	MSG_FEEDBACK_UNINSTALL_CHECK=9
 
 	def __init__(self):
 
@@ -88,7 +81,7 @@ class EpiGui(QObject):
 		self._packagesModel=PackagesModel.PackagesModel()
 		self._closeGui=False
 		self._closePopUp=True
-		self._loadMsgCode=EpiGui.MSG_LOADING_INFO
+		self._loadMsgCode=EpiGui.epiGuiManager.MSG_LOADING_INFO
 		self._loadErrorCode=""
 		self._localDebError=""
 		self._showStatusMessage=[False,"","Ok"]
@@ -100,7 +93,8 @@ class EpiGui(QObject):
 		self._selectPkg=False
 		self._showRemoveBtn=False
 		self._isProcessRunning=False
-		self._enableActionBtn=False
+		self._enableApplyBtn=False
+		self._enableRemoveBtn=False
 		self._enablePkgList=True
 		self._showDialog=False
 		self._eulaUrl=""
@@ -109,6 +103,7 @@ class EpiGui(QObject):
 		self._endProcess=True
 		self._endCurrentCommand=False
 		self._currentCommand=""
+		self._enableKonsole=False
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -145,7 +140,7 @@ class EpiGui(QObject):
 				self.localDebError=self.gatherInfoT.ret[3]
 				self.currentStack=1
 			elif self.gatherInfoT.ret[2]=="Wait":
-				self.loadMsgCode=EpiGui.MSG_LOADING_WAIT
+				self.loadMsgCode=EpiGui.epiGuiManager.MSG_LOADING_WAIT
 				self.waitUnlockTimer=QTimer()
 				self.waitUnlockTimer.timeout.connect(self._waitUnlockTimerRet)
 				self.waitUnlockTimer.start(5000)
@@ -166,7 +161,8 @@ class EpiGui(QObject):
 				self.showRemoveBtn=True
 		
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
-			self.enableActionBtn=True
+			self.enableApplyBtn=True
+			self.enableRemoveBtn=True
 		
 		if EpiGui.epiGuiManager.initialStatusCode[0]!="":
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.initialStatusCode[0],EpiGui.epiGuiManager.initialStatusCode[1]]
@@ -322,19 +318,33 @@ class EpiGui(QObject):
 
 	#def _setSelectPkg 
 
-	def _getEnableActionBtn(self):
+	def _getEnableApplyBtn(self):
 
-		return self._enableActionBtn
+		return self._enableApplyBtn
 
-	#def _getEnableActionBtn
+	#def _getEnableApplyBtn
 
-	def _setEnableActionBtn(self,enableActionBtn):
+	def _setEnableApplyBtn(self,enableApplyBtn):
 
-		if self._enableActionBtn!=enableActionBtn:
-			self._enableActionBtn=enableActionBtn
-			self.on_enableActionBtn.emit()
+		if self._enableApplyBtn!=enableApplyBtn:
+			self._enableApplyBtn=enableApplyBtn
+			self.on_enableApplyBtn.emit()
 
-	#def _setEnableActionBtn
+	#def _setEnableApplyBtn
+
+	def _getEnableRemoveBtn(self):
+
+		return self._enableRemoveBtn
+
+	#def _getEnableRemoveBtn
+
+	def _setEnableRemoveBtn(self,enableRemoveBtn):
+
+		if self._enableRemoveBtn!=enableRemoveBtn:
+			self._enableRemoveBtn=enableRemoveBtn
+			self.on_enableRemoveBtn.emit()
+
+	#def _setEnableRemoveBtn
 
 	def _getEnablePkgList(self):
 
@@ -390,7 +400,7 @@ class EpiGui(QObject):
 		packagesEntries=EpiGui.epiGuiManager.packagesData
 		for item in packagesEntries:
 			if item["pkgId"]!="":
-				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"])
+				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"],item["showSpinner"])
 
 	#def _updatePackagesModel
 
@@ -506,6 +516,20 @@ class EpiGui(QObject):
 
 	#def _setCurrentCommand
 
+	def _getEnableKonsole(self):
+
+		return self._enableKonsole
+
+	#def _getEnableKonsole
+
+	def _setEnableKonsole(self,enableKonsole):
+
+		if self._enableKonsole!=enableKonsole:
+			self._enableKonsole=enableKonsole
+			self.on_enableKonsole.emit()
+
+	#def _setEnableKonsole
+
 	def _getCloseGui(self):
 
 		return self._closeGui
@@ -521,10 +545,17 @@ class EpiGui(QObject):
 	#def _setCloseGui
 
 	@Slot()
+	def getNewCommand(self):
+
+		self.endCurrentCommand=False
+		
+	#def getNewCommand
+
+	@Slot()
 	def launchUnlockProcess(self):
 
 		self.showDialog=False
-		self.loadMsgCode=EpiGui.MSG_LOADING_UNLOCK
+		self.loadMsgCode=EpiGui.epiGuiManager.MSG_LOADING_UNLOCK
 		self.unlockProcessT=UnlockProcess()
 		self.unlockProcessT.start()
 		self.unlockProcessT.finished.connect(self._unlockProcessRet)
@@ -571,20 +602,37 @@ class EpiGui(QObject):
 		self._updatePackagesModelInfo("isChecked")
 		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
-			self.enableActionBtn=True
+			self.enableApplyBtn=True
+			self._manageRemoveBtn(True)
 		else:
-			self.enableActionBtn=False
+			self.enableApplyBtn=False
+			self._manageRemoveBtn(False)
 
 	#def _refreshInfo
+
+	def _manageRemoveBtn(self,pkgSelected):
+
+		match=False
+		if pkgSelected:
+			for item in EpiGui.epiGuiManager.epiManager.packages_selected:
+				if item in EpiGui.epiGuiManager.pkgsInstalled:
+					match=True
+					break
+		if match:
+			self.enableRemoveBtn=True
+		else:
+			self.enableRemoveBtn=False
+
+	#def _manageRemoveBtn
 
 	@Slot()
 	def initInstallProcess(self):
 
 		self.showStatusMessage=[False,"","Ok"]
 		self.enablePkgList=False
-		self.enableActionBtn=False
+		self.enableApplyBtn=False
 		if not EpiGui.epiGuiManager.noCheck:
-			self.feedbackCode=EpiGui.MSG_FEEDBACK_INTERNET
+			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INTERNET
 			EpiGui.epiGuiManager.checkInternetConnection()
 			self.checkConnectionTimer=QTimer()
 			self.checkConnectionTimer.timeout.connect(self._checkConnectionTimerRet)
@@ -601,7 +649,7 @@ class EpiGui(QObject):
 			self.checkConnectionTimer.stop()
 			self.feedbackCode=0
 			if EpiGui.epiGuiManager.retConnection[0]:
-				self.enableActionBtn=True
+				self.enableApplyBtn=True
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.retConnection[1],"Error"]
 			else:
 				self._getEulas()
@@ -620,23 +668,26 @@ class EpiGui(QObject):
 	def _manageEulas(self):
 
 		if len(EpiGui.epiGuiManager.eulasToCheck)>0:
-			self.enableActionBtn=True
+			self.enableApplyBtn=True
+			self.enableRemoveBtn=True
 			self.eulaUrl=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["eula"]
-			self.feedbackCode=EpiGui.MSG_FEEDBACK_EULA
+			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_EULA
 			self.currentEulaPkg=EpiGui.epiGuiManager.eulasToCheck[EpiGui.epiGuiManager.eulaOrder]["pkg_name"]
 			self.currentPkgOption=1
 		else:
 			self.currentPkgOption=0
 			self.currentEulaPkg=""
 			if EpiGui.epiGuiManager.eulaAccepted:
-				self.enableActionBtn=False
-				self.feedbackCode=EpiGui.MSG_FEEDBACK_INSTALL_1
+				self.enableApplyBtn=False
+				self.enableRemoveBtn=False
+				self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_1
 				self.isProcessRunning=True
 			else:
 				self.feedbackCode=""
 				self.enablePkgList=True
 				if not self.selectPkg:
-					self.enableActionBtn=True
+					self.enableApplyBtn=True
+					self.enableRemoveBtn=True
 
 	#def _manageEulas
 
@@ -661,11 +712,12 @@ class EpiGui(QObject):
 	@Slot()
 	def launchUninstallProcess(self):
 
-		self.enableActionBtn=False
+		self.enableApplyBtn=False
+		self.enableRemoveBtn=False
 		self.enablePkgList=False
 		self.showStatusMessage=[False,"","Ok"]
-
-		self.feedbackCode=EpiGui.MSG_FEEDBACK_UNINSTALL_CHECK
+		self.endProcess=False
+		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_UNINSTALL_CHECK
 		self.checkMetaProtectionT=CheckMetaProtection()
 		self.checkMetaProtectionT.start()
 		self.checkMetaProtectionT.finished.connect(self._checkMetaProtectionRet)
@@ -675,13 +727,66 @@ class EpiGui(QObject):
 	def _checkMetaProtectionRet(self):
 
 		if EpiGui.epiGuiManager.stopUninstall[0]:
-			self.enableActionBtn=True
+			self.enableApplyBtn=True
 			self.enablePkgList=True
 			self.feedbackCode=""
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.stopUninstall[1],"Error"]
-
+		else:
+			self.enableKonsole=True
+			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
+			self._updateUninstallPackagesModel('start')
+			self.isProcessRunning=True
+			EpiGui.epiGuiManager.initUnInstallProcess()
+			self.uninstallProcessTimer=QTimer(None)
+			self.uninstallProcessTimer.timeout.connect(self._uninstallProcessTimerRet)
+			self.uninstallProcessTimer.start(100)		
 
 	#def _checkMetaProtectionRet
+
+	def _uninstallProcessTimerRet(self):
+
+		if not EpiGui.epiGuiManager.removePkgLaunched:
+			EpiGui.epiGuiManager.removePkgLaunched=True
+			self.currentCommand=EpiGui.epiGuiManager.getUninstallCommand()
+			self.endCurrentCommand=True
+
+		if EpiGui.epiGuiManager.removePkgDone:
+			if not EpiGui.epiGuiManager.checkRemoveLaunched:
+				EpiGui.epiGuiManager.checkRemoveLaunched=True
+				EpiGui.epiGuiManager.checkRemove()
+
+			if EpiGui.epiGuiManager.checkRemoveDone:
+				self.isProcessRunning=False
+				self.endProcess=True
+				self.feedbackCode=""
+				self.enableApplyBtn=True
+				self.enablePkgList=True
+				self._manageRemoveBtn(True)
+				self.uninstallProcessTimer.stop()
+				self._updateUninstallPackagesModel("end")
+
+				if len(EpiGui.epiGuiManager.pkgsInstalled)==0:
+					self.showRemoveBtn=False
+
+				self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
+
+		if EpiGui.epiGuiManager.removePkgLaunched:
+			if not EpiGui.epiGuiManager.removePkgDone:
+				if not os.path.exists(EpiGui.epiGuiManager.tokenUninstall[1]):
+					EpiGui.epiGuiManager.removePkgDone=True
+		
+	#def _uninstallProcessTimerRet
+
+	def _updateUninstallPackagesModel(self,step):
+
+		self._updatePackagesModelInfo("showSpinner")
+		self._updatePackagesModelInfo("resultProcess")
+
+		if step=="end":
+			self._updatePackagesModelInfo("pkgIcon")
+			self._updatePackagesModelInfo("status")
+
+	#def _updateUninstallPackagesModel
 
 	def _updatePackagesModelInfo(self,param):
 
@@ -725,7 +830,10 @@ class EpiGui(QObject):
 	@Slot()
 	def closeApplication(self):
 
-		self.closeGui=True
+		if self.endProcess:
+			self.closeGui=True
+		else:
+			self.closeGui=False
 
 	#def closeApplication
 	
@@ -756,8 +864,11 @@ class EpiGui(QObject):
 	on_selectPkg=Signal()
 	selectPkg=Property(bool,_getSelectPkg,_setSelectPkg,notify=on_selectPkg)
 
-	on_enableActionBtn=Signal()
-	enableActionBtn=Property(bool,_getEnableActionBtn,_setEnableActionBtn,notify=on_enableActionBtn)
+	on_enableApplyBtn=Signal()
+	enableApplyBtn=Property(bool,_getEnableApplyBtn,_setEnableApplyBtn,notify=on_enableApplyBtn)
+
+	on_enableRemoveBtn=Signal()
+	enableRemoveBtn=Property(bool,_getEnableRemoveBtn,_setEnableRemoveBtn,notify=on_enableRemoveBtn)
 
 	on_enablePkgList=Signal()
 	enablePkgList=Property(bool,_getEnablePkgList,_setEnablePkgList,notify=on_enablePkgList)
@@ -791,6 +902,9 @@ class EpiGui(QObject):
 
 	on_currentCommand=Signal()
 	currentCommand=Property('QString',_getCurrentCommand,_setCurrentCommand, notify=on_currentCommand)
+
+	on_enableKonsole=Signal()
+	enableKonsole=Property(bool,_getEnableKonsole,_setEnableKonsole,notify=on_enableKonsole)
 
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)

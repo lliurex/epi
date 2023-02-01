@@ -18,6 +18,7 @@ Components.ListItem{
     property bool isRunning
     property int resultProcess
     property int order
+    property bool showSpinner
 
     enabled:true
 
@@ -116,7 +117,7 @@ Components.ListItem{
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
             visible:{
-                if (packageCheck.checked){
+                if ((packageCheck.checked) && (showSpinner)){
                     epiBridge.isProcessRunning
                 }else{
                     false
