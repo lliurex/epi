@@ -572,15 +572,6 @@ class EpiGui(QObject):
 
 	#def _unlockProcessT	
 
-	@Slot(int)
-	def manageTransitions(self,stack):
-
-		if self.currentOptionsStack!=stack:
-			self.currentOptionsStack=stack
-			self.moveToStack=""
-	
-	#def manageTransitions
-
 	@Slot('QVariantList')
 	def onCheckPkg(self,info):
 

@@ -49,7 +49,7 @@ class IconProvider(QQuickImageProvider):
 			destImage.load(self.localPackage,"png")
 		
 		s=QSize(48,48)
-		destImage=destImage.scaled(s,aspectRatio=Qt.KeepAspectRatio,mode=Qt.FastTransformation)
+		destImage=destImage.scaled(s,aspectRatio=Qt.KeepAspectRatio,mode=Qt.SmoothTransformation)
 		lastImage=QImage()
 		lastImage.load(self.checkImage,"png")
 		p=QPainter()

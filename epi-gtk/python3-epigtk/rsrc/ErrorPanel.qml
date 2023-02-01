@@ -5,6 +5,7 @@ import org.kde.kirigami 2.16 as Kirigami
 
 Rectangle{
     visible: true
+    color:"transparent"
     
     GridLayout{
         id: loadGrid

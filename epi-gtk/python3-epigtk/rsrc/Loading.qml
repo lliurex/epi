@@ -6,6 +6,7 @@ import QtQuick.Dialogs 1.3
 
 Rectangle{
     visible: true
+    color:"transparent"
 
     GridLayout{
         id: loadGrid
