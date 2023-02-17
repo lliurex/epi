@@ -790,6 +790,14 @@ class EpiGui(QObject):
 	
 	#def _updatePackagesModelInfo
 
+	@Slot(int)
+	def manageTransitions(self,stack):
+
+		if self.currentOptionsStack!=stack:
+			self.currentOptionsStack=stack
+
+	#de manageTransitions
+
 	@Slot()
 	def openHelp(self):
 

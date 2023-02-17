@@ -564,6 +564,47 @@ class EpiGuiManager:
 
 	#def checkRemoveMeta
 
+	def initInstallProcess(self):
+
+		self.addRepositoryKeysLaunched=False
+		self.addRepositoryKeysDone=False
+		self.updateKeyRingLaunched=False
+		self.updateKeysRingDone=False
+		self.downloadAppLaunched=False
+		self.downloadAppDone=False
+		self.checkDownloadLaunched=False
+		self.checkDownloadDone=False
+		self.preInstallAppLaunched=False
+		self.preInstallAppDone=False
+		self.checkPreInstallLaunched=False
+		self.checkPreInstallDone=False
+		self.checkArquitectureLaunched=False
+		self.checkArquitectureDone=False
+		self.updateReposLaunched=False
+		self.updateReposDone=False
+		self.installAppLaunched=False
+		self.installAppDone=False
+		self.checkInstallLaunched=False
+		self.checkInstallDone=False
+		self.postInstallAppLaunched=False
+		self.postInstallAppDone=False
+		self.checkPostInstallLaunched=False
+		self.checkPostInstallDone=False
+
+	#def initInstallProcess
+
+	def getAddRepositoryCommand(self,order):
+
+		command=self.epiManager.add_repository_keys(order)
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"keys")
+
+		return command
+
+	#def getAddRepositoryCommand
+
 	def initUnInstallProcess(self):
 
 		self.removePkgLaunched=False
@@ -589,34 +630,33 @@ class EpiGuiManager:
 
 		if action=="keys":
 			self.tokenKeys=tempfile.mkstemp('_keys')
-			removeTmp=' rm -f ' + self.tokenKeys[1] + ';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenKeys[1]
 		elif action=="keyring":
 			self.tokenKeyring=tempfile.mkstemp('_keyring')
-			removeTmp=' rm -f ' + self.tokenKeyring[1] + ';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenKeyring[1]
 		elif action=="download":
 			self.tokenDownload=tempfile.mkstemp('_download')
-			removeTmp=' rm -f ' + self.tokenDownload[1] + ';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenDownload[1]
 		elif action=="preinstall":
 			self.tokenPreinstall=tempfile.mkstemp('_preinstall')	
-			removeTmp=' rm -f ' + self.tokenPreinstall[1] + ';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenPreinstall[1]
 		elif action=="arquitecture":
 			self.tokenArquitecture=tempfile.mkstemp('_arquitecture')	
-			removeTmp=' rm -f ' + self.tokenArquitecture[1] + ';'+'\n'	
+			removeTmp=' rm -f %s;\n'%self.tokenArquitecture[1]	
 		elif action=="updaterepos":
 			self.tokenUpdaterepos=tempfile.mkstemp('_updaterepos')	
-			removeTmp=' rm -f ' + self.tokenUpdaterepos[1] + ';'+'\n'	
+			removeTmp=' rm -f %s;\n'%self.tokenUpdaterepos[1]	
 		elif action=="install":
 			self.tokenInstall=tempfile.mkstemp('_install')
-			removeTmp=' rm -f ' + self.tokenInstall[1] +';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenInstall[1]
 		elif action=="postinstall":	
 			self.tokenPostinstall=tempfile.mkstemp('_postinstall')
-			removeTmp=' rm -f ' + self.tokenPostinstall[1] +';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenPostinstall[1]
 		elif action=="uninstall":
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
-			removeTmp=' rm -f ' + self.tokenUninstall[1] +';'+'\n'
+			removeTmp=' rm -f %s;\n'%self.tokenUninstall[1]
 
-		cmd='%s 2>&1 | tee -a %s; %s;\n'%(command,self.konsoleLog,removeTmp)
-
+		cmd='%s 2>&1 | tee -a %s;%s;\n'%(command,self.konsoleLog,removeTmp)
 		return cmd
 
 	#def _createProcessToken
