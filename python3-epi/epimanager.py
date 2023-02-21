@@ -652,7 +652,7 @@ class EpiManager:
 						script=self.epi_conf["script"]["name"]
 						if os.path.exists(script):
 							self.manage_download=False
-							cmd_file='((%s download '%script
+							cmd_file='%s download '%script
 				except:
 					pass
 
@@ -665,13 +665,13 @@ class EpiManager:
 						cmd=cmd_file
 						for pkg in self.packages_selected:
 							cmd+="%s "%pkg
-						cmd+='); echo $? > %s )'%self.token_result_download[1]
+						cmd='((%s); echo $? > %s )'%(cmd,self.token_result_download[1])
 
 				if self.manage_download:
 					for item in self.epi_conf["pkg_list"]:
 						if item["name"] in self.packages_selected:
 							cmd=self._get_download_cmd(self.type,item,cmd)
-					cmd='%s); echo $? > %s )'%(cmd,self.token_result_download[1])	
+					cmd='((%s); echo $? > %s )'%(cmd,self.token_result_download[1])	
 
 			elif self.type=="mix":
 				
@@ -679,17 +679,20 @@ class EpiManager:
 					if item["name"] in self.packages_selected:
 						if item["type"] in self.types_with_download:
 							if self.manage_download:
-								cmd='((%s'%self._get_download_cmd(item["type"],item,cmd)
+								cmd='%s'%self._get_download_cmd(item["type"],item,cmd)
 							else:
 								if item["type"]=="file":
 									cmd_file+="%s "%item["name"]	
 								else:
-									cmd='((%s'%self._get_download_cmd(item["type"],item,cmd)
+									cmd='%s'%self._get_download_cmd(item["type"],item,cmd)
 									
 				if cmd_file!="":
 					cmd_file+=";"
 
-				cmd='%s;%s); echo $? > %s)'%(cmd,cmd_file,self.token_result_download[1])
+				if cmd!="" and cmd_file!="":
+					cmd='((%s;%s); echo $? > %s)'%(cmd,cmd_file,self.token_result_download[1])
+				else:
+					cmd='(echo $? > %s)'%(self.token_result_download[1])	
 
 		self._show_debug("download_app","Command to download: %s"%(cmd))
 		return cmd			
@@ -715,7 +718,7 @@ class EpiManager:
 		if os.path.exists(tmp_file):
 			cmd='%s rm -f %s;'%(cmd,tmp_file)
 		self.download_folder.append(tmp_file)
-		cmd='%s wget %s%s --progress=bar:force --no-check-certificate -O ;'%(cmd,url,version,tmp_file)
+		cmd='%s wget %s%s --progress=bar:force --no-check-certificate -O %s'%(cmd,url,version,tmp_file)
 		return cmd
 
 	#def _get_download_cmd
@@ -725,7 +728,6 @@ class EpiManager:
 		
 		result=True
 		content=""
-
 		if self.type not in self.types_without_download:
 
 			count=0
@@ -755,7 +757,6 @@ class EpiManager:
 							result=True
 
 		self._show_debug("check_download","Downlodad status: Result: %s - Token Content: %s"%(result,content))
-		
 		return result
 
 	#def check_download		
@@ -836,7 +837,7 @@ class EpiManager:
 			cmd=self._get_install_cmd_base(calledfrom,"deb")
 			for item in self.download_folder:
 				if os.path.exists(item):
-					pkg='%s %s'(pkg,item)
+					pkg='%s %s'%(pkg,item)
 			
 			cmd=cmd+pkg	
 

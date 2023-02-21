@@ -197,8 +197,10 @@ GridLayout{
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
                     if (epiBridge.currentPkgOption==0){
-                        epiBridge.initInstallProcess()
+                        applyChanges()
+                        epiBridge.launchInstallProcess()
                     }else{
+                        applyChanges()
                         epiBridge.acceptEula()
                     }
      
@@ -271,6 +273,18 @@ GridLayout{
             case -16:
                 msg=i18nd("epi-gtk","Uninstalled process ending with errors");
                 break;
+            case -17:
+                msg=i18nd("epi-gtk","Installation aborted. Error preparing system")
+                break;
+            case -18:
+                msg=i18nd("epi-gtk","Installation aborted. Unable to download package")
+                break;
+            case -19:
+                msg=i18nd("epi-gtk","Installation aborted. Error installing application")
+                break;
+            case -20:
+                msg=i18nd("epi-gtk","Installation aborted. Error ending installation")
+                break;
             case 3:
                 msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
                 break;
@@ -285,16 +299,40 @@ GridLayout{
             case 7:
                 msg=i18nd("epi-gtk","Showing the end user license agreement for: ")+epiBridge.currentEulaPkg;
                 break;
+            case 8:
+                msg=i18nd("epi-gtk","Checking if repositories need updating...")
+                break;
             case 9:
-                msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...");
+                msg=i18nd("epi-gtk","Checking system architecture...")
                 break;
             case 10:
-                msg=i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
+                msg=i18nd("epi-gtk","Gathering Information...")
                 break;
             case 11:
-                msg=i18nd("epi-gtk","Applications successfully uninstalled");
+                msg=i18nd("epi-gtk","Downloading application...")
                 break;
             case 12:
+                msg=i18nd("epi-gtk","Preparing installation...")
+                break;
+            case 13:
+                msg=i18nd("epi-gtk","Installing application...")
+                break;
+            case 14:
+                msg=i18nd("epi-gtk","Ending the installation...")
+                break;
+            case 15:
+                msg=i18nd("epi-gtk","Installation completed successfully")
+                break;
+            case 16:
+                msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...")
+                break;
+            case 17:
+                msg=i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
+                break;
+            case 18:
+                msg=i18nd("epi-gtk","Applications successfully uninstalled");
+                break;
+            case 19:
                 msg=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package");
                 break;
             default:

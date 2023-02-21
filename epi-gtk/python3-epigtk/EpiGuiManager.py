@@ -29,6 +29,10 @@ class EpiGuiManager:
 	ERROR_INTERNET_CONNECTION=-14
 	ERROR_UNINSTALL_STOP_META=-15
 	ERROR_UNINSTALL_FAILED=-16
+	ERROR_INSTALL_INIT=-17
+	ERROR_INSTALL_DOWNLOAD=-18
+	ERROR_INSTALL_INSTALL=-19
+	ERROR_INSTALL_ENDING=-20
 
 	MSG_LOADING_INFO=0
 	MSG_LOADING_WAIT=1
@@ -38,11 +42,18 @@ class EpiGuiManager:
 	INFO_ZMD_NOT_EXECUTED=5
 	INFO_EPI_FAILED=6
 	MSG_FEEDBACK_EULA=7
-	MSG_FEEDBACK_INSTALL_1=8
-	MSG_FEEDBACK_UNINSTALL_CHECK=9
-	MSG_FEEDBACk_UNINSTALL_RUN=10
-	SUCCESS_UNINSTALL_PROCESS=11
-	WARNING_UNINSTALL_PROCESS=12
+	MSG_FEEDBACK_INSTALL_REPOSITORIES=8
+	MSG_FEEDBACK_INSTALL_ARQUITECTURE=9
+	MSG_FEEDBACK_INSTALL_GATHER=10
+	MSG_FEEDBACK_INSTALL_DOWNLOAD=11
+	MSG_FEEDBACK_INSTALL_PREINSTALL=12
+	MSG_FEEDBACK_INSTALL_INSTALL=13
+	MSG_FEEDBACK_INSTALL_ENDING=14
+	SUCCESS_INSTALL_PROCESS=15
+	MSG_FEEDBACK_UNINSTALL_CHECK=16
+	MSG_FEEDBACk_UNINSTALL_RUN=17
+	SUCCESS_UNINSTALL_PROCESS=18
+	WARNING_UNINSTALL_PROCESS=19
 
 
 	def __init__(self):
@@ -393,6 +404,7 @@ class EpiGuiManager:
 							item["resultProcess"]=1 
 				break
 
+
 	#def _updatePackagesModel
 
 	def _managePkgSelected(self,pkgId,active=True):
@@ -566,10 +578,11 @@ class EpiGuiManager:
 
 	def initInstallProcess(self):
 
+		self._removeResultProcess()
 		self.addRepositoryKeysLaunched=False
 		self.addRepositoryKeysDone=False
 		self.updateKeyRingLaunched=False
-		self.updateKeysRingDone=False
+		self.updateKeyRingDone=False
 		self.downloadAppLaunched=False
 		self.downloadAppDone=False
 		self.checkDownloadLaunched=False
@@ -590,27 +603,207 @@ class EpiGuiManager:
 		self.postInstallAppDone=False
 		self.checkPostInstallLaunched=False
 		self.checkPostInstallDone=False
+		if self.order>0:
+			self.order=self.order-1
 
 	#def initInstallProcess
 
-	def getAddRepositoryCommand(self,order):
+	def getAddRepositoryCommand(self):
 
-		command=self.epiManager.add_repository_keys(order)
+		command=self.epiManager.add_repository_keys(self.order)
 		length=len(command)
 
 		if length>0:
 			command=self._createProcessToken(command,"keys")
-
+		else:
+			self.addRepositoryKeysDone=True
+		
 		return command
 
 	#def getAddRepositoryCommand
 
+	def getUpdateKeyRingCommand(self):
+
+		command=self.epiManager.update_keyring()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"keyring")
+		else:
+			self.updateKeyRingDone=True
+		
+		return command
+
+	#def getUpdateKeyringCommand
+
+	def getDownloadAppCommand(self):
+
+		command=self.epiManager.download_app()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"download")
+		else:
+			self.downloadAppDone=True
+
+		return command
+
+	#def getDownloadAppCommand
+
+	def checkDownload(self):
+
+		self.feedBackCheck=[True,"",""]
+		downloadRet=self.epiManager.check_download()
+
+		if not downloadRet:
+			msgCode=EpiGuiManager.ERROR_INSTALL_DOWNLOAD
+			typeMsg="Error"
+			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self.feedBackCheck=[downloadRet,msgCode,typeMsg]
+			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLogTerminal("Install")
+
+		self.checkDownloadDone=True
+
+	#def checkDownloadApp
+
+	def getPreInstallCommand(self):
+
+		command=self.epiManager.preinstall_app()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"preInstall")
+		else:
+			self.preInstallAppDone=True
+
+		return command
+
+	#def getPreInstallCommand
+
+	def checkPreInstall(self):
+
+		self.feedBackCheck=[True,"",""]
+		preInstallRet=self.epiManager.check_preinstall()
+		
+		if not preInstallRet:
+			msgCode=EpiGuiManager.ERROR_INSTALL_INI
+			typeMsg="Error"
+			self.checkDownloadDone=True
+			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self.feedBackCheck=[preInstallRet,msgCode,typeMsg]
+			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLogTerminal("Install")
+
+		self.checkPreInstallDone=True
+
+	#def checkPreInstall
+
+	def getCheckArquitectureCommand(self):
+
+		command=self.epiManager.check_arquitecture()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"arquitecture")
+		else:
+			self.checkArquitectureDone=True
+
+		return command
+
+	#def getCheckArquitectureCommand
+
+	def getUpdateReposCommand(self):
+
+		command=self.epiManager.check_update_repos()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"updaterepos")
+		else:
+			self.updateReposDone=True
+
+		return command
+
+	#def getUpdateReposCommand
+
+	def getInstallCommand(self):
+
+		command=self.epiManager.install_app("gui")
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"install")
+		else:
+			self.installAppDone=True
+
+		return command
+
+	#def getInstallCommand
+
+	def checkInstall(self):
+
+		self.feedBackCheck=[True,"",""]
+		self.dpkgStatus,self.installed=self.epiManager.check_install_remove("install")
+
+		if not self.installed:
+			#self._updateProcessModelInfo(installStatus)
+			msgCode=EpiGuiManager.ERROR_INSTALL_INSTALL
+			typeMsg="Error"
+			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self.feedBackCheck=[self.installed,msgCode,typeMsg]
+			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLogTerminal("Install")
+	
+		self.checkInstallDone=True
+
+	#def checkInstall
+
+	def getPostInstallCommand(self):
+
+		command=self.epiManager.postinstall_app()
+		length=len(command)
+
+		if length>0:
+			command=self._createProcessToken(command,"postInstall")
+		else:
+			self.postInstallAppDone=True
+
+		return command
+
+	#def getPostInstallCommand
+
+	def checkPostInstall(self):
+
+		self.feedBackCheck=[True,"",""]
+		postInstallRet=self.epiManager.check_postinstall()
+		
+		if not postInstallRet:
+			msgCode=EpiGuiManager.ERROR_INSTALL_ENDING
+			typeMsg="Error"
+			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self.feedBackCheck=[postInstallRet,msgCode,typeMsg]
+			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,EpiGuiManager.MSG_FEEDBACK_INSTALL))
+			self._writeLogTerminal("Install")
+
+		else:
+			self._updateProcessModelInfo("install",self.installed,self.dpkgStatus)
+			self.epiManager.zerocenter_feedback(self.order,"install",True)
+			self._writeLog("Install process. Result: %s - Code:%s"%("Ok",EpiGuiManager.SUCCESS_INSTALL_PROCESS))
+			self._writeLogTerminal("Install")
+
+		self.checkPostInstallDone=True
+
+	#def checkPostInstall
+
 	def initUnInstallProcess(self):
 
+		self._removeResultProcess()
 		self.removePkgLaunched=False
 		self.removePkgDone=False
 		self.checkRemoveLaunched=False
 		self.checkRemoveDone=False
+
 		
 	#def initUnInstallProcess
 
@@ -630,33 +823,34 @@ class EpiGuiManager:
 
 		if action=="keys":
 			self.tokenKeys=tempfile.mkstemp('_keys')
-			removeTmp=' rm -f %s;\n'%self.tokenKeys[1]
+			removeTmp=' rm -f %s;'%self.tokenKeys[1]
 		elif action=="keyring":
 			self.tokenKeyring=tempfile.mkstemp('_keyring')
-			removeTmp=' rm -f %s;\n'%self.tokenKeyring[1]
+			removeTmp=' rm -f %s;'%self.tokenKeyring[1]
 		elif action=="download":
 			self.tokenDownload=tempfile.mkstemp('_download')
-			removeTmp=' rm -f %s;\n'%self.tokenDownload[1]
-		elif action=="preinstall":
-			self.tokenPreinstall=tempfile.mkstemp('_preinstall')	
-			removeTmp=' rm -f %s;\n'%self.tokenPreinstall[1]
+			removeTmp=' rm -f %s;'%self.tokenDownload[1]
+		elif action=="preInstall":
+			self.tokenPreInstall=tempfile.mkstemp('_preInstall')	
+			removeTmp=' rm -f %s;'%self.tokenPreInstall[1]
 		elif action=="arquitecture":
 			self.tokenArquitecture=tempfile.mkstemp('_arquitecture')	
-			removeTmp=' rm -f %s;\n'%self.tokenArquitecture[1]	
+			removeTmp=' rm -f %s;'%self.tokenArquitecture[1]	
 		elif action=="updaterepos":
 			self.tokenUpdaterepos=tempfile.mkstemp('_updaterepos')	
-			removeTmp=' rm -f %s;\n'%self.tokenUpdaterepos[1]	
+			removeTmp=' rm -f %s;'%self.tokenUpdaterepos[1]	
 		elif action=="install":
 			self.tokenInstall=tempfile.mkstemp('_install')
-			removeTmp=' rm -f %s;\n'%self.tokenInstall[1]
-		elif action=="postinstall":	
-			self.tokenPostinstall=tempfile.mkstemp('_postinstall')
-			removeTmp=' rm -f %s;\n'%self.tokenPostinstall[1]
+			removeTmp=' rm -f %s;'%self.tokenInstall[1]
+		elif action=="postInstall":	
+			self.tokenPostInstall=tempfile.mkstemp('_postInstall')
+			removeTmp=' rm -f %s;'%self.tokenPostInstall[1]
 		elif action=="uninstall":
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
-			removeTmp=' rm -f %s;\n'%self.tokenUninstall[1]
+			removeTmp=' rm -f %s;'%self.tokenUninstall[1]
 
-		cmd='%s 2>&1 | tee -a %s;%s;\n'%(command,self.konsoleLog,removeTmp)
+		cmd='%s 2>&1 | tee -a %s;%s\n'%(command,self.konsoleLog,removeTmp)
+
 		return cmd
 
 	#def _createProcessToken
@@ -665,8 +859,8 @@ class EpiGuiManager:
 
 		self.remove=["","",""]
 
-		uninstallStatus,remove=self.epiManager.check_install_remove("uninstall")
-		self._updateProcessModelInfo(uninstallStatus)
+		dpkgStatus,remove=self.epiManager.check_install_remove("uninstall")
+		self._updateProcessModelInfo('uninstall',remove,dpkgStatus)
 		self.checkRemoveDone=True
 
 		if remove:
@@ -690,23 +884,66 @@ class EpiGuiManager:
 
 	#def checkRemove
 
-	def _updateProcessModelInfo(self,uninstallStatus):
+	def _updateProcessModelInfo(self,action,result,dpkgStatus):
 
 		pkgIndex=0
+		
 		for element in self.info[0]["pkg_list"]:
 			if element["name"] in self.epiManager.packages_selected:
 				tmpParam={}
-				tmpParam["status"]=uninstallStatus[element["name"]]
+				if result:
+					if action=="install":
+						tmpParam["status"]='installed'
+						if dpkgStatus !=None and len(dpkgStatus)>0:
+							if dpkgStatus[element["name"]] not in self.pkgsInstalled:
+								self.pkgsInstalled.append(element["name"])
+					elif action=="uninstall":
+						tmpParam["status"]='available'
+						if dpkgStatus !=None and len(dpkgStatus)>0:
+							if dpkgStatus[element["name"]] in self.pkgsInstalled:
+								self.pkgsInstalled.remove(element["name"])
+				
+					tmpParam["resultProcess"]=0
+				else:
+					if dpkgStatus !=None and len(dpkdpkgStatus)>0:
+						if action=="install":
+							if dpkgStatus[element["name"]]=='installed':
+								tmpParam["status"]='installed'
+								tmpParam["resultProcess"]=0
+								if element["name"] not in self.pkgsInstalled:
+									self.pkgsInstalled.append(element["name"])
+							else:
+								tmpParam["status"]='available'
+								tmpParam["resultProcess"]=1
+						elif action=='unistall':
+							if dpkgStatus[element["name"]]!='installed':
+								tmpParam['status']='available'
+								tmpParam["resultProcess"]=0
+								if dpkgStatus["name"] in self.pkgsInstalled:
+									self.pkgsInstalled.remove(element["name"])
+							else:
+								tmpParam["status"]='installed'
+								tmpParam["resultProcess"]=1
+					else:
+						tmpParam["resultProcess"]=1
+
 				tmpParam["pkgIcon"]=self._getPkgIcon(0,pkgIndex,tmpParam["status"])
 				tmpParam["showSpinner"]=True
 				self._updatePackagesModel(tmpParam,element["name"])
-				if uninstallStatus[element["name"]]!='installed':
-					if element["name"] in self.pkgsInstalled:
-						self.pkgsInstalled.remove(element["name"])
-
+			
 			pkgIndex+=1	
 	
 	#def _updateProcessModelInfo
+
+	def _removeResultProcess(self):
+
+		for element in self.info[0]["pkg_list"]:
+			if element["name"] in self.epiManager.packages_selected:
+				tmpParam={}
+				tmpParam["resultProcess"]=-1
+				self._updatePackagesModel(tmpParam,element["name"])
+
+	#def _removeResultProcess
 
 	def _getPackageVersion(self):
 
