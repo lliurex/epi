@@ -75,6 +75,7 @@ Rectangle{
                         id:filterModel
                         model:packagesModel
                         role:"customName"
+                        showDepend:epiBridge.showDependEpi
                         search:pkgSearchEntry.text.trim()
                         
                         delegate: ListDelegatePkgItem{
@@ -90,6 +91,7 @@ Rectangle{
                             resultProcess:model.resultProcess
                             order:model.order
                             showSpinner:model.showSpinner
+
                         }
                     }
 
@@ -104,34 +106,49 @@ Rectangle{
                  } 
             }
         }
+        RowLayout{
+            Layout.fillWidth:true
 
-        PC3.Button {
-            id:selectBtn
-            visible:epiBridge.selectPkg
-            focus:true
-            display:AbstractButton.TextBesideIcon
-            icon.name:{
-                if (epiBridge.uncheckAll){
-                    "list-remove"
-                }else{
-                    "list-add"
+            PC3.Button {
+                id:selectBtn
+                visible:epiBridge.selectPkg
+                focus:true
+                display:AbstractButton.TextBesideIcon
+                icon.name:{
+                    if (epiBridge.uncheckAll){
+                        "list-remove"
+                    }else{
+                        "list-add"
+                    }
+                }
+                text:{
+                    if (epiBridge.uncheckAll){
+                        i18nd("epi-gtk","Uncheck all packages")
+                    }else{
+                        i18nd("epi-gtk","Check all packages")
+                    }
+                }
+                enabled:epiBridge.enablePkgList
+                Layout.preferredHeight:40
+                Layout.rightMargin:10
+                Keys.onReturnPressed: selectBtn.clicked()
+                Keys.onEnterPressed: selectBtn.clicked()
+                onClicked:{
+                    epiBridge.selectAll()
+                    console.log("Seleccionar todo")
                 }
             }
-            text:{
-                if (epiBridge.uncheckAll){
-                    i18nd("epi-gtk","Uncheck all packages")
-                }else{
-                    i18nd("epi-gtk","Check all packages")
-                }
-            }
-            enabled:epiBridge.enablePkgList
-            Layout.preferredHeight:40
-            Layout.rightMargin:10
-            Keys.onReturnPressed: selectBtn.clicked()
-            Keys.onEnterPressed: selectBtn.clicked()
-            onClicked:{
-                epiBridge.selectAll()
-                console.log("Seleccionar todo")
+
+            Text{
+                id:dependText
+                text:i18nd("epi-gtk","(D) Addicitional application required")
+                visible:epiBridge.showDependLabel
+                font.family: "Quattrocento Sans Bold"
+                font.pointSize: 10
+                horizontalAlignment:Text.AlignLeft
+                Layout.preferredWidth:200
+                Layout.fillWidth:true
+                Layout.alignment:Qt.AlignLeft
             }
         }      
     }

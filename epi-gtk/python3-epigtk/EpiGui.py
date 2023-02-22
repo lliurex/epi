@@ -104,6 +104,8 @@ class EpiGui(QObject):
 		self._endCurrentCommand=False
 		self._currentCommand=""
 		self._enableKonsole=False
+		self._showDependEpi=False
+		self._showDependLabel=False
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -155,14 +157,10 @@ class EpiGui(QObject):
 		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
 		self.selectPkg=EpiGui.epiGuiManager.selectPkg
 		self.wikiUrl=EpiGui.epiGuiManager.wikiUrl
+		self._manageRemoveBtn(True)
 
-		if EpiGui.epiGuiManager.showRemoveBtn:
-			if EpiGui.epiGuiManager.pkgsInstalled:
-				self.showRemoveBtn=True
-		
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableApplyBtn=True
-			self.enableRemoveBtn=True
 		
 		if EpiGui.epiGuiManager.initialStatusCode[0]!="":
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.initialStatusCode[0],EpiGui.epiGuiManager.initialStatusCode[1]]
@@ -530,6 +528,34 @@ class EpiGui(QObject):
 
 	#def _setEnableKonsole
 
+	def _getShowDependEpi(self):
+
+		return self._showDependEpi
+
+	#def _getShowDependEpi
+
+	def _setShowDependEpi(self,showDependEpi):
+
+		if self._showDependEpi!=showDependEpi:
+			self._showDependEpi=showDependEpi
+			self.on_showDependEpi.emit()
+
+	#def _setShowDependEpi
+
+	def _getShowDependLabel(self):
+
+		return self._showDependLabel
+
+	#def _getShowDependLabel
+
+	def _setShowDependLabel(self,showDependLabel):
+
+		if self._showDependLabel!=showDependLabel:
+			self._showDependLabel=showDependLabel
+			self.on_showDependLabel.emit()
+
+	#def _setShowDependLabel
+
 	def _getCloseGui(self):
 
 		return self._closeGui
@@ -589,7 +615,9 @@ class EpiGui(QObject):
 
 	def _refreshInfo(self):
 
-		self._updatePackagesModelInfo("isChecked")
+		params=[]
+		params.append("isChecked")
+		self._updatePackagesModelInfo(params)
 		self.uncheckAll=EpiGui.epiGuiManager.uncheckAll
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableApplyBtn=True
@@ -603,11 +631,18 @@ class EpiGui(QObject):
 	def _manageRemoveBtn(self,pkgSelected):
 
 		match=False
-		if pkgSelected:
-			for item in EpiGui.epiGuiManager.epiManager.packages_selected:
-				if item in EpiGui.epiGuiManager.pkgsInstalled:
-					match=True
-					break
+		
+		if EpiGui.epiGuiManager.showRemoveBtn:
+			if EpiGui.epiGuiManager.pkgsInstalled:
+				self.showRemoveBtn=True
+			else:
+				self.showRemoveBtn=False
+		
+		for item in EpiGui.epiGuiManager.epiManager.packages_selected:
+			if item in EpiGui.epiGuiManager.pkgsInstalled:
+				match=True
+				break
+		
 		if match:
 			self.enableRemoveBtn=True
 		else:
@@ -673,12 +708,6 @@ class EpiGui(QObject):
 			self.currentEulaPkg=""
 			if EpiGui.epiGuiManager.eulaAccepted:
 				self._installProcess()
-				'''
-				self.enableApplyBtn=False
-				self.enableRemoveBtn=False
-				self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_1
-				self.isProcessRunning=True
-				'''
 			else:
 				self.endProcess=True
 				self.feedbackCode=""
@@ -714,7 +743,10 @@ class EpiGui(QObject):
 		self.enableKonsole=True
 		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
 		EpiGui.epiGuiManager.initInstallProcess()
-		self._updateUninstallPackagesModel('start')
+		self._updateResultPackagesModel('start',"install")
+		if EpiGui.epiGuiManager.order>0:
+			self.showDependEpi=True
+			self.showDependLabel=True
 		self.isProcessRunning=True
 		self.installProcessTimer=QTimer(None)
 		self.installProcessTimer.timeout.connect(self._installProcessTimerRet)
@@ -729,7 +761,6 @@ class EpiGui(QObject):
 		if not EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			EpiGui.epiGuiManager.addRepositoryKeysLaunched=True
 			self.currentCommand=EpiGui.epiGuiManager.getAddRepositoryCommand()
-			print(self.currentCommand)
 			self.endCurrentCommand=True
 
 		if EpiGui.epiGuiManager.addRepositoryKeysDone:
@@ -805,21 +836,20 @@ class EpiGui(QObject):
 
 																if EpiGui.epiGuiManager.checkPostInstallDone:
 																	if EpiGui.epiGuiManager.feedBackCheck[0]:
+																		self.showDependEpi=False
 																		if EpiGui.epiGuiManager.order>0:
 																			EpiGui.epiGuiManager.initInstallProcess()
+																			self._updateResultPackagesModel('end',"install")
 																		else:
 																			self.feedbackCode=""
 																			self.endProcess=True
 																			self.isProcessRunning=False
 																			self.installProcessTimer.stop()
-																			self._updateUninstallPackagesModel('end')
-																			if len(EpiGui.epiGuiManager.pkgsInstalled)>0:
-																				self.showRemoveBtn=True
-																			else:
-																				self.showRemoveBtn=False
-
-																			self.showStatusMessage=[True,EpiGui.epiGuiManager.SUCCESS_INSTALL_PROCESS,"Ok"]
-
+																			self._updateResultPackagesModel('end',"install")
+																			self._manageRemoveBtn(True)
+																			self.enableApplyBtn=True
+																			self.enablePkgList=True
+																			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
 																	else:
 																		error=True
 														else:
@@ -833,9 +863,10 @@ class EpiGui(QObject):
 			self.endProcess=True
 			self.feedbackCode=""
 			self.isProcessRunning=False
+			self.showDependEpi=False
 			self.installProcessTimer.stop()
-			self._updateUninstallPackagesModel("end")
-			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],"Error"]
+			self._updateResultPackagesModel("end","install")
+			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
 		
 		if EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			if not EpiGui.epiGuiManager.addRepositoryKeysDone:
@@ -906,7 +937,7 @@ class EpiGui(QObject):
 			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
 			self.isProcessRunning=True
 			EpiGui.epiGuiManager.initUnInstallProcess()
-			self._updateUninstallPackagesModel('start')
+			self._updateResultPackagesModel('start',"uninstall")
 			self.uninstallProcessTimer=QTimer(None)
 			self.uninstallProcessTimer.timeout.connect(self._uninstallProcessTimerRet)
 			self.uninstallProcessTimer.start(100)		
@@ -933,11 +964,7 @@ class EpiGui(QObject):
 				self.enablePkgList=True
 				self._manageRemoveBtn(True)
 				self.uninstallProcessTimer.stop()
-				self._updateUninstallPackagesModel("end")
-
-				if len(EpiGui.epiGuiManager.pkgsInstalled)==0:
-					self.showRemoveBtn=False
-
+				self._updateResultPackagesModel("end","uninstall")
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
 
 		if EpiGui.epiGuiManager.removePkgLaunched:
@@ -947,25 +974,34 @@ class EpiGui(QObject):
 		
 	#def _uninstallProcessTimerRet
 
-	def _updateUninstallPackagesModel(self,step):
+	def _updateResultPackagesModel(self,step,action):
 
-		self._updatePackagesModelInfo("showSpinner")
-		self._updatePackagesModelInfo("resultProcess")
-
+		params=[]
+		params.append("showSpinner")
+		params.append("resultProcess")
+		if step=="start" and action=="install":
+			if EpiGui.epiGuiManager.order>0:
+				params.append("isVisible")
 		if step=="end":
-			self._updatePackagesModelInfo("pkgIcon")
-			self._updatePackagesModelInfo("status")
+			params.append("pkgIcon")
+			params.append("status")
 
-	#def _updateUninstallPackagesModel
+		self._updatePackagesModelInfo(params)
 
-	def _updatePackagesModelInfo(self,param):
+	#def _updateResultPackagesModel
+
+	def _updatePackagesModelInfo(self,params):
 
 		updatedInfo=EpiGui.epiGuiManager.packagesData
-
+		valuesToUpdate=[]
 		if len(updatedInfo)>0:
 			for i in range(len(updatedInfo)):
 				index=self._packagesModel.index(i)
-				self._packagesModel.setData(index,param,updatedInfo[i][param])
+				for item in params:
+					tmp={}
+					tmp[item]=updatedInfo[i][item]
+					valuesToUpdate.append(tmp)
+				self._packagesModel.setData(index,valuesToUpdate)
 	
 	#def _updatePackagesModelInfo
 
@@ -1083,6 +1119,12 @@ class EpiGui(QObject):
 
 	on_enableKonsole=Signal()
 	enableKonsole=Property(bool,_getEnableKonsole,_setEnableKonsole,notify=on_enableKonsole)
+
+	on_showDependEpi=Signal()
+	showDependEpi=Property(bool,_getShowDependEpi,_setShowDependEpi,notify=on_showDependEpi)
+
+	on_showDependLabel=Signal()
+	showDependLabel=Property(bool,_getShowDependLabel,_setShowDependLabel,notify=on_showDependLabel)
 
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)

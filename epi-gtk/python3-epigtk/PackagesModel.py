@@ -88,17 +88,16 @@ class PackagesModel(QtCore.QAbstractListModel):
 
 	#def appendRow
 
-	def setData(self, index, param, value, role=QtCore.Qt.EditRole):
+	def setData(self, index, valuesToUpdate, role=QtCore.Qt.EditRole):
 		
 		if role == QtCore.Qt.EditRole:
 			row = index.row()
-			if param in ["status","showSpinner","pkgIcon","isVisible","isChecked","resultProcess"]:
-				self._entries[row][param]=value
-				self.dataChanged.emit(index,index)
-				return True
-			else:
-				return False
-	
+			for item in valuesToUpdate:
+				for param in item:
+					if param in ["status","showSpinner","pkgIcon","isVisible","isChecked","resultProcess"]:
+						self._entries[row][param]=item[param]
+						self.dataChanged.emit(index,index)
+
 	#def setData
 
 	def clear(self):

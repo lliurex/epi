@@ -5,8 +5,10 @@ DelegateModel {
 	id:filterModel
 	property string role
 	property string search
+	property bool showDepend
 	onRoleChanged:Qt.callLater(update)
 	onSearchChanged:Qt.callLater(update)
+	onShowDependChanged:Qt.callLater(update)
 	
 	groups: [
 		DelegateModelGroup{

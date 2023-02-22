@@ -75,7 +75,13 @@ Components.ListItem{
 
         Text{
             id: pkgName
-            text: customName
+            text: {
+                if (order==0){
+                    customName
+                }else{
+                    i18nd("epi-gtk","Previous actions: executing ")+customName
+                }
+            }
             width: parent.width-150 
             elide:Text.ElideMiddle
             clip: true
