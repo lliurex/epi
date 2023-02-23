@@ -214,7 +214,7 @@ GridLayout{
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
         dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Uninstall process")
         dialogMsg:i18nd("epi-gtk","Do you want uninstall the application?") 
-        dialogWidth:300
+        dialogWidth:350
         btnAcceptVisible:true
         btnCancelText:i18nd("epi-gtk","Cancel")
         btnCancelIcon:"dialog-cancel"
@@ -246,9 +246,8 @@ GridLayout{
    
     function applyChanges(){
         delay(100, function() {
-            if (epiBridge.endProccess){
+            if (epiBridge.endProcess){
                 timer.stop()
-                /*feedBackText.visible=false*/
                 
             }else{
                 if (epiBridge.endCurrentCommand){

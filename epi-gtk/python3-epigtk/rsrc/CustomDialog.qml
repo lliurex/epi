@@ -61,7 +61,7 @@ Dialog {
             id:dialogApplyBtn
             display:AbstractButton.TextBesideIcon
             icon.name:"dialog-ok"
-            text: i18nd("epi-gtk","Apply")
+            text: i18nd("epi-gtk","Accept")
             focus:true
             visible:btnAcceptVisible
             font.family: "Quattrocento Sans Bold"

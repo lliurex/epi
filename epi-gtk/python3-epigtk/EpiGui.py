@@ -850,6 +850,7 @@ class EpiGui(QObject):
 																			self.enableApplyBtn=True
 																			self.enablePkgList=True
 																			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
+																			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
 																	else:
 																		error=True
 														else:
@@ -867,6 +868,7 @@ class EpiGui(QObject):
 			self.installProcessTimer.stop()
 			self._updateResultPackagesModel("end","install")
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
+			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
 		
 		if EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			if not EpiGui.epiGuiManager.addRepositoryKeysDone:
@@ -966,7 +968,8 @@ class EpiGui(QObject):
 				self.uninstallProcessTimer.stop()
 				self._updateResultPackagesModel("end","uninstall")
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
-
+				EpiGui.epiGuiManager.epiManager.remove_repo_keys()
+		
 		if EpiGui.epiGuiManager.removePkgLaunched:
 			if not EpiGui.epiGuiManager.removePkgDone:
 				if not os.path.exists(EpiGui.epiGuiManager.tokenUninstall[1]):

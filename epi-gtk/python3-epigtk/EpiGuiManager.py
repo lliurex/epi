@@ -890,13 +890,18 @@ class EpiGuiManager:
 						if order==0:
 							if element["name"] not in self.pkgsInstalled:
 								self.pkgsInstalled.append(element["name"])
+							tmpParam["resultProcess"]=0
+
 					elif action=="uninstall":
 						tmpParam["status"]='available'
+						if element["name"] in self.epiManager.blockedRemovePkgsList:
+							tmpParam["resultProcess"]=1
+						else:
+							tmpParam["resultProcess"]=0
+
 						if order==0:
 							if element["name"] in self.pkgsInstalled:
 								self.pkgsInstalled.remove(element["name"])
-				
-					tmpParam["resultProcess"]=0
 				else:
 					if dpkgStatus !=None and len(dpkgStatus)>0:
 						if action=="install":
@@ -932,25 +937,25 @@ class EpiGuiManager:
 
 	def _initProcessValues(self,order,action):
 
-		for element in self.info[order]["pkg_list"]:
-			if element["name"] in self.epiManager.packages_selected:
+		for item in self.packagesData:
+			if item["order"]==order:
 				tmpParam={}
 				tmpParam["resultProcess"]=-1
-				if action=="install":
-					tmpParam["showSpinner"]=True
-					if order>0:
-						tmpParam["isVisible"]=True
-				else:
-					if order==0:
-						for item in self.packagesData:
-							if item["pkgId"] in self.epiManager.packages_selected:
-								if self.metaRemovedWarning:
-									if item["pkgId"] not in self.epiManager.blockedRemovePkgsList:
-										tmpParam["showSpinner"]=True
-								else:
+				if item["pkgId"] in self.epiManager.packages_selected:
+					if action=="install":
+						tmpParam["showSpinner"]=True
+						if order>0:
+							tmpParam["isVisible"]=True
+					else:
+						if order==0:
+							if self.metaRemovedWarning:
+								if item["pkgId"] not in self.epiManager.blockedRemovePkgsList:
 									tmpParam["showSpinner"]=True
+							else:
+								tmpParam["showSpinner"]=True
 
-				self._updatePackagesModel(tmpParam,element["name"])
+				self._updatePackagesModel(tmpParam,item["pkgId"])
+
 
 	#def _initProcessValues
 
