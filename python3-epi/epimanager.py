@@ -689,7 +689,7 @@ class EpiManager:
 				if cmd_file!="":
 					cmd_file+=";"
 
-				if cmd!="" and cmd_file!="":
+				if cmd!="" or cmd_file!="":
 					cmd='((%s;%s); echo $? > %s)'%(cmd,cmd_file,self.token_result_download[1])
 				else:
 					cmd='(echo $? > %s)'%(self.token_result_download[1])	

@@ -925,6 +925,11 @@ class EpiGuiManager:
 								tmpParam["status"]='installed'
 								tmpParam["resultProcess"]=1
 					else:
+						if element["name"] in self.pkgsInstalled:
+							tmpParam["status"]='installed'
+						else:
+							tmpParam["status"]='availabled'
+
 						tmpParam["resultProcess"]=1
 
 				tmpParam["pkgIcon"]=self._getPkgIcon(0,pkgIndex,tmpParam["status"])

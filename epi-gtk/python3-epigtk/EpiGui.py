@@ -892,7 +892,7 @@ class EpiGui(QObject):
 	
 		if EpiGui.epiGuiManager.checkArquitectureLaunched:
 			if not EpiGui.epiGuiManager.checkArquitectureDone:
-				if not os.path.exists(EpiGui,epiGuiManager.tokenArquitecture[1]):
+				if not os.path.exists(EpiGui.epiGuiManager.tokenArquitecture[1]):
 					EpiGui.epiGuiManager.checkArquitectureDone=True
 
 		if EpiGui.epiGuiManager.updateReposLaunched:
