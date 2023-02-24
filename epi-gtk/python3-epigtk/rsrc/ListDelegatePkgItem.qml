@@ -112,13 +112,15 @@ Components.ListItem{
             sourceSize.width:32
             sourceSize.height:32
             anchors.leftMargin:10
+            anchors.rightMargin:1.5
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
         }
         Rectangle{
+            id:animationFrame
             color:"transparent"
-            width:30
-            height:30
+            width:0.4*(animation.width)
+            height:0.4*(animation.height)
             anchors.leftMargin:10
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
@@ -131,9 +133,11 @@ Components.ListItem{
             }
 
             AnimatedImage{
+                id:animation
                 source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
                 transform: Scale {xScale:0.40;yScale:0.40}
-              }
+                paused:!animationFrame.visible
+               }
         }
 
     }

@@ -27,7 +27,7 @@ GridLayout{
             MenuOptionBtn {
                 id:packagesOption
                 optionText:i18nd("epi-gtk","Init")
-                optionIcon:"/usr/share/icons/breeze/places/16/user-home.svg"
+                optionIcon:"/usr/share/icons/breeze/places/22/user-home.svg"
                 optionVisible:true
                 Connections{
                     function onMenuOptionClicked(){
@@ -38,8 +38,8 @@ GridLayout{
 
             MenuOptionBtn {
                 id:detailsOption
-                optionText:i18nd("epi-gtk","Process details")
-                optionIcon:"/usr/share/icons/breeze/apps/16/utilities-terminal.svg"
+                optionText:i18nd("epi-gtk","View details")
+                optionIcon:"/usr/share/icons/breeze/apps/22/utilities-terminal.svg"
                 optionVisible:true
                 enabled:epiBridge.enableKonsole
                 Connections{
