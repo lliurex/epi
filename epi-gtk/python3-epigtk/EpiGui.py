@@ -106,6 +106,7 @@ class EpiGui(QObject):
 		self._enableKonsole=False
 		self._showDependEpi=False
 		self._showDependLabel=False
+		self._launchedProcess=""
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -556,6 +557,20 @@ class EpiGui(QObject):
 
 	#def _setShowDependLabel
 
+	def _getLaunchedProcess(self):
+
+		return self._launchedProcess
+
+	#def _getLaunchedProcess
+
+	def _setLaunchedProcess(self,launchedProcess):
+
+		if self._launchedProcess!=launchedProcess:
+			self._launchedProcess=launchedProcess
+			self.on_launchedProcess.emit()
+
+	#def _setLaunchedProcess
+
 	def _getCloseGui(self):
 
 		return self._closeGui
@@ -741,6 +756,7 @@ class EpiGui(QObject):
 		self.enableApplyBtn=False
 		self.enableRemoveBtn=False
 		self.enableKonsole=True
+		self.launchedProcess="install"
 		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
 		EpiGui.epiGuiManager.initInstallProcess()
 		self._updateResultPackagesModel('start',"install")
@@ -938,6 +954,7 @@ class EpiGui(QObject):
 			self.enableKonsole=True
 			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
 			self.isProcessRunning=True
+			self.launchedProcess="uninstall"
 			EpiGui.epiGuiManager.initUnInstallProcess()
 			self._updateResultPackagesModel('start',"uninstall")
 			self.uninstallProcessTimer=QTimer(None)
@@ -1129,6 +1146,9 @@ class EpiGui(QObject):
 	on_showDependLabel=Signal()
 	showDependLabel=Property(bool,_getShowDependLabel,_setShowDependLabel,notify=on_showDependLabel)
 
+	on_launchedProcess=Signal()
+	launchedProcess=Property('QString',_getLaunchedProcess,_setLaunchedProcess,notify=on_launchedProcess)
+	
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)
 

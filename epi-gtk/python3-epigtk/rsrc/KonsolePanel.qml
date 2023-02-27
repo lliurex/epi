@@ -7,7 +7,13 @@ import QMLTermWidget 1.0
 Rectangle{
     color:"transparent"
     Text{ 
-        text:i18nd("epi-gtk","Process details")
+        text:{
+            if (epiBridge.launchedProcess=="uninstall"){  
+                i18nd("epi-gtk","Uninstall process details")
+            }else{
+                i18nd("epi-gtk","Installation process details")
+            }
+        }
         font.family: "Quattrocento Sans Bold"
         font.pointSize: 16
     }
