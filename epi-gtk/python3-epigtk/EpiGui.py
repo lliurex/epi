@@ -399,7 +399,7 @@ class EpiGui(QObject):
 		packagesEntries=EpiGui.epiGuiManager.packagesData
 		for item in packagesEntries:
 			if item["pkgId"]!="":
-				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"],item["showSpinner"])
+				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"],item["showSpinner"],item["entryPoint"])
 
 	#def _updatePackagesModel
 
@@ -1024,6 +1024,23 @@ class EpiGui(QObject):
 				self._packagesModel.setData(index,valuesToUpdate)
 	
 	#def _updatePackagesModelInfo
+
+	@Slot(str)
+
+	def launchApp(self, entryPoint):
+
+		self.launchAppCmd=entryPoint
+		self.launchAppT=threading.Thread(target=self._launchAppRet)
+		self.launchAppT.daemon=True
+		self.launchAppT.start()
+
+	#def launchApp
+
+	def _launchAppRet(self):
+
+		os.system(self.launchAppCmd)
+
+	#def _launchAppRet
 
 	@Slot(int)
 	def manageTransitions(self,stack):

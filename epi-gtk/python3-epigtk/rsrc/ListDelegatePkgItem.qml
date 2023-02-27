@@ -19,6 +19,7 @@ Components.ListItem{
     property int resultProcess
     property int order
     property bool showSpinner
+    property string entryPoint
 
     enabled:true
 
@@ -112,8 +113,21 @@ Components.ListItem{
             sourceSize.width:32
             sourceSize.height:32
             anchors.leftMargin:10
-            anchors.rightMargin:1.5
-            anchors.right:parent.right
+            anchors.rightMargin:{
+                if (entryPointBtn.visible){
+                    50
+                }else{
+                    1.5
+                }
+            }
+            anchors.right:{
+                if (entryPointBtn.visible){
+                    entryPoint.left
+                }else{
+                    parent.right
+                }
+
+            }
             anchors.verticalCenter:parent.verticalCenter
         }
         Rectangle{
@@ -137,8 +151,43 @@ Components.ListItem{
                 source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
                 transform: Scale {xScale:0.40;yScale:0.40}
                 paused:!animationFrame.visible
-               }
+            }
         }
+
+        PC3.Button{
+            id:entryPointBtn
+            display:AbstractButton.IconOnly
+            icon.name:"media-playback-playing"
+            anchors.leftMargin:10
+            anchors.right:parent.right
+            anchors.verticalCenter:parent.verticalCenter
+            visible:{
+                if (listPkgItem.ListView.isCurrentItem){
+                    if ((status=="installed") && (entryPoint!="")){
+                        if (!epiBridge.isProcessRunning){
+                            true
+                        }else{
+                            false
+                        }
+                    }else{
+                        false
+                    }
+                }else{
+                    false
+                }
+            }
+            ToolTip.delay: 1000
+            ToolTip.timeout: 3000
+            ToolTip.visible: hovered
+            ToolTip.text:i18nd("epi-gtk","Click to launch the application")
+            onClicked:{
+                epiBridge.launchApp(entryPoint)
+                mainWindow.close()
+            }
+
+        }
+
+
 
     }
 

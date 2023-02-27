@@ -274,11 +274,17 @@ class EpiGuiManager:
 					
 					if order!=0:
 						tmp["customName"]=self.info[item]["zomando"]
+						tmp["entryPoint"]=""
 					else:
 						try:
 							tmp["customName"]=element["custom_name"]
 						except:
 							tmp["customName"]=element["name"]
+
+						try:
+							tmp["entryPoint"]=element["entrypoint"]
+						except:
+							tmp["entryPoint"]=""
 
 					tmp["status"]=self.epiManager.pkg_info[element["name"]]["status"]
 					

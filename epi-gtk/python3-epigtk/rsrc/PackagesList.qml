@@ -91,6 +91,7 @@ Rectangle{
                             resultProcess:model.resultProcess
                             order:model.order
                             showSpinner:model.showSpinner
+                            entryPoint:model.entryPoint
 
                         }
                     }

@@ -26,7 +26,7 @@ GridLayout{
 
             MenuOptionBtn {
                 id:packagesOption
-                optionText:i18nd("epi-gtk","Init")
+                optionText:i18nd("epi-gtk","Home")
                 optionIcon:"/usr/share/icons/breeze/places/22/user-home.svg"
                 optionVisible:true
                 Connections{

@@ -16,6 +16,7 @@ class PackagesModel(QtCore.QAbstractListModel):
 	ResultProcessRole=QtCore.Qt.UserRole+1008
 	OrderRole=QtCore.Qt.UserRole+1009
 	ShowSpinnerRole = QtCore.Qt.UserRole + 1010
+	EntryPointRole = QtCore.Qt.UserRole+1011
 
 
 	def __init__(self,parent=None):
@@ -58,7 +59,10 @@ class PackagesModel(QtCore.QAbstractListModel):
 			elif role == PackagesModel.OrderRole:
 				return item["order"]
 			elif role == PackagesModel.ShowSpinnerRole:
-				return item["showSpinner"]	
+				return item["showSpinner"]
+			elif role == PackagesModel.EntryPointRole:
+				return item["entryPoint"]
+
 		#def data
 
 	def roleNames(self):
@@ -75,15 +79,16 @@ class PackagesModel(QtCore.QAbstractListModel):
 		roles[PackagesModel.ResultProcessRole] = b"resultProcess"
 		roles[PackagesModel.OrderRole] = b"order"
 		roles[PackagesModel.ShowSpinnerRole] = b"showSpinner"
+		roles[PackagesModel.EntryPointRole] = b"entryPoint"
 
 		return roles
 
 	#def roleName
 
-	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr,ss):
+	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr,ss,ep):
 		
 		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(),self.rowCount())
-		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr,showSpinner=ss))
+		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr,showSpinner=ss,entryPoint=ep))
 		self.endInsertRows()
 
 	#def appendRow
