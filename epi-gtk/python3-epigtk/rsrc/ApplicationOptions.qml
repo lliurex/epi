@@ -296,7 +296,7 @@ GridLayout{
                 msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
                 break;
             case 7:
-                msg=i18nd("epi-gtk","Showing the end user license agreement for: ")+epiBridge.currentEulaPkg;
+                msg=i18nd("epi-gtk","Showing the end user license agreement for:\n")+epiBridge.currentEulaPkg;
                 break;
             case 8:
                 msg=i18nd("epi-gtk","Checking if repositories need updating...")

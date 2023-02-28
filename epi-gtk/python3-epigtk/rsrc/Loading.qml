@@ -70,7 +70,7 @@ Rectangle{
         var msg=""
         switch(epiBridge.loadMsgCode){
             case 0:
-                msg=i18nd("epi-gkt","Loading information. Wait a moment...")
+                msg=i18nd("epi-gtk","Loading information. Wait a moment...")
                 break;
             case 1:
                 msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Checking if they have finished")
