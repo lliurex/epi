@@ -9,6 +9,7 @@ import syslog
 import copy
 import threading
 import tempfile
+import html2text
 
 
 class EpiGuiManager:
@@ -54,6 +55,8 @@ class EpiGuiManager:
 	MSG_FEEDBACk_UNINSTALL_RUN=17
 	SUCCESS_UNINSTALL_PROCESS=18
 	WARNING_UNINSTALL_PROCESS=19
+	MSG_FEEDBACK_STORE_INFO=20
+	MSG_FEEDBACK_STORE_EMPTY=21
 
 
 	def __init__(self):
@@ -69,7 +72,7 @@ class EpiGuiManager:
 		self.stopUninstall=[False,""]
 		self.konsoleLog="/tmp/EPI_konsoleLog.txt"
 
-		self._clearEnvirontment()
+		self._clearEnvironment()
 		self.clearCache()
 
 	#def __init__
@@ -558,7 +561,7 @@ class EpiGuiManager:
 
 	def checkRemoveMeta(self):
 
-		self._clearEnvirontment()
+		self._clearEnvironment()
 		self._writeLog("Packages selected to uninstall: %s"%self.epiManager.packages_selected)
 		self.stopUninstall=[False,""]
 		self.metaRemovedWarning=self.epiManager.check_remove_meta()
@@ -970,6 +973,35 @@ class EpiGuiManager:
 
 	#def _initProcessValues
 
+	def getStoreInfo(self,pkgId):
+
+		pkgInfo=self.epiManager.get_store_info(pkgId)
+		ret=[]
+		summary=self.epiManager.pkg_info[pkgId]["summary"]
+
+		if summary!="":
+			icon=self.epiManager.pkg_info[pkgId]["icon"]
+			name=self.epiManager.pkg_info[pkgId]["name"]
+			tmpDescription=self.epiManager.pkg_info[pkgId]["description"]
+
+			h=html2text.HTML2Text()
+			h.body_width=400
+			description=h.handle(tmpDescription)
+			description=description.replace("&lt;", "<")
+			description=description.replace("&gt;", ">")
+			description=description.replace("&amp;", "&")
+			description=description.replace("***","\n- ")
+
+			ret.append(icon)
+			ret.append(name)
+			ret.append(summary)
+			ret.append(description)
+
+
+		return ret
+
+	#def getStoreInfo
+
 	def _getPackageVersion(self):
 
 		command = "LANG=C LANGUAGE=en apt-cache policy epi-gtk"
@@ -1014,11 +1046,11 @@ class EpiGuiManager:
 		
 	#def _writeLogTerminal
 
-	def _clearEnvirontment(self):
+	def _clearEnvironment(self):
 
 		if os.path.exists(self.konsoleLog):
 			os.remove(self.konsoleLog)
 
-	#def _clearEnvirontment			
+	#def _clearEnvironment			
 
 #class EpiGuiManager

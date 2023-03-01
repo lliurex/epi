@@ -112,38 +112,54 @@ GridLayout{
             PC3.Button {
                 id:uninstallBtn
                 visible:{
-                    if (epiBridge.currentPkgOption==0){
-                        if (epiBridge.showRemoveBtn){
-                            true
-                        }else{
-                            false
-                        }
-                    }else{
-                        true
-                    }
+                   if (epiBridge.currentPkgOption==0){
+                       if (epiBridge.showRemoveBtn){
+                           true
+                       }else{
+                           false
+                       }
+                   }else{
+                       true
+                   }
                 }
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:{
-                   if (epiBridge.currentPkgOption==0){
-                        "remove"
-                    }else{
-                        "dialog-cancel"
+                    switch (epiBridge.currentPkgOption){
+                        case 0:
+                            "remove"
+                            break;
+                        case 1:
+                            "dialog-cancel"
+                            break;
+                        case 2:
+                            "arrow-left"
+                            break;
                     }
                 }
                 text:{
-                    if (epiBridge.currentPkgOption==0){
-                        i18nd("epi-gtk","Uninstall")
-                    }else{
-                        i18nd("epi-gtk","Reject Eula")
+                    switch (epiBridge.currentPkgOption){
+                        case 0:
+                            i18nd("epi-gtk","Uninstall")
+                            break;
+                        case 1:
+                            i18nd("epi-gtk","Reject Eula")
+                            break;
+                        case 2:
+                            i18nd("epi-gtk","Back")
+                            break;
                     }
                 }
                 enabled:{
                     if (epiBridge.enableRemoveBtn){
                         true
-                   }else{
-                        false
-                   }
+                    }else{
+                        if (epiBridge.currentPkgOption==2){
+                            true
+                        }else{
+                            false
+                        }
+                    }
                 }
 
                 Layout.preferredHeight:40
@@ -151,10 +167,16 @@ GridLayout{
                 Keys.onReturnPressed: uninstallBtn.clicked()
                 Keys.onEnterPressed: uninstallBtn.clicked()
                 onClicked:{
-                    if (epiBridge.currentPkgOption==0){
-                        uninstallDialog.open()
-                    }else{
-                        epiBridge.rejectEula()
+                    switch (epiBridge.currentPkgOption){
+                        case 0:
+                            uninstallDialog.open()
+                            break;
+                        case 1:
+                            epiBridge.rejectEula()
+                            break;
+                        case 2:
+                            epiBridge.showPkgInfo([1,""])
+                            break;
                     }
                 }
             }
@@ -173,15 +195,27 @@ GridLayout{
                
             PC3.Button {
                 id:installBtn
-                visible:true
+                visible:{
+                    if (epiBridge.currentPkgOption!=2){
+                        true
+                    }else{
+                        false
+                    }
+                }
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:"dialog-ok"
                 text:{
-                    if (epiBridge.currentPkgOption==0){
-                        i18nd("epi-gtk","Install")
-                    }else{
-                        i18nd("epi-gtk","Accept Eula")
+                    switch (epiBridge.currentPkgOption){
+                        case 0:
+                            i18nd("epi-gtk","Install")
+                            break;
+                        case 1:
+                            i18nd("epi-gtk","Accept Eula")
+                            break;
+                        case 2:
+                            ""
+                            break;
                     }
                 }
                 enabled:{
@@ -333,6 +367,12 @@ GridLayout{
                 break;
             case 19:
                 msg=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package");
+                break;
+            case 20:
+                msg=i18nd("epi-gtk","Searching information.Wait a moment...")
+                break;
+            case 21:
+                msg=i18nd("epi-gtk","Information not availabled")
                 break;
             default:
                 break;

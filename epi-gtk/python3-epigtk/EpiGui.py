@@ -65,6 +65,23 @@ class CheckMetaProtection(QThread):
 
 #class CheckMetaProtection
 
+class GetPkgInfo(QThread):
+
+	def __init__(self,*args):
+
+		QThread.__init__(self)
+		self.pkgId=args[0]
+
+	#def __init__
+
+	def run(self):
+
+		self.ret=EpiGui.epiGuiManager.getStoreInfo(self.pkgId)
+
+	#def run
+
+#class getPkgInfo
+
 class EpiGui(QObject):
 
 	epiGuiManager=EpiGuiManager.EpiGuiManager()
@@ -107,6 +124,7 @@ class EpiGui(QObject):
 		self._showDependEpi=False
 		self._showDependLabel=False
 		self._launchedProcess=""
+		self._pkgStoreInfo=["","","",""]
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -571,6 +589,20 @@ class EpiGui(QObject):
 
 	#def _setLaunchedProcess
 
+	def _getPkgStoreInfo(self):
+
+		return self._pkgStoreInfo
+
+	#def _getPkgStorInfo
+
+	def _setPkgStoreInfo(self,pkgStoreInfo):
+
+		if self._pkgStoreInfo!=pkgStoreInfo:
+			self._pkgStoreInfo=pkgStoreInfo
+			self.on_pkgStoreInfo.emit()
+	
+	#def _setPkgStoreInfo
+
 	def _getCloseGui(self):
 
 		return self._closeGui
@@ -587,6 +619,7 @@ class EpiGui(QObject):
 
 	@Slot()
 	def getNewCommand(self):
+		
 		self.endCurrentCommand=False
 		
 	#def getNewCommand
@@ -1025,6 +1058,34 @@ class EpiGui(QObject):
 	
 	#def _updatePackagesModelInfo
 
+	@Slot('QVariantList')
+
+	def showPkgInfo(self,params):
+
+		self.showStatusMessage=[False,"","Ok"]
+
+		if params[0]==0:
+			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_STORE_INFO
+			self.getPkgInfoT=GetPkgInfo(params[1])
+			self.getPkgInfoT.start()
+			self.getPkgInfoT.finished.connect(self._getPkgInfoRet)
+		else:
+			self.feedbackCode=""
+			self.currentPkgOption=0
+
+	#def showPkgInfo
+
+	def _getPkgInfoRet(self):
+
+		if len(self.getPkgInfoT.ret)==0:
+			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_STORE_EMPTY
+		else:
+			self.feedbackCode=""
+			self.pkgStoreInfo=self.getPkgInfoT.ret
+			self.currentPkgOption=2
+
+	#def _getPkgInfoRet
+
 	@Slot(str)
 
 	def launchApp(self, entryPoint):
@@ -1033,7 +1094,7 @@ class EpiGui(QObject):
 		self.launchAppT=threading.Thread(target=self._launchAppRet)
 		self.launchAppT.daemon=True
 		self.launchAppT.start()
-
+		
 	#def launchApp
 
 	def _launchAppRet(self):
@@ -1165,6 +1226,9 @@ class EpiGui(QObject):
 
 	on_launchedProcess=Signal()
 	launchedProcess=Property('QString',_getLaunchedProcess,_setLaunchedProcess,notify=on_launchedProcess)
+	
+	on_pkgStoreInfo=Signal()
+	pkgStoreInfo=Property('QVariantList',_getPkgStoreInfo,_setPkgStoreInfo,notify=on_pkgStoreInfo)
 	
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)

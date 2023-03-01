@@ -114,14 +114,14 @@ Components.ListItem{
             sourceSize.height:32
             anchors.leftMargin:10
             anchors.rightMargin:{
-                if (entryPointBtn.visible){
+                if ((entryPointBtn.visible) || (showInfoBtn.visible)){
                     50
                 }else{
                     1.5
                 }
             }
             anchors.right:{
-                if (entryPointBtn.visible){
+                if ((entryPointBtn.visible) || (showInfoBtn.visible)){
                     entryPoint.left
                 }else{
                     parent.right
@@ -155,6 +155,37 @@ Components.ListItem{
         }
 
         PC3.Button{
+            id:showInfoBtn
+            display:AbstractButton.IconOnly
+            icon.name:"help-about"
+            anchors.leftMargin:10
+            anchors.right:parent.right
+            anchors.verticalCenter:parent.verticalCenter
+            visible:{
+                if (listPkgItem.ListView.isCurrentItem){
+                    if ((status=="installed") && (entryPoint!="")){
+                        false
+                    }else{
+                        if (!epiBridge.isProcessRunning){
+                            true
+                        }else{
+                            false
+                        }
+                    }
+                }else{
+                    false
+                }
+            }
+            ToolTip.delay: 1000
+            ToolTip.timeout: 3000
+            ToolTip.visible: hovered
+            ToolTip.text:i18nd("epi-gtk","Press to view application information")
+            onClicked:{
+                epiBridge.showPkgInfo([0,pkgId])
+            }
+        }
+
+        PC3.Button{
             id:entryPointBtn
             display:AbstractButton.IconOnly
             icon.name:"media-playback-playing"
@@ -184,7 +215,6 @@ Components.ListItem{
                 epiBridge.launchApp(entryPoint)
                 mainWindow.close()
             }
-
         }
 
 
