@@ -683,7 +683,7 @@ class EpiGuiManager:
 		preInstallRet=self.epiManager.check_preinstall()
 		
 		if not preInstallRet:
-			msgCode=EpiGuiManager.ERROR_INSTALL_INI
+			msgCode=EpiGuiManager.ERROR_INSTALL_INIT
 			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,'install',False,None)
 			self.epiManager.zerocenter_feedback(self.order,"install",False)
