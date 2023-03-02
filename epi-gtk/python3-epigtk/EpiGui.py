@@ -125,6 +125,7 @@ class EpiGui(QObject):
 		self._showDependLabel=False
 		self._launchedProcess=""
 		self._pkgStoreInfo=["","","",""]
+		self._isAllInstalled=False
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -177,6 +178,7 @@ class EpiGui(QObject):
 		self.selectPkg=EpiGui.epiGuiManager.selectPkg
 		self.wikiUrl=EpiGui.epiGuiManager.wikiUrl
 		self._manageRemoveBtn(True)
+		self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
 
 		if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableApplyBtn=True
@@ -417,7 +419,7 @@ class EpiGui(QObject):
 		packagesEntries=EpiGui.epiGuiManager.packagesData
 		for item in packagesEntries:
 			if item["pkgId"]!="":
-				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["isRunning"],item["resultProcess"],item["order"],item["showSpinner"],item["entryPoint"])
+				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["resultProcess"],item["order"],item["showSpinner"],item["entryPoint"])
 
 	#def _updatePackagesModel
 
@@ -593,7 +595,7 @@ class EpiGui(QObject):
 
 		return self._pkgStoreInfo
 
-	#def _getPkgStorInfo
+	#def _getPkgStoreInfo
 
 	def _setPkgStoreInfo(self,pkgStoreInfo):
 
@@ -602,6 +604,20 @@ class EpiGui(QObject):
 			self.on_pkgStoreInfo.emit()
 	
 	#def _setPkgStoreInfo
+
+	def _getIsAllInstalled(self):
+
+		return self._isAllInstalled
+
+	#def _getIsAllInstalled
+
+	def _setIsAllInstalled(self,isAllInstalled):
+
+		if self._isAllInstalled!=isAllInstalled:
+			self._isAllInstalled=isAllInstalled
+			self.on_isAllInstalled.emit()
+
+	#def _setIsAllInstalled
 
 	def _getCloseGui(self):
 
@@ -893,6 +909,7 @@ class EpiGui(QObject):
 																			self.feedbackCode=""
 																			self.endProcess=True
 																			self.isProcessRunning=False
+																			self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
 																			self.installProcessTimer.stop()
 																			self._updateResultPackagesModel('end',"install")
 																			self._manageRemoveBtn(True)
@@ -914,6 +931,7 @@ class EpiGui(QObject):
 			self.feedbackCode=""
 			self.isProcessRunning=False
 			self.showDependEpi=False
+			self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
 			self.installProcessTimer.stop()
 			self._updateResultPackagesModel("end","install")
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
@@ -1014,6 +1032,7 @@ class EpiGui(QObject):
 				self.feedbackCode=""
 				self.enableApplyBtn=True
 				self.enablePkgList=True
+				self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
 				self._manageRemoveBtn(True)
 				self.uninstallProcessTimer.stop()
 				self._updateResultPackagesModel("end","uninstall")
@@ -1230,6 +1249,9 @@ class EpiGui(QObject):
 	on_pkgStoreInfo=Signal()
 	pkgStoreInfo=Property('QVariantList',_getPkgStoreInfo,_setPkgStoreInfo,notify=on_pkgStoreInfo)
 	
+	on_isAllInstalled=Signal()
+	isAllInstalled=Property(bool,_getIsAllInstalled,_setIsAllInstalled,notify=on_isAllInstalled)
+
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)
 

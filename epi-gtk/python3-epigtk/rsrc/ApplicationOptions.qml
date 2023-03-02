@@ -208,7 +208,11 @@ GridLayout{
                 text:{
                     switch (epiBridge.currentPkgOption){
                         case 0:
-                            i18nd("epi-gtk","Install")
+                            if (epiBridge.isAllInstalled){
+                                i18nd("epi-gtk","Reinstall")
+                            }else{
+                                i18nd("epi-gtk","Install")
+                            }
                             break;
                         case 1:
                             i18nd("epi-gtk","Accept Eula")

@@ -87,7 +87,6 @@ Rectangle{
                             pkgIcon:model.pkgIcon
                             status:model.status
                             isVisible:model.isVisible
-                            isRunning:model.isRunning
                             resultProcess:model.resultProcess
                             order:model.order
                             showSpinner:model.showSpinner

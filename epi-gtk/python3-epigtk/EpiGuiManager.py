@@ -302,7 +302,6 @@ class EpiGuiManager:
 					else:
 						tmp["isVisible"]=False
 
-					tmp["isRunning"]=False
 					tmp["resultProcess"]=-1
 					tmp["order"]=order
 					if order!=0:
@@ -981,6 +980,9 @@ class EpiGuiManager:
 
 		if summary!="":
 			icon=self.epiManager.pkg_info[pkgId]["icon"]
+			if icon=="":
+				icon="%s%s"%(self.defaultIconPath,"package.png")
+
 			name=self.epiManager.pkg_info[pkgId]["name"]
 			tmpDescription=self.epiManager.pkg_info[pkgId]["description"]
 
@@ -1001,6 +1003,15 @@ class EpiGuiManager:
 		return ret
 
 	#def getStoreInfo
+
+	def isAllInstalled(self):
+
+		if self.totalPackages==len(self.pkgsInstalled):
+			return True
+
+		return False
+
+	#def isAllInstalled
 
 	def _getPackageVersion(self):
 

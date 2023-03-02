@@ -15,7 +15,6 @@ Components.ListItem{
     property string pkgIcon
     property string status
     property bool isVisible
-    property bool isRunning
     property int resultProcess
     property int order
     property bool showSpinner

@@ -12,11 +12,10 @@ class PackagesModel(QtCore.QAbstractListModel):
 	PkgIconRole=QtCore.Qt.UserRole+1004
 	StatusRole=QtCore.Qt.UserRole+1005
 	IsVisibleRole=QtCore.Qt.UserRole+1006
-	IsRunningRole=QtCore.Qt.UserRole+1007
-	ResultProcessRole=QtCore.Qt.UserRole+1008
-	OrderRole=QtCore.Qt.UserRole+1009
-	ShowSpinnerRole = QtCore.Qt.UserRole + 1010
-	EntryPointRole = QtCore.Qt.UserRole+1011
+	ResultProcessRole=QtCore.Qt.UserRole+1007
+	OrderRole=QtCore.Qt.UserRole+1008
+	ShowSpinnerRole = QtCore.Qt.UserRole + 1009
+	EntryPointRole = QtCore.Qt.UserRole+1010
 
 
 	def __init__(self,parent=None):
@@ -52,8 +51,6 @@ class PackagesModel(QtCore.QAbstractListModel):
 				return item["status"]
 			elif role == PackagesModel.IsVisibleRole:
 				return item["isVisible"]
-			elif role == PackagesModel.IsRunningRole:
-				return item["isRunning"]
 			elif role == PackagesModel.ResultProcessRole:
 				return item["resultProcess"]
 			elif role == PackagesModel.OrderRole:
@@ -75,7 +72,6 @@ class PackagesModel(QtCore.QAbstractListModel):
 		roles[PackagesModel.PkgIconRole] = b"pkgIcon"
 		roles[PackagesModel.StatusRole] = b"status"
 		roles[PackagesModel.IsVisibleRole] = b"isVisible"
-		roles[PackagesModel.IsRunningRole] = b"isRunning"
 		roles[PackagesModel.ResultProcessRole] = b"resultProcess"
 		roles[PackagesModel.OrderRole] = b"order"
 		roles[PackagesModel.ShowSpinnerRole] = b"showSpinner"
@@ -85,10 +81,10 @@ class PackagesModel(QtCore.QAbstractListModel):
 
 	#def roleName
 
-	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,isr,rpr,odr,ss,ep):
+	def appendRow(self,pkgid,scb,isc,cn,pkgic,st,isv,rpr,odr,ss,ep):
 		
 		self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(),self.rowCount())
-		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, isRunning=isr, resultProcess=rpr, order=odr,showSpinner=ss,entryPoint=ep))
+		self._entries.append(dict(pkgId=pkgid, showCb=scb, isChecked=isc, customName=cn, pkgIcon=pkgic, status=st, isVisible=isv, resultProcess=rpr, order=odr,showSpinner=ss,entryPoint=ep))
 		self.endInsertRows()
 
 	#def appendRow
