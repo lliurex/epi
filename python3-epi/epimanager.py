@@ -589,7 +589,7 @@ class EpiManager:
 					try:
 						key_cmd=item["key_cmd"]
 						if key_cmd !="":
-							cmd=cmd+key_cmd+';'
+							cmd="%s%s;"%(cmd,key_cmd)
 							self.add_key=True	
 					except Exception as e:
 						if len(self.epi_conf["script"])>0:
@@ -652,7 +652,7 @@ class EpiManager:
 						script=self.epi_conf["script"]["name"]
 						if os.path.exists(script):
 							self.manage_download=False
-							cmd_file="%s download"%script
+							cmd_file="%s download "%script
 				except:
 					pass
 
@@ -770,7 +770,7 @@ class EpiManager:
 				cmd="%s preInstall "%script
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd+='; echo $? >%s;'%self.token_result_preinstall[1]
+				cmd='%s; echo $? >%s;'%(cmd,self.token_result_preinstall[1])
 
 		self._show_debug("preinstall_app","Preinstall Command: %s"%(cmd))
 		return cmd		
@@ -851,7 +851,7 @@ class EpiManager:
 			if cmd !="":
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd+='; echo $? >%s'%self.token_result_install[1]	
+				cmd='%s; echo $? >%s'%(cmd,self.token_result_install[1]	)
 		
 		elif self.type=="mix":
 			for item in self.epi_conf["pkg_list"]:
@@ -1164,7 +1164,7 @@ class EpiManager:
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 
-				cmd+='; echo $? >%s;'%self.token_result_postinstall[1]
+				cmd='%s; echo $? >%s;'%(cmd,self.token_result_postinstall[1])
 
 		self._show_debug("postinstall_app","Postinstall Command:%s"%(cmd))
 
@@ -1221,7 +1221,7 @@ class EpiManager:
 					if pkg not in self.blockedRemovePkgsList:
 						cmd+="%s "%pkg
 
-				cmd+='; echo $? >%s;'%self.token_result_remove[1]
+				cmd='%s; echo $? >%s;'%(cmd,self.token_result_remove[1])
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 
