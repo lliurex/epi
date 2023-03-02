@@ -62,7 +62,6 @@ class EpiGuiManager:
 	def __init__(self):
 
 		self.packagesData=[]
-		self.packagesSelected=[]
 		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
 		self.lockInfo={}
 		self.initialStatusCode=["","Info"]
@@ -70,7 +69,6 @@ class EpiGuiManager:
 		self.secondConnection=False
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
-		self.konsoleLog="/tmp/EPI_konsoleLog.txt"
 
 		self._clearEnvironment()
 		self.clearCache()
@@ -660,7 +658,6 @@ class EpiGuiManager:
 			self.epiManager.zerocenter_feedback(self.order,"install",False)
 			self.feedBackCheck=[downloadRet,msgCode,typeMsg]
 			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
-			self._writeLogTerminal("Install")
 
 		self.checkDownloadDone=True
 
@@ -692,7 +689,6 @@ class EpiGuiManager:
 			self.epiManager.zerocenter_feedback(self.order,"install",False)
 			self.feedBackCheck=[preInstallRet,msgCode,typeMsg]
 			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
-			self._writeLogTerminal("Install")
 
 		self.checkPreInstallDone=True
 
@@ -752,7 +748,6 @@ class EpiGuiManager:
 			self.epiManager.zerocenter_feedback(self.order,"install",False)
 			self.feedBackCheck=[self.installed,msgCode,typeMsg]
 			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
-			self._writeLogTerminal("Install")
 	
 		self.checkInstallDone=True
 
@@ -791,7 +786,6 @@ class EpiGuiManager:
 
 		self.feedBackCheck=[postInstallRet,msgCode,typeMsg]
 		self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
-		self._writeLogTerminal("Install")
 
 		self.checkPostInstallDone=True
 
@@ -850,8 +844,7 @@ class EpiGuiManager:
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
 			removeTmp=' rm -f %s;'%self.tokenUninstall[1]
 
-		cmd='%s 2>&1 | tee -a %s;%s\n'%(command,self.konsoleLog,removeTmp)
-
+		cmd='%s%s\n'%(command,removeTmp)
 		return cmd
 
 	#def _createProcessToken
@@ -881,7 +874,6 @@ class EpiGuiManager:
 
 		self.remove=[remove,msgCode,typeMsg]
 		self._writeLog("Uninstall process. Result: %s - Code:%s"%(typeMsg,msgCode))
-		self._writeLogTerminal("Unistall")
 
 	#def checkRemove
 
@@ -999,7 +991,6 @@ class EpiGuiManager:
 			ret.append(summary)
 			ret.append(description)
 
-
 		return ret
 
 	#def getStoreInfo
@@ -1037,30 +1028,9 @@ class EpiGuiManager:
 
 	#def _writeLog
 
-	def _writeLogTerminal(self,process):
-
-		syslog.openlog("EPI")
-		syslog.syslog("%s process details"%process)
-		content=""
-		
-		if os.path.exists(self.konsoleLog):
-			with open(self.konsoleLog,'r') as fd:
-				content=fd.readlines()
-
-		if len(content)>0:
-			for line in content:
-				self._writeLog(line)
-		else:
-			self._writeLog("KonsoleLog is empty")
-
-		os.remove(self.konsoleLog)
-		
-	#def _writeLogTerminal
-
 	def _clearEnvironment(self):
 
-		if os.path.exists(self.konsoleLog):
-			os.remove(self.konsoleLog)
+		pass
 
 	#def _clearEnvironment			
 

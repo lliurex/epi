@@ -290,7 +290,7 @@ class EpiManager:
 		if pkg_type=="file":
 			if script!="":
 				try:
-					cmd=script +' getStatus ' + pkg;
+					cmd="%s getStatus %s;"%(script,pkg)
 					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 					poutput=p.communicate()
 					self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
@@ -312,7 +312,7 @@ class EpiManager:
 
 		cmd=""
 		if pkg_type in ["apt","deb","localdeb"]:
-			cmd='dpkg -l '+ pkg + '| grep "^i[i]"'
+			cmd='dpkg -l %s | grep "^i[i]"'%pkg
 		elif pkg_type=="snap":
 			cmd='snap list | grep %s | cut -d " " -f 1'%pkg
 		elif pkg_type=="flatpak":
@@ -338,7 +338,7 @@ class EpiManager:
 		try:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
-				cmd=script +' getInfo ' + pkg;
+				cmd="%s getInfo %s;"%(script,pkg)
 				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 				poutput=p.communicate()
 				if len(poutput)>0:
@@ -473,7 +473,7 @@ class EpiManager:
 			try:
 				script=self.epiFiles[0]["script"]["name"]
 				if os.path.exists(script):
-					cmd=script +' testInstall ';
+					cmd="%s testInstall;"%script
 					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 					poutput=p.communicate()
 					if len(poutput)>0:
@@ -484,7 +484,7 @@ class EpiManager:
 								test=parse_test.pop()
 								for item in parse_test:
 									if item!="":
-										pkg_list=pkg_list+"- "+item+"\n"
+										pkg_list="%s- %s\n"%(pkg_list,item)
 			except:
 				pass
 		
@@ -597,7 +597,7 @@ class EpiManager:
 								if self.epi_conf["script"]["addRepoKeys"]:
 									script=self.epi_conf["script"]["name"]
 									if os.path.exists(script):
-										command='%s addRepoKeys ;'%script
+										command='%s addRepoKeys;'%script
 										cmd=cmd+command
 										self.add_key=True
 							except Exception as e:
@@ -652,7 +652,7 @@ class EpiManager:
 						script=self.epi_conf["script"]["name"]
 						if os.path.exists(script):
 							self.manage_download=False
-							cmd_file='%s download '%script
+							cmd_file="%s download"%script
 				except:
 					pass
 
@@ -665,13 +665,12 @@ class EpiManager:
 						cmd=cmd_file
 						for pkg in self.packages_selected:
 							cmd+="%s "%pkg
-						cmd='((%s); echo $? > %s )'%(cmd,self.token_result_download[1])
-
+						cmd='%s; echo $? > %s;'%(cmd,self.token_result_download[1])
 				if self.manage_download:
 					for item in self.epi_conf["pkg_list"]:
 						if item["name"] in self.packages_selected:
 							cmd=self._get_download_cmd(self.type,item,cmd)
-					cmd='((%s); echo $? > %s )'%(cmd,self.token_result_download[1])	
+					cmd='%s echo $? >%s;'%(cmd,self.token_result_download[1])	
 
 			elif self.type=="mix":
 				
@@ -679,21 +678,18 @@ class EpiManager:
 					if item["name"] in self.packages_selected:
 						if item["type"] in self.types_with_download:
 							if self.manage_download:
-								cmd='%s'%self._get_download_cmd(item["type"],item,cmd)
+								cmd=self._get_download_cmd(item["type"],item,cmd)
 							else:
 								if item["type"]=="file":
 									cmd_file+="%s "%item["name"]	
 								else:
-									cmd='%s'%self._get_download_cmd(item["type"],item,cmd)
+									cmd=self._get_download_cmd(item["type"],item,cmd)
 									
 				if cmd_file!="":
 					cmd_file+=";"
 
-				if cmd!="" or cmd_file!="":
-					cmd='((%s;%s); echo $? > %s)'%(cmd,cmd_file,self.token_result_download[1])
-				else:
-					cmd='(echo $? > %s)'%(self.token_result_download[1])	
-
+				cmd='%s %s echo $? >%s;'%(cmd,cmd_file,self.token_result_download[1])	
+		
 		self._show_debug("download_app","Command to download: %s"%(cmd))
 		return cmd			
 					
@@ -717,8 +713,10 @@ class EpiManager:
 		url=item["url_download"]
 		if os.path.exists(tmp_file):
 			cmd='%s rm -f %s;'%(cmd,tmp_file)
+		
 		self.download_folder.append(tmp_file)
-		cmd='%s wget %s%s --progress=bar:force --no-check-certificate -O %s'%(cmd,url,version,tmp_file)
+		cmd='%s wget %s%s --progress=bar:force --no-check-certificate -O %s; '%(cmd,url,version,tmp_file)
+
 		return cmd
 
 	#def _get_download_cmd
@@ -769,10 +767,10 @@ class EpiManager:
 			self.token_result_preinstall=tempfile.mkstemp("_result_preinstall")
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
-				cmd='%s preInstall ' %script
+				cmd="%s preInstall "%script
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd='((%s); echo $? > %s )'%(cmd,self.token_result_preinstall[1])
+				cmd+='; echo $? >%s;'%self.token_result_preinstall[1]
 
 		self._show_debug("preinstall_app","Preinstall Command: %s"%(cmd))
 		return cmd		
@@ -830,14 +828,14 @@ class EpiManager:
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
-					cmd='%s %s '%(cmd,app)
+					cmd="%s %s "%(cmd,app)
 				
 		elif self.type=="deb":
 			pkg=""
 			cmd=self._get_install_cmd_base(calledfrom,"deb")
 			for item in self.download_folder:
 				if os.path.exists(item):
-					pkg='%s %s'%(pkg,item)
+					pkg="%s %s "%(pkg,item)
 			
 			cmd=cmd+pkg	
 
@@ -846,26 +844,26 @@ class EpiManager:
 			for item in self.epi_conf["pkg_list"]:
 				name=item["version"]["all"]
 				pkg=os.path.join(item["url_download"],name)
-				cmd='%s %s '%(cmd,pkg)
+				cmd="%s%s "%(cmd,pkg)
 
 		elif self.type=="file":
 			cmd=self._get_install_file_cmd_base()
 			if cmd !="":
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd='((%s); echo $? > %s)'%(cmd,self.token_result_install[1])	
-
+				cmd+='; echo $? >%s'%self.token_result_install[1]	
+		
 		elif self.type=="mix":
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					if item["type"]=="apt":
-						cmd='%s %s '%(cmd,item["name"])
+						cmd="%s %s "%(cmd,item["name"])
 					
 					elif item["type"]=="deb":
 						for pkg in self.download_folder:
 							if os.path.exists(pkg):
 								if item["name"] in pkg:
-									cmd_dpkg='%s %s '%(cmd_dpkg,pkg)
+									cmd_dpkg="%s %s "%(cmd_dpkg,pkg)	
 					
 					elif item["type"]=="file":
 						if cmd_file!="":
@@ -882,27 +880,26 @@ class EpiManager:
 
 			if cmd_dpkg!="":
 				if cmd!="":
-					cmd='%s %s ;'%(cmd,cmd_dpkg)
+					cmd="%s; %s"%(cmd,cmd_dpkg)
 				else:
 					cmd=cmd_dpkg	
 			
 			if cmd_file!="":
-				cmd_file='((%s); echo $? > %s )'%(cmd_file,self.token_result_install[1])
-
+				cmd_file+='; echo $? >%s'%self.token_result_install[1]
 				if cmd!="":
-					cmd='%s;%s'%(cmd,cmd_file)
+					cmd="%s; %s "%(cmd,cmd_file)
 				else:
 					cmd=cmd_file
 
 			if cmd_snap!="":
 				if cmd!="":
-					cmd='%s;%s'%(cmd,cmd_snap)
+					cmd="%s; %s "%(cmd,cmd_snap)
 				else:
 					cmd=cmd_snap		
 			
 			if cmd_flatpak!="":
 				if cmd!="":
-					cmd='%s;%s'%(cmd,cmd_flatpak)
+					cmd="%s; %s "%(cmd,cmd_flatpak)
 				else:
 					cmd=cmd_flatpak		
 
@@ -912,16 +909,17 @@ class EpiManager:
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
-					cmd='%s %s '%(cmd,app)
+					cmd="%s %s "%(cmd,app)
 		
 		elif self.type=="flatpak":
 			cmd=self._get_install_flatpak_cmd_base()
 			for item in self.epi_conf["pkg_list"]:
 				if item["name"] in self.packages_selected:
 					app=item["name"]
-					cmd='%s %s '%(cmd,app)
+					cmd="%s %s "%(cmd,app)
 
-		cmd=cmd
+
+		cmd="%s;"%cmd
 
 		self._show_debug("install_app","Install Command: %s"%(cmd))
 
@@ -1007,7 +1005,7 @@ class EpiManager:
 		script=self.epi_conf["script"]["name"]
 		
 		if os.path.exists(script):
-			cmd_tmp='%s installPackage '%script	
+			cmd_tmp="%s installPackage "%script	
 		
 		return cmd_tmp 
 
@@ -1162,11 +1160,11 @@ class EpiManager:
 			self.token_result_postinstall=tempfile.mkstemp("_result_postinstall")
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
-				cmd='%s postInstall '%script
+				cmd="%s postInstall "%script
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 
-				cmd='((%s); echo $? > %s )'%(cmd,self.token_result_postinstall[1])
+				cmd+='; echo $? >%s;'%self.token_result_postinstall[1]
 
 		self._show_debug("postinstall_app","Postinstall Command:%s"%(cmd))
 
@@ -1217,13 +1215,13 @@ class EpiManager:
 			self.token_result_remove=tempfile.mkstemp("_result_remove")
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
-				cmd='%s remove '%script 
+				cmd="%s remove "%script
 
 				for pkg in self.packages_selected:
 					if pkg not in self.blockedRemovePkgsList:
 						cmd+="%s "%pkg
 
-				cmd='((%s); echo $? > %s )'%(cmd,self.token_result_remove[1])
+				cmd+='; echo $? >%s;'%self.token_result_remove[1]
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 
@@ -1242,19 +1240,19 @@ class EpiManager:
 			else:
 				if self.epiFiles[order]["selection_enabled"]["active"]:
 					if self.get_zmd_status(order)!=0:
-						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+						cmd="zero-center remove-pulsating-color %s ;zero-center set-non-configured %s"%(zomando_name,zomando_name)
 					else:
-						cmd="zero-center remove-pulsating-color "+zomando_name
+						cmd="zero-center remove-pulsating-color %s"%zomando_name
 				elif action=="install":
 					if result:
-						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-configured " +zomando_name
+						cmd="zero-center remove-pulsating-color %s ;zero-center set-configured %s"%(zomando_name,zomando_name)
 					else:
-						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+						cmd="zero-center remove-pulsating-color %s ;zero-center set-failed %s"%(zomando_name,zomando_name)
 				elif action=="uninstall":
 					if result:
-						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-non-configured " +zomando_name
+						cmd="zero-center remove-pulsating-color %s ;zero-center set-non-configured %s"%(zomando_name,zomando_name)
 					else:
-						cmd="zero-center remove-pulsating-color "+zomando_name + " ;zero-center set-failed " +zomando_name
+						cmd="zero-center remove-pulsating-color %s ;zero-center set-failed %s"%(zomando_name,zomando_name)
 
 			os.system(cmd)		
 
