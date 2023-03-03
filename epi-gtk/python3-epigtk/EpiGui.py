@@ -753,6 +753,8 @@ class EpiGui(QObject):
 			EpiGui.epiGuiManager.getEulasToCheck()
 			if len(EpiGui.epiGuiManager.eulasToShow)>0:
 				self._manageEulas()
+			else:
+				self._installProcess()
 		else:
 			self._installProcess()
 

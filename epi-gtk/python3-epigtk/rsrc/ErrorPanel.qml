@@ -6,19 +6,26 @@ import org.kde.kirigami 2.16 as Kirigami
 Rectangle{
     visible: true
     color:"transparent"
-    
+
     GridLayout{
         id: loadGrid
         rows: 2
         rowSpacing:10
         flow: GridLayout.TopToBottom
         anchors.centerIn:parent
+        property var warningCode:[-10,-11]
 
         Kirigami.InlineMessage {
             id: errorLabel
             visible:true
             text:getErrorText(epiBridge.loadErrorCode)
-            type:Kirigami.MessageType.Error;
+            type:{
+                if (loadGrid.warningCode.includes(epiBridge.loadErrorCode)){
+                    Kirigami.MessageType.Warning;
+                }else{
+                    Kirigami.MessageType.Error;
+                }
+            }
             Layout.minimumWidth:770
             Layout.fillWidth:true
             Layout.rightMargin:15
@@ -76,6 +83,9 @@ Rectangle{
                 break;
             case -10:
                 msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
+                break;
+            case -11:
+                msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Wait a few minutes and try again")
                 break;
             case -13:
                 msg=i18nd("epi-gtk","The unlocking process has failed")

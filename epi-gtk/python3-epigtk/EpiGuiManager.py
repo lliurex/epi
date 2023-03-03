@@ -932,7 +932,7 @@ class EpiGuiManager:
 
 						tmpParam["resultProcess"]=1
 
-				tmpParam["pkgIcon"]=self._getPkgIcon(0,pkgIndex,tmpParam["status"])
+				tmpParam["pkgIcon"]=self._getPkgIcon(order,pkgIndex,tmpParam["status"])
 				tmpParam["showSpinner"]=False
 				self._updatePackagesModel(tmpParam,element["name"])
 			

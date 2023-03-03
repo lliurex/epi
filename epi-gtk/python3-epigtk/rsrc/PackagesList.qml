@@ -30,7 +30,7 @@ Rectangle{
             focus:true
             width:100
             visible:epiBridge.selectPkg
-            enabled:epiBridge.enablePkgList
+            enabled:!epiBridge.isProcessRunning
             placeholderText:i18nd("epi-gtk","Search...")
             onTextChanged:{
                 filterModel.update()
@@ -135,7 +135,6 @@ Rectangle{
                 Keys.onEnterPressed: selectBtn.clicked()
                 onClicked:{
                     epiBridge.selectAll()
-                    console.log("Seleccionar todo")
                 }
             }
 

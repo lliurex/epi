@@ -52,7 +52,7 @@ GridLayout{
             MenuOptionBtn {
                 id:helpOption
                 optionText:i18nd("epi-gtk","Help")
-                optionIcon:"/usr/share/icons/breeze/actions/16/help-contents.svg"
+                optionIcon:"/usr/share/icons/breeze/actions/22/help-contents.svg"
                 optionVisible:{
                     if (epiBridge.wikiUrl!=""){
                         true
@@ -191,6 +191,7 @@ GridLayout{
                 Layout.preferredWidth:200
                 Layout.fillWidth:true
                 Layout.alignment:Qt.AlignHCenter
+                wrapMode: Text.WordWrap
             }
                
             PC3.Button {
@@ -230,6 +231,7 @@ GridLayout{
                     }
                 }
                 Layout.preferredHeight:40
+                Layout.leftMargin:10
                 Layout.rightMargin:10
                 Keys.onReturnPressed: installBtn.clicked()
                 Keys.onEnterPressed: installBtn.clicked()
