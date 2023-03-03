@@ -918,7 +918,8 @@ class EpiGui(QObject):
 																			self.enableApplyBtn=True
 																			self.enablePkgList=True
 																			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
-																			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
+																			EpiGui.epiGuiManager.clearEnvironment()
+
 																	else:
 																		error=True
 														else:
@@ -937,7 +938,7 @@ class EpiGui(QObject):
 			self.installProcessTimer.stop()
 			self._updateResultPackagesModel("end","install")
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
-			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
+			EpiGui.epiGuiManager.clearEnvironment()
 		
 		if EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			if not EpiGui.epiGuiManager.addRepositoryKeysDone:

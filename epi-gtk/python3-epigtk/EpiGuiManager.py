@@ -70,7 +70,6 @@ class EpiGuiManager:
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
 
-		self._clearEnvironment()
 		self.clearCache()
 
 	#def __init__
@@ -144,6 +143,7 @@ class EpiGuiManager:
 
 		self._getEpiContent()
 		self._getInitialStatus()
+		self.clearEnvironment()
 		
 		if requiredRoot:
 			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End',""]
@@ -558,7 +558,6 @@ class EpiGuiManager:
 
 	def checkRemoveMeta(self):
 
-		self._clearEnvironment()
 		self._writeLog("Packages selected to uninstall: %s"%self.epiManager.packages_selected)
 		self.stopUninstall=[False,""]
 		self.metaRemovedWarning=self.epiManager.check_remove_meta()
@@ -1028,10 +1027,11 @@ class EpiGuiManager:
 
 	#def _writeLog
 
-	def _clearEnvironment(self):
+	def clearEnvironment(self):
 
-		pass
+		self.epiManager.remove_repo_keys()
+		self.epiManager.empty_cache_folder()
 
-	#def _clearEnvironment			
+	#def clearEnvironment			
 
 #class EpiGuiManager

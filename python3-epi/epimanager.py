@@ -76,6 +76,7 @@ class EpiManager:
 		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-meta-desktop","lliurex-meta-desktop-lite","lliurex-meta-music","lliurex-meta-infantil"]
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
+		self.download_path="/var/cache/epi-downloads"
 
 		
 	#def __init__	
@@ -415,7 +416,6 @@ class EpiManager:
 			f=open("/etc/epi.token","w")
 			f.close()
 			os.remove("/etc/epi.token")
-			self.download_path="/var/cache/epi-downloads"
 			self.root=True
 		except:
 			if not os.path.exists(os.path.expanduser("~/.cache/epi-downloads/")):
@@ -1510,6 +1510,19 @@ class EpiManager:
 		return script
 
 	#def check_getStatus_byScript
+
+	def empty_cache_folder(self):
+
+		if os.path.exists(self.download_path):
+			for filename in os.listdir(self.download_path):
+				file_path=os.path.join(self.download_path,filename)
+				try:
+					if os.path.isfile(file_path):
+						os.remove(file_path)
+				except:
+					pass
+
+	#def empty_cache_folder
 
 #class EpiManager
 
