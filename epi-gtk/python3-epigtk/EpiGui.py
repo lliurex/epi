@@ -166,7 +166,7 @@ class EpiGui(QObject):
 				self.waitUnlockTimer=QTimer()
 				self.waitUnlockTimer.timeout.connect(self._waitUnlockTimerRet)
 				self.waitUnlockTimer.start(5000)
-			elif self.gatherInfo.ret[2]=="Lock":
+			elif self.gatherInfoT.ret[2]=="Lock":
 				self.showDialog=True
 
 	#def _gatherInfoRet
