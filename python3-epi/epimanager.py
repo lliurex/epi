@@ -670,7 +670,7 @@ class EpiManager:
 					for item in self.epi_conf["pkg_list"]:
 						if item["name"] in self.packages_selected:
 							cmd=self._get_download_cmd(self.type,item,cmd)
-					cmd='%s echo $? >%s;'%(cmd,self.token_result_download[1])	
+					cmd='%s echo $? > %s;'%(cmd,self.token_result_download[1])	
 
 			elif self.type=="mix":
 				
@@ -688,7 +688,7 @@ class EpiManager:
 				if cmd_file!="":
 					cmd_file+=";"
 
-				cmd='%s %s echo $? >%s;'%(cmd,cmd_file,self.token_result_download[1])	
+				cmd='%s %s echo $? > %s;'%(cmd,cmd_file,self.token_result_download[1])	
 		
 		self._show_debug("download_app","Command to download: %s"%(cmd))
 		return cmd			
@@ -770,7 +770,7 @@ class EpiManager:
 				cmd="%s preInstall "%script
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd='%s; echo $? >%s;'%(cmd,self.token_result_preinstall[1])
+				cmd='%s; echo $? > %s;'%(cmd,self.token_result_preinstall[1])
 
 		self._show_debug("preinstall_app","Preinstall Command: %s"%(cmd))
 		return cmd		
@@ -851,7 +851,7 @@ class EpiManager:
 			if cmd !="":
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
-				cmd='%s; echo $? >%s'%(cmd,self.token_result_install[1]	)
+				cmd='%s; echo $? > %s'%(cmd,self.token_result_install[1]	)
 		
 		elif self.type=="mix":
 			for item in self.epi_conf["pkg_list"]:
@@ -885,7 +885,7 @@ class EpiManager:
 					cmd=cmd_dpkg	
 			
 			if cmd_file!="":
-				cmd_file+='; echo $? >%s'%self.token_result_install[1]
+				cmd_file+='; echo $? > %s'%self.token_result_install[1]
 				if cmd!="":
 					cmd="%s; %s "%(cmd,cmd_file)
 				else:
@@ -1164,7 +1164,7 @@ class EpiManager:
 				for pkg in self.packages_selected:
 					cmd+="%s "%pkg
 
-				cmd='%s; echo $? >%s;'%(cmd,self.token_result_postinstall[1])
+				cmd='%s; echo $? > %s;'%(cmd,self.token_result_postinstall[1])
 
 		self._show_debug("postinstall_app","Postinstall Command:%s"%(cmd))
 
@@ -1221,7 +1221,7 @@ class EpiManager:
 					if pkg not in self.blockedRemovePkgsList:
 						cmd+="%s "%pkg
 
-				cmd='%s; echo $? >%s;'%(cmd,self.token_result_remove[1])
+				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
 		
 		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
 
