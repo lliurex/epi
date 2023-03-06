@@ -1001,6 +1001,7 @@ class EpiGui(QObject):
 
 		if EpiGui.epiGuiManager.stopUninstall[0]:
 			self.enableApplyBtn=True
+			self.endProcess=True
 			self.enablePkgList=True
 			self.feedbackCode=""
 			self.showStatusMessage=[True,EpiGui.epiGuiManager.stopUninstall[1],"Error"]

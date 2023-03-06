@@ -77,8 +77,9 @@ class EpiManager:
 		self.blockedRemovePkgsList=[]
 		self.metaRemovedWarning=False
 		self.download_path="/var/cache/epi-downloads"
+		self.skippedPkgs=[]
+		self.blockedRemoveSkippedPkgsList=[]
 
-		
 	#def __init__	
 
 	def _show_debug(self,function,msg):
@@ -170,6 +171,7 @@ class EpiManager:
 		pkg_list=[]
 		self.pkg_info={}
 		tmp_list=self.epiFiles.copy()
+		self.skippedPkgs=[]
 
 		if self.dbusStore:
 			self.showMethod=self.dbusStore.get_dbus_method('show')                            
@@ -1073,14 +1075,16 @@ class EpiManager:
 					file_with_list=True
 					for item in pkgs:
 						if item["name"] in self.packages_selected:
-							pkgs_ref.append(item["name"])
-	
+							if item["name"] not in self.blockedRemoveSkippedPkgsList:
+								pkgs_ref.append(item["name"])
+
 			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:
 						if item["name"] not in self.blockedRemovePkgsList:
-							pkgs_ref.append(item["name"])
+							if item["name"] not in self.blockedRemoveSkippedPkgsList:
+								pkgs_ref.append(item["name"])
 
 
 		if epi_type=="file" and not file_with_list:
@@ -1219,7 +1223,8 @@ class EpiManager:
 
 				for pkg in self.packages_selected:
 					if pkg not in self.blockedRemovePkgsList:
-						cmd+="%s "%pkg
+						if pkg not in self.blockedRemoveSkippedPkgsList:
+							cmd+="%s "%pkg
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
 		
@@ -1523,6 +1528,25 @@ class EpiManager:
 					pass
 
 	#def empty_cache_folder
+
+	def check_remove_skip_pkg(self):
+
+		self.skippedPkgWarning=False
+		self.blockedRemoveSkippedPkgsList=[]
+
+		for item in self.packages_selected:
+			if item in self.skippedPkgs:
+				self.skippedPkgWarning=True
+				if item not in self.blockedRemoveSkippedPkgsList:
+					self.blockedRemoveSkippedPkgsList.append(item)
+				break
+
+		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list","List:%s"%(str(self.blockedRemoveSkippedPkgsList)))
+
+		return self.skippedPkgWarning
+
+	#def check_remove_skip_pkg
+
 
 #class EpiManager
 

@@ -302,12 +302,14 @@ GridLayout{
     function getFeedBackText(code){
 
         var msg="";
+        var errorHeaded=i18nd("epi-gkt","The selected applications cannot be uninstalled.\n")
+        var warningHeaded=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because ")
         switch (code){
             case -14:
                 msg=i18nd("epi-gtk","Internet connection not detected")
                 break;
             case -15:
-                msg=i18nd("epi-gtk","The selected applications cannot be uninstalled.\nIt is part of the system meta-package");
+                msg=errorHeaded+i18nd("epi-gtk","It is part of the system meta-package");
                 break;
             case -16:
                 msg=i18nd("epi-gtk","Uninstalled process ending with errors");
@@ -323,6 +325,12 @@ GridLayout{
                 break;
             case -20:
                 msg=i18nd("epi-gtk","Installation aborted. Error ending installation")
+                break;
+            case -21:
+                msg=errorHeaded+i18nd("epi-gtk","You do not have permissions to perfom this action")
+                break;
+            case -22:
+                msg=errorHeaded+i18nd("epi-gtk","Action blocked due to insufficient permissions and meta-package protection")
                 break;
             case 3:
                 msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
@@ -372,13 +380,19 @@ GridLayout{
                 msg=i18nd("epi-gtk","Applications successfully uninstalled");
                 break;
             case 19:
-                msg=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because they are part of the system's meta-package");
+                msg=warningHeaded+i18nd("epi-gtk","they are part of the system's meta-package");
                 break;
             case 20:
                 msg=i18nd("epi-gtk","Searching information.Wait a moment...")
                 break;
             case 21:
                 msg=i18nd("epi-gtk","Information not availabled")
+                break;
+            case 22:
+                msg=warningHeaded+i18nd("epi-gtk","you do not have permissions to uninstall them")
+                break;
+            case 23:
+                msg=warningHeaded+i18nd("epi-gtk","their uninstallation has been blocked")
                 break;
             default:
                 break;
