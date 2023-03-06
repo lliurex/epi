@@ -1165,6 +1165,7 @@ class EpiGui(QObject):
 	def closeApplication(self):
 
 		if self.endProcess:
+			EpiGui.epiGuiManager.clearEnvironment()
 			self.closeGui=True
 		else:
 			self.closeGui=False

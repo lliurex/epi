@@ -689,12 +689,14 @@ class EPIC(object):
 					if error:
 						self.epicore.zerocenter_feedback(order,'install',result)
 						self.epicore.remove_repo_keys()
+						self.epicore.empty_cache_folder()
 						return 1
 
 				msg_log='Installation completed successfully'
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				self.epicore.remove_repo_keys()
+				self.epicore.empty_cache_folder()
 				return 0
 			else:
 				msg_log="Internet connection not detected: "+connection[1] 
@@ -706,6 +708,7 @@ class EPIC(object):
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
 			self.epicore.remove_repo_keys()
+			self.epicore.empty_cache_folder()
 			return 0
 
 	#def install_process		
@@ -894,6 +897,7 @@ class EPIC(object):
 
 		print("\n  [EPIC]: Cancel process with Ctrl+C signal")
 		self.epicore.remove_repo_keys()
+		self.epicore.empty_cache_folder()
 		msg_log="Cancel process with Ctrl+C signal"
 		self.write_log(msg_log)
 		sys.exit(0)

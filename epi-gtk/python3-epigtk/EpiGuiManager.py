@@ -143,7 +143,6 @@ class EpiGuiManager:
 
 		self._getEpiContent()
 		self._getInitialStatus()
-		self.clearEnvironment()
 		
 		if requiredRoot:
 			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End',""]
