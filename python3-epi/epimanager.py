@@ -69,6 +69,13 @@ class EpiManager:
 		self.partial_installed=False
 		self.zmd_paths="/usr/share/zero-center/zmds"
 		self.app_folder="/usr/share/zero-center/applications"
+		self.skipped_flavours=[]
+		self._user_groups=[]
+		self.skipped_pkgs=[]
+		self._get_flavours()
+		self._get_user_groups()
+		self.blocked_remove_skipped_pkgs_list=[]
+		self.lock_remove_for_group=False
 		self.list_available_epi()
 		self.epiFiles={}
 		self.order=0
@@ -80,13 +87,7 @@ class EpiManager:
 		self.blocked_remove_pkgs_list=[]
 		self.meta_removed_warning=False
 		self.download_path="/var/cache/epi-downloads"
-		self.skipped_flavours=[]
-		self._get_flavours()
-		self._user_groups=[]
-		self._get_user_groups()
-		self.skipped_pkgs=[]
-		self.blocked_remove_skipped_pkgs_list=[]
-		self.lock_remove_for_group=False
+		
 
 	#def __init__	
 
@@ -178,8 +179,6 @@ class EpiManager:
 
 		pkg_list=[]
 		self.pkg_info={}
-		self.skipped_pkgs=[]
-		self.skipped_flavours=[]
 		tmp_list=self.epiFiles.copy()
 		
 		if self.dbusStore:
@@ -1312,7 +1311,12 @@ class EpiManager:
 						pkg["default_pkg"]=item["default_pkg"]
 					except:
 						pkg["default_pkg"]=False
-
+					
+					try:
+						pkg["skip_flavours"]=item["skip_flavours"]
+					except:
+						pkg["skip_flavours"]=[]	
+					
 					remote_available.append(pkg)			
 		
 		return [remote_available,selection_enabled,zomando]									
@@ -1324,6 +1328,8 @@ class EpiManager:
 		self.remote_available_epis=[]
 		self.available_epis=[]
 		self.cli_available_epis=[]
+		self.skipped_pkgs=[]
+		self.skipped_flavours=[]
 
 		for item in listdir(self.zmd_paths):
 			t=join(self.zmd_paths,item)
@@ -1368,7 +1374,10 @@ class EpiManager:
 		for item in self.cli_available_epis:
 			for element in item:
 				if epi==element:
-					return item[element]["pkg_list"]
+					for pkg in item[element]["pkg_list"]:
+						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
+							tmp.append(pkg)
+					#return item[element]["pkg_list"]
 
 		return tmp	
 
@@ -1541,6 +1550,7 @@ class EpiManager:
 
 	def _get_flavours(self):
 
+		self._flavours=[]
 		cmd='lliurex-version -v'
 		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 		result=p.communicate()[0]

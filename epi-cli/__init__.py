@@ -76,7 +76,6 @@ class EPIC(object):
 							pkgs_default=pkgs_default+item["name"]+" "
 							tmp_list.append(item["name"])
 
-
 					if not show_all:
 						if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
 							if len(self.pkgsToInstall)==0:
@@ -148,39 +147,47 @@ class EPIC(object):
 					status="installed. It seems that the packages were installed but the execution of EPI failed.It may be necessary to run EPI for proper operation"
 			try:
 				if epi_conf["script"]["remove"]:
-					self.uninstall="Yes"
+					if not self.epicore.lock_remove_for_group:
+						self.uninstall="Yes"
+					else:
+						self.uninstall="No"
 			except Exception as e:
 				self.uninstall="No"
 
 			print ("  [EPIC]: Information availabled:")
 			if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
-				print ("     - Packages availables: " + pkgs_available)
-				if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
-					if pkgs_default=="":
-						print ("     - Packages selected by defafult: None")
-					else:
-						print ("     - Packages selected by defafult: "+pkgs_default)
-					print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
+				if pkgs_available=="":
+					print ("     - Packages not availables for install via terminal in this flavour" )
+					return 0	
 				else:
-					print ("     - All packages are selected by default to be installed")
-					print ("     - If you want to install only some packages indicate their names separated by space")
-			
-				if pkgs_installed=="":
-					print("     - Packages already installed: None")
-				else:
-					if pkgs_installed==pkgs_available:
-						print("     - Packages already installed: all")
+					print ("     - Packages availables: " + pkgs_available)
+					if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
+						if pkgs_default=="":
+							print ("     - Packages selected by defafult: None")
+						else:
+							print ("     - Packages selected by defafult: "+pkgs_default)
+						print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
 					else:
-						print("     - Packages already installed: "+pkgs_installed)
+						print ("     - All packages are selected by default to be installed")
+						print ("     - If you want to install only some packages indicate their names separated by space")
+				
+					if pkgs_installed=="":
+						print("     - Packages already installed: None")
+					else:
+						if pkgs_installed==pkgs_available:
+							print("     - Packages already installed: all")
+						else:
+							print("     - Packages already installed: "+pkgs_installed)
 
 			else:
-				if pkgs_available!="":
-					print ("     - Application: " + pkgs_available)
-				else:		
-					print ("     - Application not availabled to install/uninstall via terminal. Use epi-gtk for this")
+				if pkgs_available=="":
+					print ("     - Application not availabled to install/uninstall via terminal in this flavour")
 					return 0
-				print ("     - Status: " + status)
-				
+				else:
+					print ("     - Application: " + pkgs_available)
+
+			print ("     - Status: " + status)
+			
 			print ("     - Uninstall process availabled: " + self.uninstall)
 			if len(depends)>0:
 				print ("     - Additional application required: " + depends)
@@ -234,11 +241,15 @@ class EPIC(object):
 				msg_log="Wrong packages indicated to "+action
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False
+			elif self.check_pkgList["error"]=="flavour":
+				msg_log="There are packages that can not " + action + " in this flavour"
+				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
+				check=False		
 			elif self.check_pkgList["error"]=="cli":
 				msg_log="There are packages that can not " + action + " via terminal"	
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False
-
+			self.write_log(msg_log)
 		return check
 
 	#def check_epi	
@@ -267,6 +278,7 @@ class EPIC(object):
 			else:
 				count_cli=0
 				count_name=0
+				count_flavour=0
 				tmp_remote=[]
 				tmp_all=[]
 
@@ -276,13 +288,18 @@ class EPIC(object):
 					for item in self.epicore.epiFiles[0]["pkg_list"]:
 						tmp_all.append(item["name"])	
 					for pkg in self.pkgsToInstall:
-						if pkg not in tmp_remote:
-							if pkg not in tmp_all:
-								count_name+=1
-							else:	
-								count_cli+=1
+						if pkg in self.epicore.skipped_flavours:
+							count_flavour+=1
+						else:
+							if pkg not in tmp_remote:
+								if pkg not in tmp_all:
+									count_name+=1
+								else:
+									count_cli+=1
 					if count_name>0:
 						return {"status":False,"error":"name"}
+					if count_flavour>0:
+						return {"status":False,"error":"flavour"}
 					if count_cli>0:
 						return {"status":False,"error":"cli"}	
 				else:
