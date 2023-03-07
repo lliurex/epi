@@ -16,6 +16,8 @@ import dpkgunlocker.dpkgunlockermanager as DpkgUnlockerManager
 import shutil
 import n4d.client as client
 import codecs
+import pwd
+import grp
 
 class EpiManager:
 	
@@ -59,7 +61,8 @@ class EpiManager:
 					"selection_enabled":{"active":False,"all_selected":False},
 					"custom_icon_path":"",
 					"check_zomando_state":True,
-					"wiki":""
+					"wiki":"",
+					"lock_remove_groups":[]
 					}
 
 		self.packages_selected=[]
@@ -74,11 +77,16 @@ class EpiManager:
 		self.types_without_download=["apt","localdeb","snap","flatpak"]
 		self.types_with_download=["deb","file"]
 		self.lliurex_meta_pkgs=["lliurex-meta-server","lliurex-meta-server-lite","lliurex-meta-client","lliurex-meta-client-lite","lliurex-meta-minimal-client","lliurex-meta-desktop","lliurex-meta-desktop-lite","lliurex-meta-music","lliurex-meta-infantil"]
-		self.blockedRemovePkgsList=[]
-		self.metaRemovedWarning=False
+		self.blocked_remove_pkgs_list=[]
+		self.meta_removed_warning=False
 		self.download_path="/var/cache/epi-downloads"
-		self.skippedPkgs=[]
-		self.blockedRemoveSkippedPkgsList=[]
+		self.skipped_flavours=[]
+		self._get_flavours()
+		self._user_groups=[]
+		self._get_user_groups()
+		self.skipped_pkgs=[]
+		self.blocked_remove_skipped_pkgs_list=[]
+		self.lock_remove_for_group=False
 
 	#def __init__	
 
@@ -170,9 +178,10 @@ class EpiManager:
 
 		pkg_list=[]
 		self.pkg_info={}
+		self.skipped_pkgs=[]
+		self.skipped_flavours=[]
 		tmp_list=self.epiFiles.copy()
-		self.skippedPkgs=[]
-
+		
 		if self.dbusStore:
 			self.showMethod=self.dbusStore.get_dbus_method('show')                            
 				
@@ -205,7 +214,8 @@ class EpiManager:
 			else:
 				if item==0:
 					if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
-						self.partial_installed=True	
+						self.partial_installed=True
+					self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
 
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
@@ -1075,15 +1085,15 @@ class EpiManager:
 					file_with_list=True
 					for item in pkgs:
 						if item["name"] in self.packages_selected:
-							if item["name"] not in self.blockedRemoveSkippedPkgsList:
+							if item["name"] not in self.blocked_remove_skipped_pkgs_list:
 								pkgs_ref.append(item["name"])
 
 			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
 				for item in pkgs:
 					if item["name"] in self.packages_selected:
-						if item["name"] not in self.blockedRemovePkgsList:
-							if item["name"] not in self.blockedRemoveSkippedPkgsList:
+						if item["name"] not in self.blocked_remove_pkgs_list:
+							if item["name"] not in self.blocked_remove_skipped_pkgs_list:
 								pkgs_ref.append(item["name"])
 
 
@@ -1222,8 +1232,8 @@ class EpiManager:
 				cmd="%s remove "%script
 
 				for pkg in self.packages_selected:
-					if pkg not in self.blockedRemovePkgsList:
-						if pkg not in self.blockedRemoveSkippedPkgsList:
+					if pkg not in self.blocked_remove_pkgs_list:
+						if pkg not in self.blocked_remove_skipped_pkgs_list:
 							cmd+="%s "%pkg
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
@@ -1446,11 +1456,11 @@ class EpiManager:
 
 	def check_remove_meta(self):
 
-		self.blockedRemovePkgsList=[]
-		tmpBlockedRemovePkgsList=[]
+		self.blocked_remove_pkgs_list=[]
+		tmpblocked_remove_pkgs_list=[]
 
 		for pkg in self.packages_selected:
-			tmpBlockedRemovePkgsList=[]
+			tmpblocked_remove_pkgs_list=[]
 			cmd="apt-get remove --simulate %s"%pkg
 			psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			rawoutputsimulate=psimulate.stdout.readlines()
@@ -1461,19 +1471,19 @@ class EpiManager:
 			if len(r)>0:
 				for item in r:
 					tmp=item.split(' ')[0]
-					tmpBlockedRemovePkgsList.append(tmp)
+					tmpblocked_remove_pkgs_list.append(tmp)
 
-				for item in tmpBlockedRemovePkgsList:
+				for item in tmpblocked_remove_pkgs_list:
 					if item in self.lliurex_meta_pkgs:
-						self.blockedRemovePkgsList.append(pkg) 
+						self.blocked_remove_pkgs_list.append(pkg) 
 						break	
 
-		if len(self.blockedRemovePkgsList)>0:
-			self.metaRemovedWarning=True 
+		if len(self.blocked_remove_pkgs_list)>0:
+			self.meta_removed_warning=True 
 
-		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blockedRemovePkgsList)))
+		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
 		
-		return self.metaRemovedWarning
+		return self.meta_removed_warning
 
 
 	#def check_remove_meta
@@ -1529,21 +1539,96 @@ class EpiManager:
 
 	#def empty_cache_folder
 
+	def _get_flavours(self):
+
+		cmd='lliurex-version -v'
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+		result=p.communicate()[0]
+		if type(result) is bytes:
+			result=result.decode()
+			self._flavours = [ x.strip() for x in result.split(',') ]	
+	
+	#def _getFlavours
+
+	def is_pkg_skipped_for_flavour(self,pkg_id,skipped_flavours):
+
+		for flavour in self._flavours:
+			for element in skipped_flavours:
+				if element in flavour:
+					if pkg_id not in self.skipped_flavours:
+						self.skipped_flavours.append(pkg_id)
+					return True
+
+		return False
+
+	#def is_pkg_skipped_for_flavour
+
+	def _get_user_groups(self):
+
+		try:
+			user=pwd.getpwuid(int(os.environ["PKEXEC_UID"])).pw_name
+			gid = pwd.getpwnam(user).pw_gid
+			groups_gids = os.getgrouplist(user, gid)
+			self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+		except:
+			user=os.environ["USER"]
+			gid = pwd.getpwnam(user).pw_gid
+			groups_gids = os.getgrouplist(user, gid)
+			self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+
+	#def _get_user_groups
+
+	def is_pkg_skipped_for_group(self,pkg_id,skipped_groups):
+
+		'''
+			Values for pkg_skipped:
+			- 0: pkg not skipped
+			- 1: pkg skipped for all actions
+			- 2: pkg skipped for remove action
+		'''
+		pkg_skipped=0
+		if 'admins' not in self._user_groups:
+			for item in skipped_groups:
+				if item["group"] in self._user_groups:
+					if item["action"]=="all":
+						pkg_skipped=1
+					elif item["action"]=="remove":
+						pkg_skipped=2
+						if pkg_id not in self.skipped_pkgs:
+							self.skipped_pkgs.append(pkg_id)
+					break
+
+		return pkg_skipped
+
+	#def is_pkg_skipped_for_group
+
+	def _is_remove_lock_for_group(self,skipped_groups):
+
+		if 'admins' not in self._user_groups:
+			if len(skipped_groups)>0:
+				for group in skipped_groups:
+					if group in self._user_groups:
+						return True
+
+		return False
+
+	#def _is_remove_lock_for_group
+
 	def check_remove_skip_pkg(self):
 
-		self.skippedPkgWarning=False
-		self.blockedRemoveSkippedPkgsList=[]
+		self.skipped_pkg_warning=False
+		self.blocked_remove_skipped_pkgs_list=[]
 
 		for item in self.packages_selected:
-			if item in self.skippedPkgs:
-				self.skippedPkgWarning=True
-				if item not in self.blockedRemoveSkippedPkgsList:
-					self.blockedRemoveSkippedPkgsList.append(item)
+			if item in self.skipped_pkgs:
+				self.skipped_pkg_warning=True
+				if item not in self.blocked_remove_skipped_pkgs_list:
+					self.blocked_remove_skipped_pkgs_list.append(item)
 				break
 
-		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list","List:%s"%(str(self.blockedRemoveSkippedPkgsList)))
+		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list","List:%s"%(str(self.blocked_remove_skipped_pkgs_list)))
 
-		return self.skippedPkgWarning
+		return self.skipped_pkg_warning
 
 	#def check_remove_skip_pkg
 

@@ -302,7 +302,7 @@ GridLayout{
     function getFeedBackText(code){
 
         var msg="";
-        var errorHeaded=i18nd("epi-gkt","The selected applications cannot be uninstalled.\n")
+        var errorHeaded=i18nd("epi-gtk","The selected applications cannot be uninstalled.\n")
         var warningHeaded=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because ")
         switch (code){
             case -14:
@@ -392,7 +392,7 @@ GridLayout{
                 msg=warningHeaded+i18nd("epi-gtk","you do not have permissions to uninstall them")
                 break;
             case 23:
-                msg=warningHeaded+i18nd("epi-gtk","their uninstallation has been blocked")
+                msg=warningHeaded+i18nd("epi-gtk","you do not have permissions and meta-package protection")
                 break;
             default:
                 break;

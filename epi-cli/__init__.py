@@ -858,14 +858,14 @@ class EPIC(object):
 
 		if self.metaRemovedWarning:
 			count=1
-			for item in self.epicore.blockedRemovePkgsList:
-				if count<len(self.epicore.blockedRemovePkgsList):
+			for item in self.epicore.blocked_remove_pkgs_list:
+				if count<len(self.epicore.blocked_remove_pkgs_list):
 					self.blockedPkgs=self.blockedPkgs+item+", "
 				else:
 					self.blockedPkgs=self.blockedPkgs+item
 				count+=1	
 
-			if len(self.epicore.packages_selected)==len(self.epicore.blockedRemovePkgsList):
+			if len(self.epicore.packages_selected)==len(self.epicore.blocked_remove_pkgs_list):
 				stop_uninstall=True
 
 		msg_log="Packages blocked because remove metapackage: %s"%self.blockedPkgs

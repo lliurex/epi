@@ -64,7 +64,6 @@ class EpiGuiManager:
 	MSG_FEEDBACK_STORE_INFO=20
 	MSG_FEEDBACK_STORE_EMPTY=21
 
-
 	def __init__(self):
 
 		self.packagesData=[]
@@ -75,11 +74,6 @@ class EpiGuiManager:
 		self.secondConnection=False
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
-		self._userGroups=[]
-		self._flavours=[]
-
-		self._getFlavours()
-		self._getUserGroups()
 		self.clearCache()
 
 	#def __init__
@@ -251,10 +245,11 @@ class EpiGuiManager:
 
 				try:
 					if self.info[item]["script"]["remove"]:
-						self.showRemoveBtn=True
+						if not self.epiManager.lock_remove_for_group:
+							self.showRemoveBtn=True
 				except :
 					pass
-				
+
 				self.wikiUrl=self.info[item]["wiki"]
 				self.totalPackages=len(self.info[item]["pkg_list"])
 				
@@ -264,15 +259,15 @@ class EpiGuiManager:
 				else:
 					try:
 						pkgSkippedFlavours=element["skip_flavours"]
-						pkgSkipped=self._isPkgSkippedForFlavour(pkgSkippedFlavours)
-					except:
+						pkgSkipped=self.epiManager.is_pkg_skipped_for_flavour(element["name"],pkgSkippedFlavours)
+					except Exception as e:
 						pkgSkipped=False
 
 					if not pkgSkipped:
 						try:
 							pkgSkipGroups=element["skip_groups"]
-							pkgSkipped=self._isPkgSkippedForGroup(element["name"],pkgSkipGroups)
-						except:
+							pkgSkipped=self.epiManager.is_pkg_skipped_for_group(element["name"],pkgSkipGroups)
+						except Exception as e:
 							pkgSkipped=0
 							pass
 
@@ -334,8 +329,10 @@ class EpiGuiManager:
 				
 				pkgOrder+=1
 
-			if len(self.epiManager.skippedPkgs)==self.totalPackages:
-				self.showRemoveBtn=False
+			
+			if self.showRemoveBtn:
+				if len(self.epiManager.skipped_pkgs)==self.totalPackages:
+					self.showRemoveBtn=False
 		
 	#def _getEpiContent
 
@@ -588,23 +585,23 @@ class EpiGuiManager:
 		self._writeLog("Packages selected to uninstall: %s"%self.epiManager.packages_selected)
 		self.stopUninstall=[False,""]
 		self.metaRemovedWarning=self.epiManager.check_remove_meta()
-		self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blockedRemovePkgsList)
+		self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blocked_remove_pkgs_list)
 
 		if self.metaRemovedWarning:
-			if len(self.epiManager.packages_selected)==len(self.epiManager.blockedRemovePkgsList):
+			if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_pkgs_list):
 				self.stopUninstall=[True,EpiGuiManager.ERROR_UNINSTALL_STOP_META]
 				self._writeLog("Uninstall blocked due to remove metapackage warning")
 		
 		if not self.stopUninstall[0]:
 			self.skippedRemovedWarning=self.epiManager.check_remove_skip_pkg()
-			self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.skippedPkgs)
+			self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.skipped_pkgs)
 
 			if self.skippedRemovedWarning:
-				if len(self.epiManager.packages_selected)==len(self.epiManager.blockedRemoveSkippedPkgsList):
+				if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_skipped_pkgs_list):
 					self.stopUninstall=[True,EpiGuiManager.ERROR_UNINSTALL_STOP_SKIP_PKG]
 					self._writeLog("Uninstall blocked due to remove skipped pkg warning")
 				else:
-					totalBlockedPkgs=len(self.epiManager.blockedRemoveSkippedPkgsList)+len(self.epiManager.blockedRemovePkgsList)
+					totalBlockedPkgs=len(self.epiManager.blocked_remove_skipped_pkgs_list)+len(self.epiManager.blocked_remove_pkgs_list)
 					if len(self.epiManager.packages_selected)==totalBlockedPkgs:
 						self.stopUninstall=[True,EpiGuiManager.ERROR_UNINSTALL_STOP_META_SKIP_PKG]
 						self._writeLog("Uninstall blocked due to remove skipped and meta pkg warning")
@@ -898,13 +895,13 @@ class EpiGuiManager:
 		self.checkRemoveDone=True
 
 		if remove:
-			if len(self.epiManager.blockedRemovePkgsList)>0:
-				if len(self.epiManager.blockedRemoveSkippedPkgsList)==0:
+			if len(self.epiManager.blocked_remove_pkgs_list)>0:
+				if len(self.epiManager.blocked_remove_skipped_pkgs_list)==0:
 					msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_META
 				else:
 					msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP
 				typeMsg="Warning"
-			elif len(self.epiManager.blockedRemoveSkippedPkgsList)>0:
+			elif len(self.epiManager.blocked_remove_skipped_pkgs_list)>0:
 				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
 				typeMsg="Warning"
 			else:
@@ -939,7 +936,7 @@ class EpiGuiManager:
 							tmpParam["resultProcess"]=0
 
 					elif action=="uninstall":
-						if element["name"] in self.epiManager.blockedRemovePkgsList or element["name"] in self.epiManager.blockedRemoveSkippedPkgsList:
+						if element["name"] in self.epiManager.blocked_remove_pkgs_list or element["name"] in self.epiManager.blocked_remove_skipped_pkgs_list:
 							tmpParam["resultProcess"]=1
 							tmpParam['status']='installed'
 						else:
@@ -1000,7 +997,7 @@ class EpiGuiManager:
 							tmpParam["isVisible"]=True
 					else:
 						if order==0:
-							if item["pkgId"] not in self.epiManager.blockedRemovePkgsList and item["pkgId"] not in self.epiManager.blockedRemoveSkippedPkgsList:
+							if item["pkgId"] not in self.epiManager.blocked_remove_pkgs_list and item["pkgId"] not in self.epiManager.blocked_remove_skipped_pkgs_list:
 								tmpParam["showSpinner"]=True
 
 				self._updatePackagesModel(tmpParam,item["pkgId"])
@@ -1078,65 +1075,5 @@ class EpiGuiManager:
 		self.epiManager.empty_cache_folder()
 
 	#def clearEnvironment
-
-	def _getFlavours(self):
-
-		cmd='lliurex-version -v'
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-		result=p.communicate()[0]
-		if type(result) is bytes:
-			result=result.decode()
-			self._flavours = [ x.strip() for x in result.split(',') ]	
-	
-	#def _getFlavours
-
-	def _isPkgSkippedForFlavour(self,skippedFlavours):
-
-		for flavour in self._flavours:
-			for element in skippedFlavours:
-				if element in flavour:
-					return True
-
-		return False
-
-	#def _isPkgSkippedForFlavour
-
-	def _getUserGroups(self):
-
-		try:
-			user=pwd.getpwuid(int(os.environ["PKEXEC_UID"])).pw_name
-			gid = pwd.getpwnam(user).pw_gid
-			groups_gids = os.getgrouplist(user, gid)
-			self._userGroups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
-
-		except:
-			pass
-
-	#def _getUserGroups
-
-	def _isPkgSkippedForGroup(self,pkgId,skippedGroups):
-
-		'''
-			Values for pkgSkipped:
-			- 0: pkg not skipped
-			- 1: pkg skipped for all actions
-			- 2: pkg skipped for remove action
-		'''
-
-		pkgSkipped=0
-		for item in skippedGroups:
-			if item["group"] in self._userGroups:
-				if item["action"]=="all":
-					pkgSkipped=1
-				elif item["action"]=="remove":
-					pkgSkipped=2
-					if pkgId not in self.epiManager.skippedPkgs:
-						self.epiManager.skippedPkgs.append(pkgId)
-				break
-
-		return pkgSkipped
-
-	#def _isPkgSkippedForGroup
-
 
 #class EpiGuiManager
