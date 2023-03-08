@@ -288,7 +288,7 @@ class EPIC(object):
 					for item in self.epicore.epiFiles[0]["pkg_list"]:
 						tmp_all.append(item["name"])	
 					for pkg in self.pkgsToInstall:
-						if pkg in self.epicore.skipped_flavours:
+						if pkg in self.epicore.skipped_pkgs_flavours:
 							count_flavour+=1
 						else:
 							if pkg not in tmp_remote:
@@ -806,11 +806,16 @@ class EPIC(object):
 				if not self.stop_uninstall:
 					result=self.uninstall_app()
 					if result:
-						if not self.metaRemovedWarning:
-							msg_log='Application successfully uninstalled'
+						if not self.meta_remove_warning:
+							if not self.skipped_remove_warning:
+								msg_log='Application successfully uninstalled'
+							else:
+								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
 						else:
-							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blockedPkgs
-						
+							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blocked_pkgs_meta
+							if self.skipped_remove_warning:
+								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
+												
 						print('  [EPIC]: '+msg_log)
 						self.write_log(msg_log)
 						self.epicore.zerocenter_feedback(0,'uninstall',result)
@@ -820,7 +825,14 @@ class EPIC(object):
 						self.epicore.zerocenter_feedback(0,'uninstall',result)
 						return 1
 				else:
-					msg_log='Uninstall blocked because remove metapackage.'
+					if self.meta_remove_warning:
+						if not self.skipped_remove_warning:
+							msg_log='Uninstall blocked because remove metapackage.'
+						else:
+							msg_log='Uninstall blocked because remove metapackage and not enough permissions'
+					else:
+						msg_log='Uninstall blocked because yo do not have enough permissions'
+
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 					return 1
@@ -867,27 +879,53 @@ class EPIC(object):
 
 	def check_remove_meta(self):
 
-		self.blockedPkgs=""
+		self.blocked_pkgs_meta=""
+		self.blocked_pkgs_skipped=""
 		stop_uninstall=False
 
 		print('  [EPIC]: Checking if selected applications can be uninstalled...')
-		self.metaRemovedWarning=self.epicore.check_remove_meta()
+		self.meta_remove_warning=self.epicore.check_remove_meta()
 
-		if self.metaRemovedWarning:
+		if self.meta_remove_warning:
 			count=1
 			for item in self.epicore.blocked_remove_pkgs_list:
 				if count<len(self.epicore.blocked_remove_pkgs_list):
-					self.blockedPkgs=self.blockedPkgs+item+", "
+					self.blocked_pkgs_meta=self.blocked_pkgs_meta+item+", "
 				else:
-					self.blockedPkgs=self.blockedPkgs+item
+					self.blocked_pkgs_meta=self.blocked_pkgs_meta+item
 				count+=1	
 
 			if len(self.epicore.packages_selected)==len(self.epicore.blocked_remove_pkgs_list):
 				stop_uninstall=True
 
-		msg_log="Packages blocked because remove metapackage: %s"%self.blockedPkgs
-		print('  [EPIC]: '+msg_log)
-		self.write_log(msg_log)
+		if not stop_uninstall:
+			self.skipped_remove_warning=self.epicore.check_remove_skip_pkg()
+			print("1:%s"%(str(self.skipped_remove_warning)))
+			if self.skipped_remove_warning:
+				count=1
+				for item in self.epicore.blocked_remove_skipped_pkgs_list:
+					if count<len(self.epicore.blocked_remove_skipped_pkgs_list):
+						self.blocked_pkgs_skipped=self.blocked_pkgs_skipped+item+", "
+					else:
+						self.blocked_pkgs_skipped=self.blocked_pkgs_skipped+item
+					count+=1
+
+				if len(self.epicore.packages_selected)==len(self.epicore.blocked_remove_skipped_pkgs_list):
+					stop_uninstall=True
+					msg_log="Packages blocked because you do not have permission to uninstall them: %s"%self.blocked_pkgs_skipped	
+					print('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)
+				else:
+					total_pkgs=len(self.epicore.blocked_remove_skipped_pkgs_list)+len(self.epicore.blocked_remove_pkgs_list)
+					if total_pkgs==len(self.epicore.packages_selected):
+						stop_uninstall=True
+						msg_log="Packages blocked because you do not have permission to uninstall them and remove metapackage: by permision:%s - by meta:%s"%(self.blocked_pkgs_skipped,self.blocked_pkgs_meta)	
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
+		else:
+			msg_log="Packages blocked because remove metapackage: %s"%self.blocked_pkgs_meta
+			print('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
 
 		return stop_uninstall
 

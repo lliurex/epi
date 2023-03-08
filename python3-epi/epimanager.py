@@ -23,11 +23,19 @@ class EpiManager:
 	
 	def __init__(self,args=None):
 
-		if args:
-			self.debug=1
-		else:	
-			self.debug=0
-		
+		try:
+			if args[0]:
+				self.debug=1
+			else:
+				self.debug=0
+			self.get_available_list=args[1]
+		except:
+			if args:
+				self.debug=1
+			else:
+				self.debug=0
+			self.get_available_list=True
+	
 		try:
 			storeBus=dbus.SystemBus()
 			storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
@@ -69,14 +77,15 @@ class EpiManager:
 		self.partial_installed=False
 		self.zmd_paths="/usr/share/zero-center/zmds"
 		self.app_folder="/usr/share/zero-center/applications"
-		self.skipped_flavours=[]
+		self.skipped_pkgs_flavours=[]
 		self._user_groups=[]
-		self.skipped_pkgs=[]
+		self.skipped_pkgs_groups=[]
 		self._get_flavours()
 		self._get_user_groups()
 		self.blocked_remove_skipped_pkgs_list=[]
 		self.lock_remove_for_group=False
-		self.list_available_epi()
+		if self.get_available_list:
+			self.list_available_epi()
 		self.epiFiles={}
 		self.order=0
 		self.root=False
@@ -179,6 +188,10 @@ class EpiManager:
 
 		pkg_list=[]
 		self.pkg_info={}
+		if not self.get_available_list:
+			self.skipped_pkgs_groups=[]
+			self.skipped_pkgs_flavours=[]
+
 		tmp_list=self.epiFiles.copy()
 		
 		if self.dbusStore:
@@ -1315,7 +1328,11 @@ class EpiManager:
 					try:
 						pkg["skip_flavours"]=item["skip_flavours"]
 					except:
-						pkg["skip_flavours"]=[]	
+						pkg["skip_flavours"]=[]
+					try:
+						pkg["skip_groups"]=item["skip_groups"]
+					except:
+						pkg["skip_groups"]=[]
 					
 					remote_available.append(pkg)			
 		
@@ -1328,8 +1345,8 @@ class EpiManager:
 		self.remote_available_epis=[]
 		self.available_epis=[]
 		self.cli_available_epis=[]
-		self.skipped_pkgs=[]
-		self.skipped_flavours=[]
+		self.skipped_pkgs_groups=[]
+		self.skipped_pkgs_flavours=[]
 
 		for item in listdir(self.zmd_paths):
 			t=join(self.zmd_paths,item)
@@ -1351,13 +1368,10 @@ class EpiManager:
 									tmp[epi_name]=remote[1]
 									tmp[epi_name]["zomando"]=remote[2]
 									tmp[epi_name]["pkg_list"]=remote[0]
+									self.cli_available_epis.append(tmp)
 									if not self.is_zmd_service(remote[2]):
-										if ('_onStandalone' not in line) and ('_onServer' not in line):
-											self.remote_available_epis.append(tmp)
-										self.cli_available_epis.append(tmp)
-									else:
-										self.cli_available_epis.append(tmp)
-
+										tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
+										self.remote_available_epis.append(tmp)
 								
 								self.available_epis.append(line)
 
@@ -1376,7 +1390,8 @@ class EpiManager:
 				if epi==element:
 					for pkg in item[element]["pkg_list"]:
 						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
-							tmp.append(pkg)
+							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
+								tmp.append(pkg)
 					#return item[element]["pkg_list"]
 
 		return tmp	
@@ -1466,10 +1481,10 @@ class EpiManager:
 	def check_remove_meta(self):
 
 		self.blocked_remove_pkgs_list=[]
-		tmpblocked_remove_pkgs_list=[]
+		tmp_blocked_remove_pkgs_list=[]
 
 		for pkg in self.packages_selected:
-			tmpblocked_remove_pkgs_list=[]
+			tmp_blocked_remove_pkgs_list=[]
 			cmd="apt-get remove --simulate %s"%pkg
 			psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			rawoutputsimulate=psimulate.stdout.readlines()
@@ -1480,9 +1495,9 @@ class EpiManager:
 			if len(r)>0:
 				for item in r:
 					tmp=item.split(' ')[0]
-					tmpblocked_remove_pkgs_list.append(tmp)
+					tmp_blocked_remove_pkgs_list.append(tmp)
 
-				for item in tmpblocked_remove_pkgs_list:
+				for item in tmp_blocked_remove_pkgs_list:
 					if item in self.lliurex_meta_pkgs:
 						self.blocked_remove_pkgs_list.append(pkg) 
 						break	
@@ -1565,8 +1580,8 @@ class EpiManager:
 		for flavour in self._flavours:
 			for element in skipped_flavours:
 				if element in flavour:
-					if pkg_id not in self.skipped_flavours:
-						self.skipped_flavours.append(pkg_id)
+					if pkg_id not in self.skipped_pkgs_flavours:
+						self.skipped_pkgs_flavours.append(pkg_id)
 					return True
 
 		return False
@@ -1604,8 +1619,8 @@ class EpiManager:
 						pkg_skipped=1
 					elif item["action"]=="remove":
 						pkg_skipped=2
-						if pkg_id not in self.skipped_pkgs:
-							self.skipped_pkgs.append(pkg_id)
+						if pkg_id not in self.skipped_pkgs_groups:
+							self.skipped_pkgs_groups.append(pkg_id)
 					break
 
 		return pkg_skipped
@@ -1630,7 +1645,7 @@ class EpiManager:
 		self.blocked_remove_skipped_pkgs_list=[]
 
 		for item in self.packages_selected:
-			if item in self.skipped_pkgs:
+			if item in self.skipped_pkgs_groups:
 				self.skipped_pkg_warning=True
 				if item not in self.blocked_remove_skipped_pkgs_list:
 					self.blocked_remove_skipped_pkgs_list.append(item)
@@ -1642,6 +1657,23 @@ class EpiManager:
 
 	#def check_remove_skip_pkg
 
+	def _clean_pkg_skipped_for_client(self,pkg_list):
+
+		tmp_list=[]
+
+		for pkg in pkg_list:
+			match=False
+			if len(pkg["skip_flavours"])>0:
+				for item in pkg["skip_flavours"]:
+					if 'client' in item:
+						match=True
+						break
+			if not match:
+				tmp_list.append(pkg)
+
+		return tmp_list
+
+	#def _clean_pkg_skipped_for_client
 
 #class EpiManager
 
