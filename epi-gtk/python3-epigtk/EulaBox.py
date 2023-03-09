@@ -101,10 +101,9 @@ class EulaBox(Gtk.VBox):
 		
 		if self.core.mainWindow.load_epi_conf[0]["selection_enabled"]["active"]:
 			for item in self.core.epiBox.epi_list_box.get_children():
-				for element in item.get_children():
-					if element.id == self.pkg_name:
-						item.get_children()[0].set_active(False)
-
+				if item.get_children()[0].get_children()[0].id==self.pkg_name:
+					item.get_children()[0].get_children()[0].set_active(False)
+	
 			self.core.mainWindow.eulas_toshow.pop(self.core.mainWindow.eula_order)
 			self.core.mainWindow.eula_order-=1
 			self.core.mainWindow.accept_eula()
