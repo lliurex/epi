@@ -1,3 +1,9 @@
+epi (0.3.36) bionic; urgency=medium
+
+  * Fixed management of EULAS
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 09 Mar 2023 12:35:52 +0100
+
 epi (0.3.35) bionic; urgency=medium
 
   * Fixed meta-package list
