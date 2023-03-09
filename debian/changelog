@@ -1,3 +1,9 @@
+epi (0.4.35) focal; urgency=medium
+
+  * Fixed management of EULAS.
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 09 Mar 2023 12:15:51 +0100
+
 epi (0.4.34) focal; urgency=medium
 
   * Fixed lis of meta-packages.
