@@ -900,7 +900,6 @@ class EPIC(object):
 
 		if not stop_uninstall:
 			self.skipped_remove_warning=self.epicore.check_remove_skip_pkg()
-			print("1:%s"%(str(self.skipped_remove_warning)))
 			if self.skipped_remove_warning:
 				count=1
 				for item in self.epicore.blocked_remove_skipped_pkgs_list:
