@@ -232,7 +232,6 @@ class EpiManager:
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
 					
-		
 		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
 		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
 	

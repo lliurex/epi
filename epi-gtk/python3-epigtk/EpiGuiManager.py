@@ -530,15 +530,19 @@ class EpiGuiManager:
 	def rejectEula(self):
 
 		pkgId=self.eulasToShow[self.eulaOrder]["pkg_name"]
+		self.eulasToCheck.pop(self.eulaOrder)
+		self.eulasToShow.pop(self.eulaOrder)
+		self.eulaOrder-=1
+
 		if self.selectPkg:
 			self._managePkgSelected(pkgId,False)
 			tmpParam={}
 			tmpParam["isChecked"]=False
 			self._updatePackagesModel(tmpParam,pkgId)
+
+			if len(self.eulasToCheck)==0 and len(self.epiManager.packages_selected)>0:
+				self.eulaAccepted=True
 		
-		self.eulasToCheck.pop(self.eulaOrder)
-		self.eulasToShow.pop(self.eulaOrder)
-		self.eulaOrder-=1
 		self._writeLog("Rejected EULA of: %s"%pkgId)
 
 	#def rejectEula

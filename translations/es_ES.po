@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-03-07 10:44+0100\n"
-"PO-Revision-Date: 2023-03-07 10:49+0100\n"
+"PO-Revision-Date: 2023-03-09 13:45+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -140,7 +140,7 @@ msgstr "Aceptar Eula"
 
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:255
 msgid "Uninstall process"
-msgstr "Proceso de desintalación"
+msgstr "Proceso de desinstalación"
 
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:256
 msgid "Do you want uninstall the application?"
@@ -284,7 +284,7 @@ msgstr "Información no disponibles"
 
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:392
 msgid "you do not have permissions to uninstall them"
-msgstr "no tiene permisos para desintalarlas"
+msgstr "no tiene permisos para desinstalarlas"
 
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:395
 msgid "you do not have permissions and meta-package protection"

@@ -762,6 +762,7 @@ class EpiGui(QObject):
 
 	def _manageEulas(self):
 
+		nextStep=False
 		if len(EpiGui.epiGuiManager.eulasToCheck)>0:
 			self.enableApplyBtn=True
 			self.enableRemoveBtn=True
@@ -773,6 +774,13 @@ class EpiGui(QObject):
 			self.currentPkgOption=0
 			self.currentEulaPkg=""
 			if EpiGui.epiGuiManager.eulaAccepted:
+				if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
+					nextStep=True
+				self._installProcess()
+			else:
+				nextStep=False
+
+			if nextStep:
 				self._installProcess()
 			else:
 				self.endProcess=True
