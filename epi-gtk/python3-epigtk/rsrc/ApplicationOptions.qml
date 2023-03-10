@@ -32,6 +32,9 @@ GridLayout{
                 Connections{
                     function onMenuOptionClicked(){
                         epiBridge.manageTransitions(0)
+                        if (epiBridge.currentPkgOption==2){
+                            epiBridge.showPkgInfo([1,""])
+                        }
                     }
                 }
             }

@@ -31,8 +31,8 @@ Rectangle{
             Image{
                 id:pkgIcon
                 source:epiBridge.pkgStoreInfo[0]
-                sourceSize.width:128
-                sourceSize.height:128
+                sourceSize.width:64
+                sourceSize.height:64
                 Layout.alignment:Qt.AlignVCenter
             }
             ColumnLayout{
@@ -75,12 +75,11 @@ Rectangle{
                    implicitWidth:parent.width
                    implicitHeight:parent.height
                    anchors.leftMargin:11
-                   ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
                    Text{
                        id:pkgDescriptionText
                        text:epiBridge.pkgStoreInfo[3]
                        font.family: "Quattrocento Sans"
-                       font.pointSize: 10
+                       font.pointSize: 11
                        horizontalAlignment:Text.AlignLeft
                        width:container.width
                        height:container.height

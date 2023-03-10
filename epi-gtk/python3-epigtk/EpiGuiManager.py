@@ -354,7 +354,6 @@ class EpiGuiManager:
 					else:
 						pkgIcon="%s%s"%(self.defaultIconPath,"package.png")
 			except Exception as e:
-				print("ERROR: %s"%str(e))
 				if status=="installed":
 					pkgIcon="%s%s"%(self.defaultIconPath,"package_install.png")
 				else:
@@ -1011,16 +1010,20 @@ class EpiGuiManager:
 
 	def getStoreInfo(self,pkgId):
 
-		pkgInfo=self.epiManager.get_store_info(pkgId)
+		self.epiManager.get_store_info(pkgId)
 		ret=[]
 		summary=self.epiManager.pkg_info[pkgId]["summary"]
 
-		if summary!="":
-			icon=self.epiManager.pkg_info[pkgId]["icon"]
-			if icon=="":
-				icon="%s%s"%(self.defaultIconPath,"package.png")
+		pkgIndex=0
 
-			name=self.epiManager.pkg_info[pkgId]["name"]
+		for item in self.info[0]["pkg_list"]:
+			if item["name"]==pkgId:
+				break
+			pkgIndex+=1
+
+		if summary!="":
+			icon=self._getPkgIcon(0,pkgIndex,'available')
+			name=pkgId
 			tmpDescription=self.epiManager.pkg_info[pkgId]["description"]
 
 			h=html2text.HTML2Text()
@@ -1029,7 +1032,9 @@ class EpiGuiManager:
 			description=description.replace("&lt;", "<")
 			description=description.replace("&gt;", ">")
 			description=description.replace("&amp;", "&")
-			description=description.replace("***","\n- ")
+			description=description.replace(" * ","\n- ")
+			description=description.replace("**","")
+			description=description.strip()
 
 			ret.append(icon)
 			ret.append(name)
