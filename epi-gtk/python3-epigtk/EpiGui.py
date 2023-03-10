@@ -776,7 +776,6 @@ class EpiGui(QObject):
 			if EpiGui.epiGuiManager.eulaAccepted:
 				if len(EpiGui.epiGuiManager.epiManager.packages_selected)>0:
 					nextStep=True
-				self._installProcess()
 			else:
 				nextStep=False
 
