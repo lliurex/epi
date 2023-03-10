@@ -12,6 +12,7 @@ import tempfile
 import html2text
 import pwd
 import grp
+import time
 
 
 class EpiGuiManager:
@@ -119,20 +120,24 @@ class EpiGuiManager:
 
 	def _loadEpiFile(self):
 
-		epiLoaded=self.epiManager.epiFiles
-		order=len(epiLoaded)
+		self.loadEpiConf=self.epiManager.epiFiles
+		self.order=len(self.loadEpiConf)
+		self._endGetEpiContent=False
+		self._endGetInitialStatus=False
+
 		ret=[True,"","",""]
 
-		if order>0:
-			checkRoot=self.epiManager.check_root()
+		if self.order>0:
 			self.epiManager.get_pkg_info()
+			self._launchLoadThreads()
+			checkRoot=self.epiManager.check_root()
 			requiredRoot=self.epiManager.required_root()
 			self.requiredEula=self.epiManager.required_eula()
 			
 			if len(self.requiredEula)>0:
 				self.eulaAccepted=False
 			if checkRoot:
-				if not self.noCheck:	
+				if not self.noCheck:
 					self.checkLockInfo()
 				self._writeLog("Locks info: "+ str(self.lockInfo))
 			else:
@@ -141,13 +146,10 @@ class EpiGuiManager:
 			testInstall=self.epiManager.test_install()
 			self.loadEpiConf=self.epiManager.epiFiles
 			self.order=len(self.loadEpiConf)
-		else:
-			self.loadEpiConf=epiLoaded
-			self.order=order
+	
+		while not self._endGetEpiContent and not self._endGetInitialStatus:
+			time.sleep(0.1)
 
-		self._getEpiContent()
-		self._getInitialStatus()
-		
 		if requiredRoot:
 			ret=[False,EpiGuiManager.ERROR_USER_NO_ROOT,'End',""]
 		elif len(self.lockInfo)>0:
@@ -162,6 +164,17 @@ class EpiGuiManager:
 		return ret
 
 	#def _loadEpiFile
+
+	def _launchLoadThreads(self):
+
+		self._getEpiContent_t=threading.Thread(target=self._getEpiContent)
+		self._getEpiContent_t.daemon=True
+		self._getEpiContent_t.start()
+		self._getInitialStatus_t=threading.Thread(target=self._getInitialStatus)
+		self._getInitialStatus_t.daemon=True
+		self._getInitialStatus_t.start()
+
+	#def _launchLoadThreads
 
 	def checkLockInfo(self):
 
@@ -334,6 +347,8 @@ class EpiGuiManager:
 				if len(self.epiManager.skipped_pkgs_groups)==self.totalPackages:
 					self.showRemoveBtn=False
 		
+		self._endGetEpiContent=True
+	
 	#def _getEpiContent
 
 	def _getPkgIcon(self,order,pkgIndex,status):
@@ -379,6 +394,8 @@ class EpiGuiManager:
 					self.initialStatusCode=[EpiGuiManager.INFO_ZMD_NOT_EXECUTED,"Warning"]
 				elif zmdConfigured==-1:
 					self.initialStatusCode=[EpiGuiManager.INFO_EPI_FAILED,"Warning"]
+
+		self._endGetInitialStatus=True
 
 	#def _getInitialStatus
 

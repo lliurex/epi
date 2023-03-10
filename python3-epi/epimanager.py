@@ -204,6 +204,8 @@ class EpiManager:
 			script=self.check_getStatus_byScript(item)
 			info=self.get_basic_info(pkg_list,item,type_epi,script)
 			cont=0
+			if item==0:
+				self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
 
 			for element in pkg_list:
 				name=element["name"]
@@ -227,8 +229,6 @@ class EpiManager:
 				if item==0:
 					if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
 						self.partial_installed=True
-					self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
-
 				self.epiFiles[item]["status"]="availabled"
 				self.pkg_info.update(info)
 					
