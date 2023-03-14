@@ -75,6 +75,7 @@ class EpiGuiManager:
 		self.secondConnection=False
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
+		self.totalUninstallError=0
 		self.clearCache()
 
 	#def __init__
@@ -237,6 +238,7 @@ class EpiGuiManager:
 		self.uncheckAll=False
 		self.showRemoveBtn=False
 		self.pkgsInstalled=[]
+		self.pkgSelectedFromList=[]
 		defaultChecked=False
 		self.wikiUrl=""
 
@@ -458,9 +460,15 @@ class EpiGuiManager:
 		if active:
 			if pkgId not in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.append(pkgId)
+			if self.selectPkg:
+				if pkgId not in self.pkgSelectedFromList:
+					self.pkgSelectedFromList.append(pkgId)
 		else:
 			if pkgId in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.remove(pkgId)
+			if self.selectPkg:
+				if pkgId in self.pkgSelectedFromList:
+					self.pkgSelectedFromList.remove(pkgId)
 
 
 	#def _managePkgSelected
@@ -634,6 +642,18 @@ class EpiGuiManager:
 		self.addRepositoryKeysDone=False
 		self.updateKeyRingLaunched=False
 		self.updateKeyRingDone=False
+		self.checkArquitectureLaunched=False
+		self.checkArquitectureDone=False
+		self.updateReposLaunched=False
+		self.updateReposDone=False
+
+		if self.order>0:
+			self.order=self.order-1
+
+	#def initInstallProcess
+
+	def initPkgInstallProcess(self,pkgId):
+
 		self.downloadAppLaunched=False
 		self.downloadAppDone=False
 		self.checkDownloadLaunched=False
@@ -642,10 +662,6 @@ class EpiGuiManager:
 		self.preInstallAppDone=False
 		self.checkPreInstallLaunched=False
 		self.checkPreInstallDone=False
-		self.checkArquitectureLaunched=False
-		self.checkArquitectureDone=False
-		self.updateReposLaunched=False
-		self.updateReposDone=False
 		self.installAppLaunched=False
 		self.installAppDone=False
 		self.checkInstallLaunched=False
@@ -654,12 +670,10 @@ class EpiGuiManager:
 		self.postInstallAppDone=False
 		self.checkPostInstallLaunched=False
 		self.checkPostInstallDone=False
-		if self.order>0:
-			self.order=self.order-1
 
-		self._initProcessValues(self.order,"install")
+		self._initProcessValues(self.order,"install",pkgId)
 
-	#def initInstallProcess
+	#def initPkgInstallProcess
 
 	def getAddRepositoryCommand(self):
 
@@ -689,9 +703,9 @@ class EpiGuiManager:
 
 	#def getUpdateKeyringCommand
 
-	def getDownloadAppCommand(self):
+	def getDownloadAppCommand(self,pkgId):
 
-		command=self.epiManager.download_app()
+		command=self.epiManager.download_app(pkgId)
 		length=len(command)
 
 		if length>0:
@@ -703,26 +717,25 @@ class EpiGuiManager:
 
 	#def getDownloadAppCommand
 
-	def checkDownload(self):
+	def checkDownload(self,pkgId):
 
 		self.feedBackCheck=[True,"",""]
-		downloadRet=self.epiManager.check_download()
+		downloadRet=self.epiManager.check_download(pkgId)
 
 		if not downloadRet:
 			msgCode=EpiGuiManager.ERROR_INSTALL_DOWNLOAD
 			typeMsg="Error"
-			self._updateProcessModelInfo(self.order,'install',False,None)
-			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self._updateProcessModelInfo(self.order,pkgId,'install',False,None)
 			self.feedBackCheck=[downloadRet,msgCode,typeMsg]
-			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
 		self.checkDownloadDone=True
 
 	#def checkDownloadApp
 
-	def getPreInstallCommand(self):
+	def getPreInstallCommand(self,pkgId):
 
-		command=self.epiManager.preinstall_app()
+		command=self.epiManager.preinstall_app(pkgId)
 		length=len(command)
 
 		if length>0:
@@ -734,18 +747,18 @@ class EpiGuiManager:
 
 	#def getPreInstallCommand
 
-	def checkPreInstall(self):
+	def checkPreInstall(self,pkgId):
 
 		self.feedBackCheck=[True,"",""]
-		preInstallRet=self.epiManager.check_preinstall()
+		preInstallRet=self.epiManager.check_preinstall(pkgId)
 		
 		if not preInstallRet:
 			msgCode=EpiGuiManager.ERROR_INSTALL_INIT
 			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,'install',False,None)
-			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
 			self.feedBackCheck=[preInstallRet,msgCode,typeMsg]
-			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
 		self.checkPreInstallDone=True
 
@@ -779,9 +792,9 @@ class EpiGuiManager:
 
 	#def getUpdateReposCommand
 
-	def getInstallCommand(self):
+	def getInstallCommand(self,pkgId):
 
-		command=self.epiManager.install_app("gui")
+		command=self.epiManager.install_app("gui",pkgId)
 		length=len(command)
 
 		if length>0:
@@ -793,26 +806,26 @@ class EpiGuiManager:
 
 	#def getInstallCommand
 
-	def checkInstall(self):
+	def checkInstall(self,pkgId):
 
 		self.feedBackCheck=[True,"",""]
-		self.dpkgStatus,self.installed=self.epiManager.check_install_remove("install")
+		self.dpkgStatus,self.installed=self.epiManager.check_install_remove("install",pkgId)
 
 		if not self.installed:
-			self._updateProcessModelInfo(self.order,'install',self.installed,self.dpkgStatus)
+			self._updateProcessModelInfo(self.order,pkgId,'install',self.installed,self.dpkgStatus)
 			msgCode=EpiGuiManager.ERROR_INSTALL_INSTALL
 			typeMsg="Error"
-			self.epiManager.zerocenter_feedback(self.order,"install",False)
+			#self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
 			self.feedBackCheck=[self.installed,msgCode,typeMsg]
-			self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 	
 		self.checkInstallDone=True
 
 	#def checkInstall
 
-	def getPostInstallCommand(self):
+	def getPostInstallCommand(self,pkgId):
 
-		command=self.epiManager.postinstall_app()
+		command=self.epiManager.postinstall_app(pkgId)
 		length=len(command)
 
 		if length>0:
@@ -824,44 +837,44 @@ class EpiGuiManager:
 
 	#def getPostInstallCommand
 
-	def checkPostInstall(self):
+	def checkPostInstall(self,pkgId):
 
 		self.feedBackCheck=[True,"",""]
-		postInstallRet=self.epiManager.check_postinstall()
+		postInstallRet=self.epiManager.check_postinstall(pkgId)
 		
-		self._updateProcessModelInfo(self.order,"install",self.installed,self.dpkgStatus)
+		if self.installed:
+			self._updateProcessModelInfo(self.order,pkgId,"install",self.installed,self.dpkgStatus)
 
-		if not postInstallRet:
-			msgCode=EpiGuiManager.ERROR_INSTALL_ENDING
-			typeMsg="Error"
-			self.epiManager.zerocenter_feedback(self.order,"install",False)
-	
-		else:
-			msgCode=EpiGuiManager.SUCCESS_INSTALL_PROCESS
-			typeMsg="Ok"
-			self.epiManager.zerocenter_feedback(self.order,"install",True)
+			if not postInstallRet:
+				msgCode=EpiGuiManager.ERROR_INSTALL_ENDING
+				typeMsg="Error"
+				#self.epiManager.zerocenter_feedback(self.order,"install",False)
+		
+			else:
+				msgCode=EpiGuiManager.SUCCESS_INSTALL_PROCESS
+				typeMsg="Ok"
+				#self.epiManager.zerocenter_feedback(self.order,"install",True)
 
-		self.feedBackCheck=[postInstallRet,msgCode,typeMsg]
-		self._writeLog("Install process. Result: %s - Code:%s"%(typeMsg,msgCode))
+			self.feedBackCheck=[postInstallRet,msgCode,typeMsg]
+			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
-		self.checkPostInstallDone=True
+			self.checkPostInstallDone=True
 
 	#def checkPostInstall
 
-	def initUnInstallProcess(self):
+	def initUnInstallProcess(self,pkgId):
 
 		self.removePkgLaunched=False
 		self.removePkgDone=False
 		self.checkRemoveLaunched=False
 		self.checkRemoveDone=False
-		self._initProcessValues(0,"uninstall")
-
+		self._initProcessValues(0,"uninstall",pkgId)
 		
 	#def initUnInstallProcess
 
-	def getUninstallCommand(self):
+	def getUninstallCommand(self,pkgId):
 
-		command=self.epiManager.uninstall_app(0)
+		command=self.epiManager.uninstall_app(0,pkgId)
 		length=len(command)
 
 		if length>0:
@@ -906,14 +919,14 @@ class EpiGuiManager:
 
 	#def _createProcessToken
 
-	def checkRemove(self):
+	def checkRemove(self,pkgId):
 
 		self.remove=["","",""]
 
-		dpkgStatus,remove=self.epiManager.check_install_remove("uninstall")
-		self._updateProcessModelInfo(0,'uninstall',remove,dpkgStatus)
+		dpkgStatus,remove=self.epiManager.check_install_remove("uninstall",pkgId)
+		self._updateProcessModelInfo(0,pkgId,'uninstall',remove,dpkgStatus)
 		self.checkRemoveDone=True
-
+		
 		if remove:
 			if len(self.epiManager.blocked_remove_pkgs_list)>0:
 				if len(self.epiManager.blocked_remove_skipped_pkgs_list)==0:
@@ -928,99 +941,106 @@ class EpiGuiManager:
 				msgCode=EpiGuiManager.SUCCESS_UNINSTALL_PROCESS
 				typeMsg="Ok"
 
-			self.epiManager.zerocenter_feedback(0,"uninstall",True)
-
 		else:
-			msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
-			typeMsg="Error"
-			self.epiManager.zerocenter_feedback(0,"uninstall",False)
+			if pkgId not in self.epiManager.blocked_remove_skipped_pkgs_list or pkgId not in  self.epiManager.blocked_remove_skipped_pkgs_list:
+				self.totalUninstallError+=1
+				msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
+				typeMsg="Error"
 
 		self.remove=[remove,msgCode,typeMsg]
-		self._writeLog("Uninstall process. Result: %s - Code:%s"%(typeMsg,msgCode))
+		self._writeLog("Uninstall process. Result: PkgId:%s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
 	#def checkRemove
 
-	def _updateProcessModelInfo(self,order,action,result,dpkgStatus=None):
+	def _updateProcessModelInfo(self,order,pkgId,action,result,dpkgStatus=None):
 
 		pkgIndex=0
 		
 		for element in self.info[order]["pkg_list"]:
-			if element["name"] in self.epiManager.packages_selected:
-				tmpParam={}
-				if result:
-					if action=="install":
-						tmpParam["status"]='installed'
-						if order==0:
-							if element["name"] not in self.pkgsInstalled:
-								self.pkgsInstalled.append(element["name"])
-							tmpParam["resultProcess"]=0
-
-					elif action=="uninstall":
-						if element["name"] in self.epiManager.blocked_remove_pkgs_list or element["name"] in self.epiManager.blocked_remove_skipped_pkgs_list:
-							tmpParam["resultProcess"]=1
-							tmpParam['status']='installed'
-						else:
-							tmpParam["resultProcess"]=0
-							tmpParam["status"]='available'
-
-						if order==0:
-							if element["name"] in self.pkgsInstalled:
-								self.pkgsInstalled.remove(element["name"])
-				else:
-					if dpkgStatus !=None and len(dpkgStatus)>0:
+			if pkgId!=None and element["name"]!=pkgId:
+				pass
+			else:
+				if element["name"] in self.epiManager.packages_selected:
+					tmpParam={}
+					if result:
 						if action=="install":
-							if dpkgStatus[element["name"]]=='installed':
-								tmpParam["status"]='installed'
-								tmpParam["resultProcess"]=0
-								if order==0:
-									if element["name"] not in self.pkgsInstalled:
-										self.pkgsInstalled.append(element["name"])
-							else:
-								tmpParam["status"]='available'
-								tmpParam["resultProcess"]=1
-						elif action=='unistall':
-							if dpkgStatus[element["name"]]!='installed':
-								tmpParam['status']='available'
-								tmpParam["resultProcess"]=0
-								if order==0:
-									if element["name"] in self.pkgsInstalled:
-										self.pkgsInstalled.remove(element["name"])
-							else:
-								tmpParam["status"]='installed'
-								tmpParam["resultProcess"]=1
-					else:
-						if element["name"] in self.pkgsInstalled:
 							tmpParam["status"]='installed'
+							if order==0:
+								if element["name"] not in self.pkgsInstalled:
+									self.pkgsInstalled.append(element["name"])
+								tmpParam["resultProcess"]=0
+
+						elif action=="uninstall":
+							if element["name"] in self.epiManager.blocked_remove_pkgs_list or element["name"] in self.epiManager.blocked_remove_skipped_pkgs_list:
+								tmpParam["resultProcess"]=1
+								tmpParam['status']='installed'
+							else:
+								tmpParam["resultProcess"]=0
+								tmpParam["status"]='available'
+
+							if order==0:
+								if element["name"] in self.pkgsInstalled:
+									self.pkgsInstalled.remove(element["name"])
+					else:
+						if dpkgStatus !=None and len(dpkgStatus)>0:
+							if action=="install":
+								if dpkgStatus[element["name"]]=='installed':
+									tmpParam["status"]='installed'
+									tmpParam["resultProcess"]=0
+									if order==0:
+										if element["name"] not in self.pkgsInstalled:
+											self.pkgsInstalled.append(element["name"])
+								else:
+									tmpParam["status"]='available'
+									tmpParam["resultProcess"]=1
+							elif action=='uninstall':
+								if dpkgStatus[element["name"]]!='installed':
+									tmpParam['status']='available'
+									tmpParam["resultProcess"]=0
+									if order==0:
+										if element["name"] in self.pkgsInstalled:
+											self.pkgsInstalled.remove(element["name"])
+								else:
+									tmpParam["status"]='installed'
+									tmpParam["resultProcess"]=1
 						else:
-							tmpParam["status"]='availabled'
+							if element["name"] in self.pkgsInstalled:
+								tmpParam["status"]='installed'
+							else:
+								tmpParam["status"]='availabled'
 
-						tmpParam["resultProcess"]=1
+							tmpParam["resultProcess"]=1
 
-				tmpParam["pkgIcon"]=self._getPkgIcon(order,pkgIndex,tmpParam["status"])
-				tmpParam["showSpinner"]=False
-				self._updatePackagesModel(tmpParam,element["name"])
-			
+					tmpParam["pkgIcon"]=self._getPkgIcon(order,pkgIndex,tmpParam["status"])
+					tmpParam["showSpinner"]=False
+					self._updatePackagesModel(tmpParam,element["name"])
+
 			pkgIndex+=1	
 	
 	#def _updateProcessModelInfo
 
-	def _initProcessValues(self,order,action):
+	def _initProcessValues(self,order,action,pkgId):
 
 		for item in self.packagesData:
 			if item["order"]==order:
 				tmpParam={}
-				tmpParam["resultProcess"]=-1
-				if item["pkgId"] in self.epiManager.packages_selected:
-					if action=="install":
-						tmpParam["showSpinner"]=True
-						if order>0:
-							tmpParam["isVisible"]=True
-					else:
-						if order==0:
-							if item["pkgId"] not in self.epiManager.blocked_remove_pkgs_list and item["pkgId"] not in self.epiManager.blocked_remove_skipped_pkgs_list:
-								tmpParam["showSpinner"]=True
+				if order==1:
+					tmpParam["resultProcess"]=-1
+				if pkgId!=None and item["pkgId"]!=pkgId:
+					pass
+				else:
+					if item["pkgId"] in self.epiManager.packages_selected:
+						if action=="install":
+							tmpParam["showSpinner"]=True
+							if order>0:
+								tmpParam["isVisible"]=True
+						else:
+							if order==0:
 
-				self._updatePackagesModel(tmpParam,item["pkgId"])
+								if item["pkgId"] not in self.epiManager.blocked_remove_pkgs_list and item["pkgId"] not in self.epiManager.blocked_remove_skipped_pkgs_list:
+									tmpParam["showSpinner"]=True
+
+					self._updatePackagesModel(tmpParam,item["pkgId"])
 
 
 	#def _initProcessValues

@@ -814,23 +814,39 @@ class EpiGui(QObject):
 		self.enableApplyBtn=False
 		self.enableRemoveBtn=False
 		self.enableKonsole=True
+		self.totalError=0
 		self.launchedProcess="install"
-		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
-		EpiGui.epiGuiManager.initInstallProcess()
-		self._updateResultPackagesModel('start',"install")
-		if EpiGui.epiGuiManager.order>0:
-			self.showDependEpi=True
-			self.showDependLabel=True
-		self.isProcessRunning=True
+		self._initInstallProcess()
 		self.installProcessTimer=QTimer(None)
 		self.installProcessTimer.timeout.connect(self._installProcessTimerRet)
 		self.installProcessTimer.start(100)		
 
 	#def _installProcess
 
-	def _installProcessTimerRet(self):
+	def _initInstallProcess(self):
 
-		error=False
+		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
+		EpiGui.epiGuiManager.initInstallProcess()
+		if EpiGui.epiGuiManager.order>0:
+			self.showDependEpi=True
+			self.showDependLabel=True
+		self.isProcessRunning=True
+		self.error=False
+		self.showError=False
+		self.endAction=False
+		self.pkgProcessed=False
+		countLimit=len(EpiGui.epiGuiManager.pkgSelectedFromList)
+		if countLimit==0:
+			self.countLimit=1
+		else:
+			self.countLimit=countLimit
+
+		self.pkgToSelect=-1
+		self.pkgToProcess=""
+
+	#def _initInstallProcess
+
+	def _installProcessTimerRet(self):
 
 		if not EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			EpiGui.epiGuiManager.addRepositoryKeysLaunched=True
@@ -844,109 +860,157 @@ class EpiGui(QObject):
 				self.endCurrentCommand=True
 
 			if EpiGui.epiGuiManager.updateKeyRingDone:
-				if not EpiGui.epiGuiManager.downloadAppLaunched:
-					self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_DOWNLOAD
-					EpiGui.epiGuiManager.downloadAppLaunched=True
-					self.currentCommand=EpiGui.epiGuiManager.getDownloadAppCommand()
+				if not EpiGui.epiGuiManager.checkArquitectureLaunched:
+					self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_ARQUITECTURE
+					EpiGui.epiGuiManager.checkArquitectureLaunched=True
+					self.currentCommand=EpiGui.epiGuiManager.getCheckArquitectureCommand()
 					self.endCurrentCommand=True
 
-				if EpiGui.epiGuiManager.downloadAppDone:
-					if not EpiGui.epiGuiManager.checkDownloadLaunched:
-						EpiGui.epiGuiManager.checkDownloadLaunched=True
-						EpiGui.epiGuiManager.checkDownload()
+				if EpiGui.epiGuiManager.checkArquitectureDone:
+					if not EpiGui.epiGuiManager.updateReposLaunched:
+						self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_REPOSITORIES
+						EpiGui.epiGuiManager.updateReposLaunched=True
+						self.currentCommand=EpiGui.epiGuiManager.getUpdateReposCommand()
+						self.endCurrentCommand=True
 
-					if EpiGui.epiGuiManager.checkDownloadDone:
-						if EpiGui.epiGuiManager.feedBackCheck[0]:
-							if not EpiGui.epiGuiManager.preInstallAppLaunched:
-								self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_PREINSTALL
-								EpiGui.epiGuiManager.preInstallAppLaunched=True
-								self.currentCommand=EpiGui.epiGuiManager.getPreInstallCommand()
-								self.endCurrentCommand=True
+					if EpiGui.epiGuiManager.updateReposDone:
+						if not self.pkgProcessed:
+							if EpiGui.epiGuiManager.order!=0:
+								if self.error:
+									self.endAction=True
+								else:
+									self.error=False
+							
+							if not self.endAction:
+								self.pkgToSelect+=1
+								if self.pkgToSelect<self.countLimit:
+									try:
+										self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+									except:
+										self.pkgToProcess=None
 
-							if EpiGui.epiGuiManager.preInstallAppDone:
-								if not EpiGui.epiGuiManager.checkPreInstallLaunched:
-									EpiGui.epiGuiManager.checkPreInstallLaunched=True
-									EpiGui.epiGuiManager.checkPreInstall()
+									EpiGui.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
+									self._updateResultPackagesModel('start',"install")
+									if not EpiGui.epiGuiManager.downloadAppLaunched:
+										self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_DOWNLOAD
+										EpiGui.epiGuiManager.downloadAppLaunched=True
+										self.currentCommand=EpiGui.epiGuiManager.getDownloadAppCommand(self.pkgToProcess)
+										self.endCurrentCommand=True
 
-								if EpiGui.epiGuiManager.checkPreInstallDone:
+								else:
+									self.endAction=True
+
+							self.pkgProcessed=True
+
+						if not self.endAction:
+							if EpiGui.epiGuiManager.downloadAppDone:
+								if not EpiGui.epiGuiManager.checkDownloadLaunched:
+									EpiGui.epiGuiManager.checkDownloadLaunched=True
+									EpiGui.epiGuiManager.checkDownload(self.pkgToProcess)
+
+								if EpiGui.epiGuiManager.checkDownloadDone:
 									if EpiGui.epiGuiManager.feedBackCheck[0]:
-										if not EpiGui.epiGuiManager.checkArquitectureLaunched:
-											self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_ARQUITECTURE
-											EpiGui.epiGuiManager.checkArquitectureLaunched=True
-											self.currentCommand=EpiGui.epiGuiManager.getCheckArquitectureCommand()
-											self.endCurrentCommand=True		
+										if not EpiGui.epiGuiManager.preInstallAppLaunched:
+											self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_PREINSTALL
+											EpiGui.epiGuiManager.preInstallAppLaunched=True
+											self.currentCommand=EpiGui.epiGuiManager.getPreInstallCommand(self.pkgToProcess)
+											self.endCurrentCommand=True
 
-										if EpiGui.epiGuiManager.checkArquitectureDone:
-											if not EpiGui.epiGuiManager.updateReposLaunched:
-												self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_REPOSITORIES
-												EpiGui.epiGuiManager.updateReposLaunched=True
-												self.currentCommand=EpiGui.epiGuiManager.getUpdateReposCommand()
-												self.endCurrentCommand=True
+										if EpiGui.epiGuiManager.preInstallAppDone:
+											if not EpiGui.epiGuiManager.checkPreInstallLaunched:
+												EpiGui.epiGuiManager.checkPreInstallLaunched=True
+												EpiGui.epiGuiManager.checkPreInstall(self.pkgToProcess)
 
-											if EpiGui.epiGuiManager.updateReposDone:
-												if not EpiGui.epiGuiManager.installAppLaunched:
-													self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_INSTALL
-													EpiGui.epiGuiManager.installAppLaunched=True
-													self.currentCommand=EpiGui.epiGuiManager.getInstallCommand()
-													self.endCurrentCommand=True
+											if EpiGui.epiGuiManager.checkPreInstallDone:
+												if EpiGui.epiGuiManager.feedBackCheck[0]:
+													if not EpiGui.epiGuiManager.installAppLaunched:
+														self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_INSTALL
+														EpiGui.epiGuiManager.installAppLaunched=True
+														self.currentCommand=EpiGui.epiGuiManager.getInstallCommand(self.pkgToProcess)
+														self.endCurrentCommand=True
 
-												if EpiGui.epiGuiManager.installAppDone:
-													if not EpiGui.epiGuiManager.checkInstallLaunched:
-														EpiGui.epiGuiManager.checkInstallLaunched=True
-														EpiGui.epiGuiManager.checkInstall()
+													if EpiGui.epiGuiManager.installAppDone:
+														if not EpiGui.epiGuiManager.checkInstallLaunched:
+															EpiGui.epiGuiManager.checkInstallLaunched=True
+															EpiGui.epiGuiManager.checkInstall(self.pkgToProcess)
 
-													if EpiGui.epiGuiManager.checkInstallDone:
-														if EpiGui.epiGuiManager.feedBackCheck[0]:
-															if not EpiGui.epiGuiManager.postInstallAppLaunched:
-																self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_ENDING
-																EpiGui.epiGuiManager.postInstallAppLaunched=True
-																self.currentCommand=EpiGui.epiGuiManager.getPostInstallCommand()
-																self.endCurrentCommand=True
+														if EpiGui.epiGuiManager.checkInstallDone:
+															if EpiGui.epiGuiManager.feedBackCheck[0]:
+																if not EpiGui.epiGuiManager.postInstallAppLaunched:
+																	self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_ENDING
+																	EpiGui.epiGuiManager.postInstallAppLaunched=True
+																	self.currentCommand=EpiGui.epiGuiManager.getPostInstallCommand(self.pkgToProcess)
+																	self.endCurrentCommand=True
+																if EpiGui.epiGuiManager.postInstallAppDone:
+																	if not EpiGui.epiGuiManager.checkPostInstallLaunched:
+																		EpiGui.epiGuiManager.checkPostInstallLaunched=True
+																		EpiGui.epiGuiManager.checkPostInstall(self.pkgToProcess)
+																	if EpiGui.epiGuiManager.checkPostInstallDone:
+																		self._updateResultPackagesModel('end',"install")
 
-															if EpiGui.epiGuiManager.postInstallAppDone:
-																if not EpiGui.epiGuiManager.checkPostInstallLaunched:
-																	EpiGui.epiGuiManager.checkPostInstallLaunched=True
-																	EpiGui.epiGuiManager.checkPostInstall()
-
-																if EpiGui.epiGuiManager.checkPostInstallDone:
-																	if EpiGui.epiGuiManager.feedBackCheck[0]:
-																		self.showDependEpi=False
-																		if EpiGui.epiGuiManager.order>0:
-																			EpiGui.epiGuiManager.initInstallProcess()
-																			self._updateResultPackagesModel('end',"install")
+																		if EpiGui.epiGuiManager.feedBackCheck[0]:
+																			self.showDependEpi=False
+																			if EpiGui.epiGuiManager.order>0:
+																				self._initInstallProcess()
+																			else:
+																				self.pkgProcessed=False
+																			
 																		else:
-																			self.feedbackCode=""
-																			self.endProcess=True
-																			self.isProcessRunning=False
-																			self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
-																			self.installProcessTimer.stop()
+																			self.error=True
+																			self.pkgProcessed=False
 																			self._updateResultPackagesModel('end',"install")
-																			self._manageRemoveBtn(True)
-																			self.enableApplyBtn=True
-																			self.enablePkgList=True
-																			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
-																			EpiGui.epiGuiManager.clearEnvironment()
-
-																	else:
-																		error=True
-														else:
-															error=True
+																			if EpiGui.epiGuiManager.order==0:
+																				self.totalError+=1
+															else:
+																self.error=True
+																self.pkgProcessed=False
+																self._updateResultPackagesModel('end',"install")
+																if EpiGui.epiGuiManager.order==0:
+																	self.totalError+=1
+												else:
+													self.error=True
+													self.pkgProcessed=False
+													self._updateResultPackagesModel('end',"install")
+													if EpiGui.epiGuiManager.order==0:
+														self.totalError+=1
 									else:
-										error=True
-						else:
-							error=True
+										self.error=True
+										self.pkgProcessed=False
+										self._updateResultPackagesModel('end',"install")
+										if EpiGui.epiGuiManager.order==0:
+											self.totalError+=1
 
-		if error:
-			self.endProcess=True
-			self.feedbackCode=""
-			self.isProcessRunning=False
-			self.showDependEpi=False
-			self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
-			self.installProcessTimer.stop()
-			self._updateResultPackagesModel("end","install")
-			self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
-			EpiGui.epiGuiManager.clearEnvironment()
-		
+		if self.endAction:
+			if EpiGui.epiGuiManager.order>0:
+				if self.error:
+					self.showError=True
+			else:
+				if self.totalError>0:
+					self.showError=True
+
+			if self.showError:
+				self.endProcess=True
+				self.feedbackCode=""
+				self.isProcessRunning=False
+				self.showDependEpi=False
+				self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
+				self.installProcessTimer.stop()
+				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(EpiGui.epiGuiManager.order,"install",False)
+				self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
+				EpiGui.epiGuiManager.clearEnvironment()
+			else:
+				self.feedbackCode=""
+				self.endProcess=True
+				self.isProcessRunning=False
+				self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
+				self.installProcessTimer.stop()
+				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(EpiGui.epiGuiManager.order,"install",True)
+				self._manageRemoveBtn(True)
+				self.enableApplyBtn=True
+				self.enablePkgList=True
+				self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
+				EpiGui.epiGuiManager.clearEnvironment()
+
 		if EpiGui.epiGuiManager.addRepositoryKeysLaunched:
 			if not EpiGui.epiGuiManager.addRepositoryKeysDone:
 				if not os.path.exists(EpiGui.epiGuiManager.tokenKeys[1]):
@@ -957,16 +1021,6 @@ class EpiGui(QObject):
 				if not os.path.exists(EpiGui.epiGuiManager.tokenKeyring[1]):
 					EpiGui.epiGuiManager.updateKeyRingDone=True
 
-		if EpiGui.epiGuiManager.downloadAppLaunched:
-			if not EpiGui.epiGuiManager.downloadAppDone:
-				if not os.path.exists(EpiGui.epiGuiManager.tokenDownload[1]):
-					EpiGui.epiGuiManager.downloadAppDone=True
-
-		if EpiGui.epiGuiManager.preInstallAppLaunched:
-			if not EpiGui.epiGuiManager.preInstallAppDone:
-				if not os.path.exists(EpiGui.epiGuiManager.tokenPreInstall[1]):
-					EpiGui.epiGuiManager.preInstallAppDone=True
-	
 		if EpiGui.epiGuiManager.checkArquitectureLaunched:
 			if not EpiGui.epiGuiManager.checkArquitectureDone:
 				if not os.path.exists(EpiGui.epiGuiManager.tokenArquitecture[1]):
@@ -977,15 +1031,26 @@ class EpiGui(QObject):
 				if not os.path.exists(EpiGui.epiGuiManager.tokenUpdaterepos[1]):
 					EpiGui.epiGuiManager.updateReposDone=True
 
-		if EpiGui.epiGuiManager.installAppLaunched:
-			if not EpiGui.epiGuiManager.installAppDone:
-				if not os.path.exists(EpiGui.epiGuiManager.tokenInstall[1]):
-					EpiGui.epiGuiManager.installAppDone=True
+		if self.pkgProcessed:
+			if EpiGui.epiGuiManager.downloadAppLaunched:
+				if not EpiGui.epiGuiManager.downloadAppDone:
+					if not os.path.exists(EpiGui.epiGuiManager.tokenDownload[1]):
+						EpiGui.epiGuiManager.downloadAppDone=True
 
-		if EpiGui.epiGuiManager.postInstallAppLaunched:
-			if not EpiGui.epiGuiManager.postInstallAppDone:
-				if not os.path.exists(EpiGui.epiGuiManager.tokenPostInstall[1]):
-					EpiGui.epiGuiManager.postInstallAppDone=True
+			if EpiGui.epiGuiManager.preInstallAppLaunched:
+				if not EpiGui.epiGuiManager.preInstallAppDone:
+					if not os.path.exists(EpiGui.epiGuiManager.tokenPreInstall[1]):
+						EpiGui.epiGuiManager.preInstallAppDone=True
+
+			if EpiGui.epiGuiManager.installAppLaunched:
+				if not EpiGui.epiGuiManager.installAppDone:
+					if not os.path.exists(EpiGui.epiGuiManager.tokenInstall[1]):
+						EpiGui.epiGuiManager.installAppDone=True
+
+			if EpiGui.epiGuiManager.postInstallAppLaunched:
+				if not EpiGui.epiGuiManager.postInstallAppDone:
+					if not os.path.exists(EpiGui.epiGuiManager.tokenPostInstall[1]):
+						EpiGui.epiGuiManager.postInstallAppDone=True
 	
 	#def _installProcessTimerRet
 
@@ -1017,8 +1082,17 @@ class EpiGui(QObject):
 			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
 			self.isProcessRunning=True
 			self.launchedProcess="uninstall"
-			EpiGui.epiGuiManager.initUnInstallProcess()
-			self._updateResultPackagesModel('start',"uninstall")
+			EpiGui.epiGuiManager.totalUninstallError=0
+			self.endAction=False
+			self.pkgProcessed=False
+			countLimit=len(EpiGui.epiGuiManager.epiManager.packages_selected)
+			if countLimit==0:
+				self.countLimit=1
+			else:
+				self.countLimit=countLimit
+
+			self.pkgToSelect=-1
+			self.pkgToProcess=""
 			self.uninstallProcessTimer=QTimer(None)
 			self.uninstallProcessTimer.timeout.connect(self._uninstallProcessTimerRet)
 			self.uninstallProcessTimer.start(100)		
@@ -1027,28 +1101,52 @@ class EpiGui(QObject):
 
 	def _uninstallProcessTimerRet(self):
 
-		if not EpiGui.epiGuiManager.removePkgLaunched:
-			EpiGui.epiGuiManager.removePkgLaunched=True
-			self.currentCommand=EpiGui.epiGuiManager.getUninstallCommand()
-			self.endCurrentCommand=True
+		if not self.pkgProcessed:
+			if not self.endAction:
+				self.pkgToSelect+=1
+				if self.pkgToSelect<self.countLimit:
+					try:
+						self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+					except:
+						self.pkgToProcess=None
 
-		if EpiGui.epiGuiManager.removePkgDone:
-			if not EpiGui.epiGuiManager.checkRemoveLaunched:
-				EpiGui.epiGuiManager.checkRemoveLaunched=True
-				EpiGui.epiGuiManager.checkRemove()
+					EpiGui.epiGuiManager.initUnInstallProcess(self.pkgToProcess)
+					self._updateResultPackagesModel('start',"uninstall")
+					if not EpiGui.epiGuiManager.removePkgLaunched:
+						EpiGui.epiGuiManager.removePkgLaunched=True
+						self.currentCommand=EpiGui.epiGuiManager.getUninstallCommand(self.pkgToProcess)
+						self.endCurrentCommand=True
+				else:
+					self.endAction=True
 
-			if EpiGui.epiGuiManager.checkRemoveDone:
-				self.isProcessRunning=False
-				self.endProcess=True
-				self.feedbackCode=""
-				self.enableApplyBtn=True
-				self.enablePkgList=True
-				self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
-				self._manageRemoveBtn(True)
-				self.uninstallProcessTimer.stop()
-				self._updateResultPackagesModel("end","uninstall")
-				self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
-				EpiGui.epiGuiManager.epiManager.remove_repo_keys()
+				self.pkgProcessed=True
+
+		if not self.endAction:
+			if EpiGui.epiGuiManager.removePkgDone:
+				if not EpiGui.epiGuiManager.checkRemoveLaunched:
+					EpiGui.epiGuiManager.checkRemoveLaunched=True
+					EpiGui.epiGuiManager.checkRemove(self.pkgToProcess)
+
+				if EpiGui.epiGuiManager.checkRemoveDone:
+					self._updateResultPackagesModel("end","uninstall")
+					self.pkgProcessed=False
+		
+		else:
+			self.isProcessRunning=False
+			self.endProcess=True
+			self.feedbackCode=""
+			self.enableApplyBtn=True
+			self.enablePkgList=True
+			self.isAllInstalled=EpiGui.epiGuiManager.isAllInstalled()
+			self._manageRemoveBtn(True)
+			self.uninstallProcessTimer.stop()
+			if EpiGui.epiGuiManager.totalUninstallError>0:
+				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",False)
+			else:
+				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",True)
+			
+			self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
+			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
 		
 		if EpiGui.epiGuiManager.removePkgLaunched:
 			if not EpiGui.epiGuiManager.removePkgDone:
