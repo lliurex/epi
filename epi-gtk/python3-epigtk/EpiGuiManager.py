@@ -977,7 +977,7 @@ class EpiGuiManager:
 		pkgIndex=0
 		
 		for element in self.info[order]["pkg_list"]:
-			if pkgId!=None and element["name"]!=pkgId:
+			if pkgId!="all" and element["name"]!=pkgId:
 				pass
 			else:
 				if element["name"] in self.epiManager.packages_selected:
@@ -1045,7 +1045,7 @@ class EpiGuiManager:
 			if item["order"]==order:
 				tmpParam={}
 				tmpParam["resultProcess"]=-1
-				if pkgId!=None and item["pkgId"]!=pkgId:
+				if pkgId!="all" and item["pkgId"]!=pkgId:
 					pass
 				else:
 					if item["pkgId"] in self.epiManager.packages_selected:
@@ -1055,7 +1055,6 @@ class EpiGuiManager:
 								tmpParam["isVisible"]=True
 						else:
 							if order==0:
-
 								if item["pkgId"] not in self.epiManager.blocked_remove_pkgs_list and item["pkgId"] not in self.epiManager.blocked_remove_skipped_pkgs_list:
 									tmpParam["showSpinner"]=True
 

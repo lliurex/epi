@@ -884,7 +884,7 @@ class EpiGui(QObject):
 									try:
 										self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
 									except:
-										self.pkgToProcess=None
+										self.pkgToProcess="all"
 
 									EpiGui.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
 									self._updateResultPackagesModel('start',"install")
@@ -1113,7 +1113,7 @@ class EpiGui(QObject):
 					try:
 						self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
 					except:
-						self.pkgToProcess=None
+						self.pkgToProcess="all"
 
 					EpiGui.epiGuiManager.initUnInstallProcess(self.pkgToProcess)
 					self._updateResultPackagesModel('start',"uninstall")
