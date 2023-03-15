@@ -1024,8 +1024,7 @@ class EpiGuiManager:
 		for item in self.packagesData:
 			if item["order"]==order:
 				tmpParam={}
-				if order==1:
-					tmpParam["resultProcess"]=-1
+				tmpParam["resultProcess"]=-1
 				if pkgId!=None and item["pkgId"]!=pkgId:
 					pass
 				else:

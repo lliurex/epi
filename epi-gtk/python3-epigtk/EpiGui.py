@@ -827,9 +827,6 @@ class EpiGui(QObject):
 
 		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
 		EpiGui.epiGuiManager.initInstallProcess()
-		if EpiGui.epiGuiManager.order>0:
-			self.showDependEpi=True
-			self.showDependLabel=True
 		self.isProcessRunning=True
 		self.error=False
 		self.showError=False
@@ -891,6 +888,9 @@ class EpiGui(QObject):
 
 									EpiGui.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
 									self._updateResultPackagesModel('start',"install")
+									if EpiGui.epiGuiManager.order>0:
+										self.showDependEpi=True
+										self.showDependLabel=True
 									if not EpiGui.epiGuiManager.downloadAppLaunched:
 										self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INSTALL_DOWNLOAD
 										EpiGui.epiGuiManager.downloadAppLaunched=True
@@ -951,6 +951,7 @@ class EpiGui(QObject):
 																		if EpiGui.epiGuiManager.feedBackCheck[0]:
 																			self.showDependEpi=False
 																			if EpiGui.epiGuiManager.order>0:
+																				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(EpiGui.epiGuiManager.order,"install",True)
 																				self._initInstallProcess()
 																			else:
 																				self.pkgProcessed=False
@@ -1085,7 +1086,7 @@ class EpiGui(QObject):
 			EpiGui.epiGuiManager.totalUninstallError=0
 			self.endAction=False
 			self.pkgProcessed=False
-			countLimit=len(EpiGui.epiGuiManager.epiManager.packages_selected)
+			countLimit=len(EpiGui.epiGuiManager.pkgSelectedFromList)
 			if countLimit==0:
 				self.countLimit=1
 			else:
@@ -1174,9 +1175,9 @@ class EpiGui(QObject):
 	def _updatePackagesModelInfo(self,params):
 
 		updatedInfo=EpiGui.epiGuiManager.packagesData
-		valuesToUpdate=[]
 		if len(updatedInfo)>0:
 			for i in range(len(updatedInfo)):
+				valuesToUpdate=[]
 				index=self._packagesModel.index(i)
 				for item in params:
 					tmp={}
