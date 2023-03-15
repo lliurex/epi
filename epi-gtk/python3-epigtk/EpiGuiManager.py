@@ -76,6 +76,9 @@ class EpiGuiManager:
 		self.eulaAccepted=True
 		self.stopUninstall=[False,""]
 		self.totalUninstallError=0
+		self.totalWarningMeta=0
+		self.totalWarningSkipPkg=0
+		self.totalWarningSkipMeta=0
 		self.clearCache()
 
 	#def __init__
@@ -930,11 +933,14 @@ class EpiGuiManager:
 		if remove:
 			if len(self.epiManager.blocked_remove_pkgs_list)>0:
 				if len(self.epiManager.blocked_remove_skipped_pkgs_list)==0:
+					self.totalWarningSkipPkg+=1
 					msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_META
 				else:
+					self.totalWarningSkipMeta+=1
 					msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP
 				typeMsg="Warning"
 			elif len(self.epiManager.blocked_remove_skipped_pkgs_list)>0:
+				self.totalWarningSkipPkg+=1
 				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
 				typeMsg="Warning"
 			else:
@@ -942,15 +948,29 @@ class EpiGuiManager:
 				typeMsg="Ok"
 
 		else:
-			if pkgId not in self.epiManager.blocked_remove_skipped_pkgs_list or pkgId not in  self.epiManager.blocked_remove_skipped_pkgs_list:
+			if pkgId not in self.epiManager.blocked_remove_pkgs_list and pkgId not in  self.epiManager.blocked_remove_skipped_pkgs_list:
 				self.totalUninstallError+=1
 				msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
 				typeMsg="Error"
 
-		self.remove=[remove,msgCode,typeMsg]
 		self._writeLog("Uninstall process. Result: PkgId:%s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
 	#def checkRemove
+
+	def getUninstallGlobalResult(self):
+
+		if self.totalUninstallError>0:
+			return [EpiGuiManager.ERROR_UNINSTALL_FAILED,"Error"]
+		elif self.totalWarningSkipPkg>0:
+			return [EpiGuiManager.WARNING_UNINSTALL_PROCESS_META,"Warning"]
+		elif self.totalWarningSkipMeta>0:
+			return [EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP,"Warning"]
+		elif self.totalWarningSkipPkg>0:
+			return [EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG,"Warning"]
+		else:
+			return [EpiGuiManager.SUCCESS_UNINSTALL_PROCESS,"OK"]
+
+	#def getUninstallGlobalResult
 
 	def _updateProcessModelInfo(self,order,pkgId,action,result,dpkgStatus=None):
 

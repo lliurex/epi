@@ -1063,6 +1063,10 @@ class EpiGui(QObject):
 		self.enablePkgList=False
 		self.showStatusMessage=[False,"","Ok"]
 		self.endProcess=False
+		EpiGui.epiGuiManager.totalUninstallError=0
+		EpiGui.epiGuiManager.totalWarningSkipPkg=0
+		EpiGui.epiGuiManager.totalWarningSkipMeta=0
+		EpiGui.epiGuiManager.totalWarningSkipPkg=0
 		self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_UNINSTALL_CHECK
 		self.checkMetaProtectionT=CheckMetaProtection()
 		self.checkMetaProtectionT.start()
@@ -1146,7 +1150,8 @@ class EpiGui(QObject):
 			else:
 				EpiGui.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",True)
 			
-			self.showStatusMessage=[True,EpiGui.epiGuiManager.remove[1],EpiGui.epiGuiManager.remove[2]]
+			getUninstallGlobalResult=EpiGui.epiGuiManager.getUninstallGlobalResult()
+			self.showStatusMessage=[True,getUninstallGlobalResult[0],getUninstallGlobalResult[1]]
 			EpiGui.epiGuiManager.epiManager.remove_repo_keys()
 		
 		if EpiGui.epiGuiManager.removePkgLaunched:
