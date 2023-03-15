@@ -8,3 +8,4 @@ xgettext --join-existing -kde -ki18nd:2 ./epi-gtk/python3-epigtk/rsrc/KonsolePan
 xgettext --join-existing -kde -ki18nd:2 ./epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml -o ./translations/epi-gtk.pot
 xgettext --join-existing -kde -ki18nd:2 ./epi-gtk/python3-epigtk/rsrc/PackagesInfo.qml -o ./translations/epi-gtk.pot
 xgettext --join-existing -kde -ki18nd:2 ./epi-gtk/python3-epigtk/rsrc/PackagesList.qml -o ./translations/epi-gtk.pot
+xgettext --join-existing -kde -ki18nd:2 ./epi-gtk/python3-epigtk/rsrc/InfoPanel.qml -o ./translations/epi-gtk.pot
