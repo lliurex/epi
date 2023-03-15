@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-15 17:30+0100\n"
-"PO-Revision-Date: 2023-03-15 17:31+0100\n"
+"POT-Creation-Date: 2023-03-15 18:09+0100\n"
+"PO-Revision-Date: 2023-03-15 18:11+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -328,6 +328,10 @@ msgstr "Aplicaciones disponibles"
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:34
 msgid "Search..."
 msgstr "Buscar..."
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:103
+msgid "Applications not found"
+msgstr "No se han encontrado aplicaciones"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:126
 msgid "Uncheck all packages"
