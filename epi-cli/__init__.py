@@ -842,7 +842,7 @@ class EPIC(object):
 					if result:
 						if not self.meta_remove_warning:
 							if not self.skipped_remove_warning:
-								msg_log='Application successfully uninstalled'
+								msg_log='Uninstall ending successfully'
 							else:
 								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
 						else:
@@ -856,7 +856,7 @@ class EPIC(object):
 						return 0
 
 					else:
-						msg_log="Uninstall process ending with errors"
+						msg_log="Uninstall ending with errors"
 						print('  [EPIC]: '+msg_log)
 						self.write_log(msg_log)
 						self.epicore.zerocenter_feedback(0,'uninstall',False)
