@@ -183,18 +183,31 @@ GridLayout{
                     }
                 }
             }
-
-            Text{
-                id:feedBackText
-                text:getFeedBackText(epiBridge.feedbackCode)
-                visible:true
-                font.family: "Quattrocento Sans Bold"
-                font.pointSize: 10
-                horizontalAlignment:Text.AlignHCenter
-                Layout.preferredWidth:200
-                Layout.fillWidth:true
+             ColumnLayout{
+                id:feedbackColumn
+                spacing:10
                 Layout.alignment:Qt.AlignHCenter
-                wrapMode: Text.WordWrap
+                Text{
+                    id:feedBackText
+                    text:getFeedBackText(epiBridge.feedbackCode)
+                    visible:true
+                    font.family: "Quattrocento Sans Bold"
+                    font.pointSize: 10
+                    horizontalAlignment:Text.AlignHCenter
+                    Layout.preferredWidth:200
+                    Layout.fillWidth:true
+                    Layout.alignment:Qt.AlignHCenter
+                    wrapMode: Text.WordWrap
+                }
+                
+                ProgressBar{
+                    id:feedBackBar
+                    indeterminate:true
+                    visible:!epiBridge.enablePkgList
+                    implicitWidth:100
+                    Layout.alignment:Qt.AlignHCenter
+                }
+                
             }
                
             PC3.Button {

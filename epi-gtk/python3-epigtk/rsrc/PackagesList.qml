@@ -30,7 +30,7 @@ Rectangle{
             focus:true
             width:100
             visible:epiBridge.selectPkg
-            enabled:!epiBridge.isProcessRunning
+            enabled:epiBridge.enablePkgList
             placeholderText:i18nd("epi-gtk","Search...")
             onTextChanged:{
                 filterModel.update()
