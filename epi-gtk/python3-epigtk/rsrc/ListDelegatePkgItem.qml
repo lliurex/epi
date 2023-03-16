@@ -82,7 +82,21 @@ Components.ListItem{
                     i18nd("epi-gtk","Previous actions: executing ")+customName
                 }
             }
-            width: parent.width-150 
+            width: {
+                if (listPkgItem.ListView.isCurrentItem){
+                    if (resultImg.visible){
+                        parent.width-resultImg.width-showInfoBtn.width-150
+                    }else{
+                        parent.width-showInfoBtn.width-150
+                    }
+                }else{
+                    if ((showSpinner) || (resultImg.visible)){
+                        parent.width-resultImg.width-150
+                    }else{
+                        parent.width-150
+                    }
+                }
+            }
             elide:Text.ElideMiddle
             clip: true
             font.family: "Quattrocento Sans Bold"
