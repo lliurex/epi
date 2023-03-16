@@ -856,6 +856,9 @@ class EPIC(object):
 						return 0
 
 					else:
+						msg_log="Uninstall process ending with errors"
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
 						self.epicore.zerocenter_feedback(0,'uninstall',False)
 						return 1
 				else:

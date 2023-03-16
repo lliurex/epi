@@ -126,6 +126,7 @@ class EpiGui(QObject):
 		self._launchedProcess=""
 		self._pkgStoreInfo=["","","",""]
 		self._isAllInstalled=False
+		self._isProgressBarVisible=False
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -619,6 +620,20 @@ class EpiGui(QObject):
 
 	#def _setIsAllInstalled
 
+	def _getIsProgressBarVisible(self):
+
+		return self._isProgressBarVisible
+
+	#def _getIsProgressBarVisible
+
+	def _setIsProgressBarVisible(self,isProgressBarVisible):
+
+		if self._isProgressBarVisible!=isProgressBarVisible:
+			self._isProgressBarVisible=isProgressBarVisible
+			self.on_isProgressBarVisible.emit()
+
+	#def _setIsProgressBarVisible
+
 	def _getCloseGui(self):
 
 		return self._closeGui
@@ -722,6 +737,7 @@ class EpiGui(QObject):
 		self.endProcess=False
 		self.enableApplyBtn=False
 		if not EpiGui.epiGuiManager.noCheck:
+			self.isProgressBarVisible=True
 			self.feedbackCode=EpiGui.epiGuiManager.MSG_FEEDBACK_INTERNET
 			EpiGui.epiGuiManager.checkInternetConnection()
 			self.checkConnectionTimer=QTimer()
@@ -739,10 +755,12 @@ class EpiGui(QObject):
 			self.checkConnectionTimer.stop()
 			self.feedbackCode=0
 			if EpiGui.epiGuiManager.retConnection[0]:
+				self.isProgressBarVisible=False
 				self.endProcess=True
 				self.enableApplyBtn=True
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.retConnection[1],"Error"]
 			else:
+				self.isProgressBarVisible=False
 				self._getEulas()
 
 	#def _checkConnectionTimerRet
@@ -814,6 +832,7 @@ class EpiGui(QObject):
 		self.enableApplyBtn=False
 		self.enableRemoveBtn=False
 		self.enableKonsole=True
+		self.isProgressBarVisible=True
 		self.totalError=0
 		self.launchedProcess="install"
 		self._initInstallProcess()
@@ -990,6 +1009,7 @@ class EpiGui(QObject):
 					self.showError=True
 
 			if self.showError:
+				self.isProgressBarVisible=False
 				self.endProcess=True
 				self.feedbackCode=""
 				self.isProcessRunning=False
@@ -1000,6 +1020,7 @@ class EpiGui(QObject):
 				self.showStatusMessage=[True,EpiGui.epiGuiManager.feedBackCheck[1],EpiGui.epiGuiManager.feedBackCheck[2]]
 				EpiGui.epiGuiManager.clearEnvironment()
 			else:
+				self.isProgressBarVisible=False
 				self.feedbackCode=""
 				self.endProcess=True
 				self.isProcessRunning=False
@@ -1063,6 +1084,7 @@ class EpiGui(QObject):
 		self.enablePkgList=False
 		self.showStatusMessage=[False,"","Ok"]
 		self.endProcess=False
+		self.isProgressBarVisible=True
 		EpiGui.epiGuiManager.totalUninstallError=0
 		EpiGui.epiGuiManager.totalWarningSkipPkg=0
 		EpiGui.epiGuiManager.totalWarningSkipMeta=0
@@ -1077,6 +1099,7 @@ class EpiGui(QObject):
 	def _checkMetaProtectionRet(self):
 
 		if EpiGui.epiGuiManager.stopUninstall[0]:
+			self.isProgressBarVisible=False
 			self.enableApplyBtn=True
 			self.endProcess=True
 			self.enablePkgList=True
@@ -1137,6 +1160,7 @@ class EpiGui(QObject):
 					self.pkgProcessed=False
 		
 		else:
+			self.isProgressBarVisible=False
 			self.isProcessRunning=False
 			self.endProcess=True
 			self.feedbackCode=""
@@ -1367,6 +1391,9 @@ class EpiGui(QObject):
 	
 	on_isAllInstalled=Signal()
 	isAllInstalled=Property(bool,_getIsAllInstalled,_setIsAllInstalled,notify=on_isAllInstalled)
+
+	on_isProgressBarVisible=Signal()
+	isProgressBarVisible=Property(bool,_getIsProgressBarVisible,_setIsProgressBarVisible,notify=on_isProgressBarVisible)
 
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)

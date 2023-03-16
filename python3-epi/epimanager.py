@@ -981,7 +981,8 @@ class EpiManager:
 						pass
 					else:
 						cmd="%s %s "%(cmd,app)
-		cmd="%s;"%cmd
+		if cmd!="":
+			cmd="%s;"%cmd
 
 		self._show_debug("install_app","Install Command: %s"%(cmd))
 

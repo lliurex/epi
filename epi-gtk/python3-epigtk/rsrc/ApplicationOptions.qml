@@ -203,7 +203,7 @@ GridLayout{
                 ProgressBar{
                     id:feedBackBar
                     indeterminate:true
-                    visible:!epiBridge.enablePkgList
+                    visible:epiBridge.isProgressBarVisible
                     implicitWidth:100
                     Layout.alignment:Qt.AlignHCenter
                 }
