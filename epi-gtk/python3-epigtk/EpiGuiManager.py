@@ -968,7 +968,7 @@ class EpiGuiManager:
 		elif self.totalWarningSkipPkg>0:
 			return [EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG,"Warning"]
 		else:
-			return [EpiGuiManager.SUCCESS_UNINSTALL_PROCESS,"OK"]
+			return [EpiGuiManager.SUCCESS_UNINSTALL_PROCESS,"Ok"]
 
 	#def getUninstallGlobalResult
 
