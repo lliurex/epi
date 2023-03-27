@@ -356,6 +356,7 @@ GridLayout{
                 break;
             case 5:
                 msg=i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
+                break;
             case 6:
                 msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
                 break;
