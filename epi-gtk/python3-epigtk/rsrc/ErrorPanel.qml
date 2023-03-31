@@ -89,6 +89,7 @@ Rectangle{
                 break;
             case -13:
                 msg=i18nd("epi-gtk","The unlocking process has failed")
+                break;
         }
         return msg
     }
