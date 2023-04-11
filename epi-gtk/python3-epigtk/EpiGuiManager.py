@@ -759,7 +759,7 @@ class EpiGuiManager:
 			msgCode=EpiGuiManager.ERROR_INSTALL_INIT
 			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,'install',False,None)
-			self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
+			#self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
 			self.feedBackCheck=[preInstallRet,msgCode,typeMsg]
 			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
