@@ -49,7 +49,7 @@ Rectangle{
                 terminal: terminal
                 width: 20
                 Rectangle {
-                    opacity: 0.4
+                    opacity: 0.8
                     anchors.margins: 5
                     radius: width * 0.5
                     anchors.fill: parent
