@@ -457,8 +457,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error gathering information: ' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error gathering information. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -513,8 +513,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error preparing system for %s \n Details: %s'%(self.pkg_log,str(output[1]))
+			if error[0]:
+				msg_log='Installation aborted. Error preparing system for %s. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: ' +msg_log)
 				self.write_log(msg_log)
 				return False
@@ -544,8 +544,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error checking architecture:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error checking architecture. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -565,8 +565,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error Checking if repositories need updating:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error Checking if repositories need updating. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -586,8 +586,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error installing: %s \n Details: %s' %(self.pkg_log,str(output[1]))
+			if error[0]:
+				msg_log='Installation aborted. Error installing: %s. Details:\n%s' %(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -616,8 +616,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error ending installation of %s \n: Details: %s'%(self.pkg_log,str(output[1]))
+			if error[0]:
+				msg_log='Installation aborted. Error ending installation of %s. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -783,8 +783,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Uninstalled process for %s ending with errors:%s\n'%(self.pkg_log,str(output[1]))
+			if error[0]:
+				msg_log='Uninstalled process for %s ending with errors. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -856,7 +856,7 @@ class EPIC(object):
 						return 0
 
 					else:
-						msg_log="Uninstall ending with errors"
+						msg_log="Uninstall process ending with errors"
 						print('  [EPIC]: '+msg_log)
 						self.write_log(msg_log)
 						self.epicore.zerocenter_feedback(0,'uninstall',False)
@@ -983,9 +983,9 @@ class EPIC(object):
 				cont=cont+1
 
 		if cont>0:
-			return True
+			return [True,output]
 		else:
-			return False	
+			return [False,output]	
 
 	# def readErrorOutput		
 
