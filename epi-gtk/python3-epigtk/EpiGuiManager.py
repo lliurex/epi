@@ -954,7 +954,7 @@ class EpiGuiManager:
 			elif pkgId in self.epiManager.blocked_remove_skipped_pkgs_list:
 				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
 				typeMsg="Warning"
-			if pkgId not in self.epiManager.blocked_remove_pkgs_list and pkgId not in  self.epiManager.blocked_remove_skipped_pkgs_list:
+			else:
 				self.totalUninstallError+=1
 				msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
 				typeMsg="Error"
