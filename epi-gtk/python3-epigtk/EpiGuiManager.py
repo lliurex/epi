@@ -297,16 +297,16 @@ class EpiGuiManager:
 
 							if defaultChecked:
 								tmp["isChecked"]=True
-								self._managePkgSelected(element["name"],True)
+								self._managePkgSelected(element["name"],True,order)
 							else:
 								if not showCB:
 									tmp["isChecked"]=True
-									self._managePkgSelected(element["name"],True)
+									self._managePkgSelected(element["name"],True,order)
 								else:
 									try:
 										tmp["isChecked"]=element["default_pkg"]
 										if tmp["isChecked"]:
-											self._managePkgSelected(element["name"],True)
+											self._managePkgSelected(element["name"],True,order)
 									except:
 										tmp["isChecked"]=False			
 							
@@ -458,21 +458,22 @@ class EpiGuiManager:
 
 	#def _updatePackagesModel
 
-	def _managePkgSelected(self,pkgId,active=True):
+	def _managePkgSelected(self,pkgId,active=True,order=0):
 
 		if active:
 			if pkgId not in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.append(pkgId)
 			if self.selectPkg:
-				if pkgId not in self.pkgSelectedFromList:
-					self.pkgSelectedFromList.append(pkgId)
+				if order==0:
+					if pkgId not in self.pkgSelectedFromList:
+						self.pkgSelectedFromList.append(pkgId)
 		else:
 			if pkgId in self.epiManager.packages_selected:
 				self.epiManager.packages_selected.remove(pkgId)
 			if self.selectPkg:
-				if pkgId in self.pkgSelectedFromList:
-					self.pkgSelectedFromList.remove(pkgId)
-
+				if order==0:
+					if pkgId in self.pkgSelectedFromList:
+						self.pkgSelectedFromList.remove(pkgId)
 
 	#def _managePkgSelected
 

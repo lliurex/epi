@@ -900,9 +900,13 @@ class EpiGui(QObject):
 							if not self.endAction:
 								self.pkgToSelect+=1
 								if self.pkgToSelect<self.countLimit:
-									try:
-										self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
-									except:
+									if EpiGui.epiGuiManager.order==0:
+										try:
+											print(self.pkgToSelect)
+											self.pkgToProcess=EpiGui.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+										except:
+											self.pkgToProcess="all"
+									else:
 										self.pkgToProcess="all"
 
 									EpiGui.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
