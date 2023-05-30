@@ -948,12 +948,18 @@ class EpiGuiManager:
 				typeMsg="Ok"
 
 		else:
+			if pkgId in self.epiManager.blocked_remove_pkgs_list:
+				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_META
+				typeMsg="Warning"
+			elif pkgId in self.epiManager.self.epiManager.blocked_remove_skipped_pkgs_list:
+				msgCode=EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
+				typeMsg="Warning"
 			if pkgId not in self.epiManager.blocked_remove_pkgs_list and pkgId not in  self.epiManager.blocked_remove_skipped_pkgs_list:
 				self.totalUninstallError+=1
 				msgCode=EpiGuiManager.ERROR_UNINSTALL_FAILED
 				typeMsg="Error"
 
-		self._writeLog("Uninstall process. Result: PkgId:%s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
+		self._writeLog("Uninstall process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
 	#def checkRemove
 
