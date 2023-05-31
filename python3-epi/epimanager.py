@@ -686,11 +686,12 @@ class EpiManager:
 				if self.type=="file":
 					if not self.manage_download:
 						cmd=cmd_file
-						for pkg in self.packages_selected:
-							if pkg_id!="all" and pkg!=pkg_id:
-								pass
-							else:
-								cmd+="%s "%pkg
+						for item in self.epi_conf["pkg_list"]:
+							if item["name"] in self.packages_selected:
+								if pkg_id!="all" and item["name"]!=pkg_id:
+									pass
+								else:
+									cmd+="%s "%item["name"]
 
 						cmd='%s; echo $? > %s;'%(cmd,self.token_result_download[1])
 				if self.manage_download:
@@ -725,6 +726,7 @@ class EpiManager:
 				cmd='%s %s echo $? > %s;'%(cmd,cmd_file,self.token_result_download[1])	
 		
 		self._show_debug("download_app","Command to download: %s"%(cmd))
+		
 		return cmd			
 					
 	#def download_app		
@@ -805,11 +807,12 @@ class EpiManager:
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
 				cmd="%s preInstall "%script
-				for pkg in self.packages_selected:
-					if pkg_id!="all" and pkg!=pkg_id:
-						pass
-					else:
-						cmd+="%s "%pkg
+				for item in self.epi_conf["pkg_list"]:
+					if item["name"] in self.packages_selected:
+						if pkg_id!="all" and item["name"]!=pkg_id:
+							pass
+						else:
+							cmd+="%s "%item["name"]
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_preinstall[1])
 
@@ -900,11 +903,12 @@ class EpiManager:
 		elif self.type=="file":
 			cmd=self._get_install_file_cmd_base()
 			if cmd !="":
-				for pkg in self.packages_selected:
-					if pkg_id!="all" and pkg!=pkg_id:
-						pass
-					else:
-						cmd+="%s "%pkg
+				for item in self.epi_conf["pkg_list"]:
+					if item["name"] in self.packages_selected:
+						if pkg_id!="all" and item["name"]!=pkg_id:
+							pass
+						else:
+							cmd+="%s "%item["name"]
 					
 				cmd='%s; echo $? > %s'%(cmd,self.token_result_install[1]	)
 		
@@ -1237,11 +1241,12 @@ class EpiManager:
 			script=self.epi_conf["script"]["name"]
 			if os.path.exists(script):
 				cmd="%s postInstall "%script
-				for pkg in self.packages_selected:
-					if pkg_id!="all" and pkg!=pkg_id:
-						pass
-					else:
-						cmd+="%s "%pkg
+				for item in self.epi_conf["pkg_list"]:
+					if item["name"] in self.packages_selected:
+						if pkg_id!="all" and item["name"]!=pkg_id:
+							pass
+						else:
+							cmd+="%s "%item["name"]
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_postinstall[1])
 
@@ -1295,14 +1300,14 @@ class EpiManager:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
 				cmd="%s remove "%script
-
-				for pkg in self.packages_selected:
-					if pkg not in self.blocked_remove_pkgs_list:
-						if pkg not in self.blocked_remove_skipped_pkgs_list:
-							if pkg_id!="all" and pkg!=pkg_id:
-								pass
-							else:
-								cmd+="%s "%pkg
+				for item in self.epiFiles[order]["pkg_list"]:
+					if item["name"] in self.packages_selected:
+						if item["name"] not in self.blocked_remove_pkgs_list:
+							if item["name"] not in self.blocked_remove_skipped_pkgs_list:
+								if pkg_id!="all" and item["name"]!=pkg_id:
+									pass
+								else:
+									cmd+="%s "%item["name"]
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
 		
