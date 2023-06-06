@@ -335,19 +335,29 @@ class EpiManager:
 	def _get_pkg_status(self,pkg,pkg_type):
 
 		cmd=""
+		status_by_code=True
 		if pkg_type in ["apt","deb","localdeb"]:
 			cmd='dpkg -l %s | grep "^i[i]"'%pkg
 		elif pkg_type=="snap":
 			cmd='snap list | grep %s | cut -d " " -f 1'%pkg
+			status_by_code=False
 		elif pkg_type=="flatpak":
 			cmd='flatpak list | grep %s | cut -d " " -f 1'%pkg
+			status_by_code=False
 
 		p=subprocess.run(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		code=p.returncode
+		pout=p.stdout.decode()
 		self._show_debug("_get_pkg_status","pkg: %s; result by command: %s"%(pkg,p))
 		
 		if code==0:
-			return "installed"
+			if not status_by_code:
+				if pout!="":
+					return "installed"
+				else:
+					return "available"
+			else: 
+				return "installed"
 		else:
 			return "available"
 
