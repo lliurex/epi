@@ -253,9 +253,11 @@ GridLayout{
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
                     if (epiBridge.currentPkgOption==0){
+                        konsolePanel.runCommand('history -c\n')
                         applyChanges()
                         epiBridge.launchInstallProcess()
                     }else{
+                        konsolePanel.runCommand('history -c\n')
                         applyChanges()
                         epiBridge.acceptEula()
                     }
@@ -279,6 +281,7 @@ GridLayout{
             target:uninstallDialog
             function onDialogApplyClicked(){
                 uninstallDialog.close()
+                konsolePanel.runCommand('history -c\n')
                 applyChanges()
                 epiBridge.launchUninstallProcess()
             }

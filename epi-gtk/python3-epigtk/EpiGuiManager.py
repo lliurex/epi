@@ -928,6 +928,9 @@ class EpiGuiManager:
 			removeTmp=' rm -f %s;'%self.tokenUninstall[1]
 
 		cmd='%s stty -echo;%s\n'%(command,removeTmp)
+		if cmd.startswith(";"):
+			cmd=cmd[1:]
+
 		return cmd
 
 	#def _createProcessToken

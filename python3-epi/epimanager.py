@@ -994,10 +994,13 @@ class EpiManager:
 					if pkg_id!="all" and pkg_id!=app:
 						pass
 					else:
-						cmd="%s %s "%(cmd,app)
-		if cmd!="":
-			cmd="%s;"%cmd
-
+						cmd="%s %s"%(cmd,app)
+		#if cmd!="":
+		cmd="%s;"%cmd
+		cmd=cmd.strip()
+		if cmd==";":
+			cmd=""
+	
 		self._show_debug("install_app","Install Command: %s"%(cmd))
 
 		return cmd	
