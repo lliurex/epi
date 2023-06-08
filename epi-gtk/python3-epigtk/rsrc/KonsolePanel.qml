@@ -40,7 +40,7 @@ Rectangle{
                 }
                 Component.onCompleted: {
                     mainsession.startShellProgram();
-                    mainsession.sendText('setterm -cursor off;stty -echo;PS1="";clear\n');
+                    mainsession.sendText('setterm -cursor off;stty -echo;PS1="";history -c;clear;\n');
                 }
 
             }

@@ -681,6 +681,7 @@ class EpiGuiManager:
 
 	def getAddRepositoryCommand(self):
 
+		command=""
 		command=self.epiManager.add_repository_keys(self.order)
 		length=len(command)
 
@@ -695,6 +696,7 @@ class EpiGuiManager:
 
 	def getUpdateKeyRingCommand(self):
 
+		command=""
 		command=self.epiManager.update_keyring()
 		length=len(command)
 
@@ -709,6 +711,7 @@ class EpiGuiManager:
 
 	def getDownloadAppCommand(self,pkgId):
 
+		command=""
 		command=self.epiManager.download_app(pkgId)
 		length=len(command)
 
@@ -739,6 +742,7 @@ class EpiGuiManager:
 
 	def getPreInstallCommand(self,pkgId):
 
+		command=""
 		command=self.epiManager.preinstall_app(pkgId)
 		length=len(command)
 
@@ -770,6 +774,7 @@ class EpiGuiManager:
 
 	def getCheckArquitectureCommand(self):
 
+		command=""
 		command=self.epiManager.check_arquitecture()
 		length=len(command)
 
@@ -784,6 +789,7 @@ class EpiGuiManager:
 
 	def getUpdateReposCommand(self):
 
+		command=""
 		command=self.epiManager.check_update_repos()
 		length=len(command)
 
@@ -798,6 +804,7 @@ class EpiGuiManager:
 
 	def getInstallCommand(self,pkgId):
 
+		command=""
 		command=self.epiManager.install_app("gui",pkgId)
 		length=len(command)
 
@@ -878,6 +885,7 @@ class EpiGuiManager:
 
 	def getUninstallCommand(self,pkgId):
 
+		command=""
 		command=self.epiManager.uninstall_app(0,pkgId)
 		length=len(command)
 
@@ -890,6 +898,7 @@ class EpiGuiManager:
 
 	def _createProcessToken(self,command,action):
 
+		cmd=""
 		if action=="keys":
 			self.tokenKeys=tempfile.mkstemp('_keys')
 			removeTmp=' rm -f %s;'%self.tokenKeys[1]
@@ -918,7 +927,7 @@ class EpiGuiManager:
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
 			removeTmp=' rm -f %s;'%self.tokenUninstall[1]
 
-		cmd='%s%s\n'%(command,removeTmp)
+		cmd='%s stty -echo;%s\n'%(command,removeTmp)
 		return cmd
 
 	#def _createProcessToken
