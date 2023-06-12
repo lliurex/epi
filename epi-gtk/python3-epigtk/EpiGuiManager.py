@@ -901,33 +901,33 @@ class EpiGuiManager:
 		cmd=""
 		if action=="keys":
 			self.tokenKeys=tempfile.mkstemp('_keys')
-			removeTmp=' rm -f %s;'%self.tokenKeys[1]
+			removeTmp=' rm -f %s'%self.tokenKeys[1]
 		elif action=="keyring":
 			self.tokenKeyring=tempfile.mkstemp('_keyring')
-			removeTmp=' rm -f %s;'%self.tokenKeyring[1]
+			removeTmp=' rm -f %s'%self.tokenKeyring[1]
 		elif action=="download":
 			self.tokenDownload=tempfile.mkstemp('_download')
-			removeTmp=' rm -f %s;'%self.tokenDownload[1]
+			removeTmp=' rm -f %s'%self.tokenDownload[1]
 		elif action=="preInstall":
 			self.tokenPreInstall=tempfile.mkstemp('_preInstall')	
-			removeTmp=' rm -f %s;'%self.tokenPreInstall[1]
+			removeTmp=' rm -f %s'%self.tokenPreInstall[1]
 		elif action=="arquitecture":
 			self.tokenArquitecture=tempfile.mkstemp('_arquitecture')	
-			removeTmp=' rm -f %s;'%self.tokenArquitecture[1]	
+			removeTmp=' rm -f %s'%self.tokenArquitecture[1]	
 		elif action=="updaterepos":
 			self.tokenUpdaterepos=tempfile.mkstemp('_updaterepos')	
-			removeTmp=' rm -f %s;'%self.tokenUpdaterepos[1]	
+			removeTmp=' rm -f %s'%self.tokenUpdaterepos[1]	
 		elif action=="install":
 			self.tokenInstall=tempfile.mkstemp('_install')
-			removeTmp=' rm -f %s;'%self.tokenInstall[1]
+			removeTmp=' rm -f %s'%self.tokenInstall[1]
 		elif action=="postInstall":	
 			self.tokenPostInstall=tempfile.mkstemp('_postInstall')
-			removeTmp=' rm -f %s;'%self.tokenPostInstall[1]
+			removeTmp=' rm -f %s'%self.tokenPostInstall[1]
 		elif action=="uninstall":
 			self.tokenUninstall=tempfile.mkstemp('_uninstall')
-			removeTmp=' rm -f %s;'%self.tokenUninstall[1]
+			removeTmp=' rm -f %s'%self.tokenUninstall[1]
 
-		cmd='%s stty -echo;%s\n'%(command,removeTmp)
+		cmd='%s history -c;stty -echo;%s\n'%(command,removeTmp)
 		if cmd.startswith(";"):
 			cmd=cmd[1:]
 
@@ -1149,7 +1149,10 @@ class EpiGuiManager:
 
 	#def _writeLog
 
-	def clearEnvironment(self):
+	def clearEnvironment(self,forceClossing=False):
+
+		if forceClossing:
+			self._writeLog("Force closure of EPI")
 
 		self.epiManager.remove_repo_keys()
 		self.epiManager.empty_cache_folder()

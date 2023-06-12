@@ -60,6 +60,7 @@ Rectangle{
     }
     
     function runCommand(command){
+        mainsession.sendText('\n')
         mainsession.sendText(command)
 
     } 

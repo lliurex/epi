@@ -127,6 +127,7 @@ class EpiGui(QObject):
 		self._pkgStoreInfo=["","","",""]
 		self._isAllInstalled=False
 		self._isProgressBarVisible=False
+		self._showCloseDialog=False
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
@@ -633,6 +634,20 @@ class EpiGui(QObject):
 			self.on_isProgressBarVisible.emit()
 
 	#def _setIsProgressBarVisible
+
+	def _getShowCloseDialog(self):
+
+		return self._showCloseDialog
+
+	#def _getShowCloseDialog
+
+	def _setShowCloseDialog(self,showCloseDialog):
+
+		if self._showCloseDialog!=showCloseDialog:
+			self._showCloseDialog=showCloseDialog
+			self.on_showCloseDialog.emit()
+
+	#def _setShowCloseDialog
 
 	def _getCloseGui(self):
 
@@ -1308,9 +1323,31 @@ class EpiGui(QObject):
 			EpiGui.epiGuiManager.clearEnvironment()
 			self.closeGui=True
 		else:
+			try:
+				if os.path.exists(EpiGui.epiGuiManager.tokenPostInstall[1]):
+					self.showCloseDialog=True
+			except:
+				pass
 			self.closeGui=False
 
 	#def closeApplication
+
+	@Slot()
+	def forceClossing(self):
+
+		self.showCloseDialog=False
+		self.endProcess=True
+		EpiGui.epiGuiManager.clearEnvironment(True)
+		self.closeGui=True
+
+	#def forceClossing
+
+	@Slot()
+	def cancelClossing(self):
+
+		self.showCloseDialog=False
+
+	#def cancelClossing
 	
 	on_loadMsgCode=Signal()
 	loadMsgCode=Property(int,_getLoadMsgCode,_setLoadMsgCode,notify=on_loadMsgCode)
@@ -1398,6 +1435,9 @@ class EpiGui(QObject):
 
 	on_isProgressBarVisible=Signal()
 	isProgressBarVisible=Property(bool,_getIsProgressBarVisible,_setIsProgressBarVisible,notify=on_isProgressBarVisible)
+
+	on_showCloseDialog=Signal()
+	showCloseDialog=Property(bool,_getShowCloseDialog,_setShowCloseDialog,notify=on_showCloseDialog)
 
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)

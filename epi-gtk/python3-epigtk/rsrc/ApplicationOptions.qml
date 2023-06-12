@@ -292,6 +292,30 @@ GridLayout{
         }        
     }
 
+    CustomDialog{
+        id:closeDialog
+        dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
+        dialogTitle:"EPI"
+        dialogMsg:i18nd("epi-gtk","It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?") 
+        dialogWidth:600
+        dialogVisible:epiBridge.showCloseDialog
+        btnAcceptVisible:true
+        btnCancelText:i18nd("epi-gtk","Cancel")
+        btnCancelIcon:"dialog-cancel"
+
+        Connections{
+            target:closeDialog
+            function onDialogApplyClicked(){
+                epiBridge.forceClossing()
+            }
+            function onCancelDialogClicked(){
+                closeTimer.stop()
+                epiBridge.cancelClossing()
+            } 
+
+        }        
+    }
+
     Timer{
         id:timer
     }
