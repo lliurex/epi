@@ -76,7 +76,6 @@ class EPIC(object):
 							pkgs_default=pkgs_default+item["name"]+" "
 							tmp_list.append(item["name"])
 
-
 					if not show_all:
 						if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
 							if len(self.pkgsToInstall)==0:
@@ -121,18 +120,19 @@ class EPIC(object):
 		else:
 			print ('  [EPIC]: No available epi file app detected')
 
-
 	#def listEpi	
 	
 	def showInfo(self,checked=None):
 		
 		checksystem=True
 		show_all=False
+		self.sequentialProcess=False
+		self.pkg_log='aplication'
+
 		if not checked:
 			show_all=True
 			print ('  [EPIC]: Searching information...')
 			self.epicore.get_pkg_info()
-
 
 		if checksystem:
 			depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs=self.get_info(show_all)
@@ -148,39 +148,49 @@ class EPIC(object):
 					status="installed. It seems that the packages were installed but the execution of EPI failed.It may be necessary to run EPI for proper operation"
 			try:
 				if epi_conf["script"]["remove"]:
-					self.uninstall="Yes"
+					if not self.epicore.lock_remove_for_group:
+						self.uninstall="Yes"
+					else:
+						self.uninstall="No"
 			except Exception as e:
 				self.uninstall="No"
 
 			print ("  [EPIC]: Information availabled:")
 			if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
-				print ("     - Packages availables: " + pkgs_available)
-				if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
-					if pkgs_default=="":
-						print ("     - Packages selected by defafult: None")
-					else:
-						print ("     - Packages selected by defafult: "+pkgs_default)
-					print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
+				self.sequentialProcess=True
+
+				if pkgs_available=="":
+					print ("     - Packages not availables for install via terminal in this flavour" )
+					return 0	
 				else:
-					print ("     - All packages are selected by default to be installed")
-					print ("     - If you want to install only some packages indicate their names separated by space")
-			
-				if pkgs_installed=="":
-					print("     - Packages already installed: None")
-				else:
-					if pkgs_installed==pkgs_available:
-						print("     - Packages already installed: all")
+					print ("     - Packages availables: " + pkgs_available)
+					if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
+						if pkgs_default=="":
+							print ("     - Packages selected by defafult: None")
+						else:
+							print ("     - Packages selected by defafult: "+pkgs_default)
+						print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
 					else:
-						print("     - Packages already installed: "+pkgs_installed)
+						print ("     - All packages are selected by default to be installed")
+						print ("     - If you want to install only some packages indicate their names separated by space")
+				
+					if pkgs_installed=="":
+						print("     - Packages already installed: None")
+					else:
+						if pkgs_installed==pkgs_available:
+							print("     - Packages already installed: all")
+						else:
+							print("     - Packages already installed: "+pkgs_installed)
 
 			else:
-				if pkgs_available!="":
-					print ("     - Application: " + pkgs_available)
-				else:		
-					print ("     - Application not availabled to install/uninstall via terminal. Use epi-gtk for this")
+				if pkgs_available=="":
+					print ("     - Application not availabled to install/uninstall via terminal in this flavour")
 					return 0
-				print ("     - Status: " + status)
-				
+				else:
+					print ("     - Application: " + pkgs_available)
+
+			print ("     - Status: " + status)
+			
 			print ("     - Uninstall process availabled: " + self.uninstall)
 			if len(depends)>0:
 				print ("     - Additional application required: " + depends)
@@ -205,7 +215,6 @@ class EPIC(object):
 		self.write_log(msg_log)
 		return check
 		
-
 	#def checking_system
 
 	def checking_epi(self,mode,action=None):
@@ -234,11 +243,15 @@ class EPIC(object):
 				msg_log="Wrong packages indicated to "+action
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False
+			elif self.check_pkgList["error"]=="flavour":
+				msg_log="There are packages that can not " + action + " in this flavour"
+				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
+				check=False		
 			elif self.check_pkgList["error"]=="cli":
 				msg_log="There are packages that can not " + action + " via terminal"	
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False
-
+			self.write_log(msg_log)
 		return check
 
 	#def check_epi	
@@ -267,6 +280,7 @@ class EPIC(object):
 			else:
 				count_cli=0
 				count_name=0
+				count_flavour=0
 				tmp_remote=[]
 				tmp_all=[]
 
@@ -276,13 +290,18 @@ class EPIC(object):
 					for item in self.epicore.epiFiles[0]["pkg_list"]:
 						tmp_all.append(item["name"])	
 					for pkg in self.pkgsToInstall:
-						if pkg not in tmp_remote:
-							if pkg not in tmp_all:
-								count_name+=1
-							else:	
-								count_cli+=1
+						if pkg in self.epicore.skipped_pkgs_flavours:
+							count_flavour+=1
+						else:
+							if pkg not in tmp_remote:
+								if pkg not in tmp_all:
+									count_name+=1
+								else:
+									count_cli+=1
 					if count_name>0:
 						return {"status":False,"error":"name"}
+					if count_flavour>0:
+						return {"status":False,"error":"flavour"}
 					if count_cli>0:
 						return {"status":False,"error":"cli"}	
 				else:
@@ -353,7 +372,6 @@ class EPIC(object):
 
 	#def check_required_x	
 
-
 	def manage_unlock_info(self,mode,action):
 
 		if "Lliurex-Up" in self.lock_info:
@@ -385,7 +403,6 @@ class EPIC(object):
 						return 0	
 
 	#def manage_unlock_info					
-
 
 	def pulsate_unlocking_process(self,mode,action):
 
@@ -425,7 +442,6 @@ class EPIC(object):
 
 	#def pulsate_unlocking_process	
 
-
 	def unlocking_process(self,result_queue):
 
 		result_queue.put(self.epicore.unlock_process())
@@ -441,8 +457,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error gathering information: ' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error gathering information. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -466,20 +482,20 @@ class EPIC(object):
 
 	#def update_keyring
 
-	def download_app(self):
+	def download_app(self,pkg_id):
 
-		cmd=self.epicore.download_app()
+		cmd=self.epicore.download_app(pkg_id)
 
 		if cmd !="":
 			print('  [EPIC]: Downloading application....')
 			os.system(cmd)
-			result=self.epicore.check_download()
+			result=self.epicore.check_download(pkg_id)
 			if result:
-				msg_log='Downloading application: OK'
+				msg_log='Downloading %s - Result: OK'%self.pkg_log
 				self.write_log(msg_log)
 				return True	
 			else:
-				msg_log='Installation aborted. Error downloading application'
+				msg_log='Installation aborted. Error downloading %s'%self.pkg_log
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False	
@@ -488,29 +504,28 @@ class EPIC(object):
 
 	#def download_app		
 
+	def preinstall_app(self,pkg_id):
 
-	def preinstall_app(self):
-
-		cmd=self.epicore.preinstall_app()
+		cmd=self.epicore.preinstall_app(pkg_id)
 
 		if cmd !="":
 			print('  [EPIC]: Preparing installation...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error preparing system:' '\n' + str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error preparing system for %s. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: ' +msg_log)
 				self.write_log(msg_log)
 				return False
 			else:
-				result=self.epicore.check_preinstall()
+				result=self.epicore.check_preinstall(pkg_id)
 				if result:
-					msg_log='Preparing installation: OK'
+					msg_log='Preparing installation of %s - Result: OK'%self.pkg_log
 					self.write_log(msg_log)
 					return True	
 				else:
-					msg_log='Installation aborted. Error preparing system'
+					msg_log='Installation aborted. Error preparing system for %s'%self.pkg_log
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 
@@ -529,8 +544,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error checking architecture:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error checking architecture. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -550,8 +565,8 @@ class EPIC(object):
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error Checking if repositories need updating:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error Checking if repositories need updating. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
@@ -562,28 +577,28 @@ class EPIC(object):
 
 	#def check_update_repos
 				
-	def install_app(self):
+	def install_app(self,pkg_id):
 	
-		cmd=self.epicore.install_app("cli")
+		cmd=self.epicore.install_app("cli",pkg_id)
 
 		if cmd !="":
 			print('  [EPIC]: Installing application...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error installing application:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error installing: %s. Details:\n%s' %(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
 			else:
-				dpkg_status,result=self.epicore.check_install_remove("install")
+				dpkg_status,result=self.epicore.check_install_remove("install",pkg_id)
 				if result:
-					msg_log='Installing application: OK'
+					msg_log='Installing %s - Result: OK'%(self.pkg_log)
 					self.write_log(msg_log)
 					return True	
 				else:
-					msg_log='Installation aborted. Error installing application'
+					msg_log='Installation aborted. Error installing %s'%self.pkg_log
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 					return False	
@@ -592,28 +607,28 @@ class EPIC(object):
 
 	#def install_app		
 
-	def postinstall_app(self):
+	def postinstall_app(self,pkg_id):
 	
-		cmd=self.epicore.postinstall_app()	
+		cmd=self.epicore.postinstall_app(pkg_id)	
 
 		if cmd !="":
 			print('  [EPIC]: Ending installation...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Installation aborted. Error ending installation:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Installation aborted. Error ending installation of %s. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
 			else:
-				result=self.epicore.check_postinstall()
+				result=self.epicore.check_postinstall(pkg_id)
 				if result:
-					msg_log='Ending installation. OK'
+					msg_log='Ending installation of: %s - Result: OK'%self.pkg_log
 					self.write_log(msg_log)
 					return True	
 				else:
-					msg_log='Installation aborted. Error ending installation'
+					msg_log='Installation aborted. Error ending installation of: %s'%self.pkg_log
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 					return False	
@@ -650,6 +665,7 @@ class EPIC(object):
 					order=order-1
 					self.epicore.zerocenter_feedback(order,'init')
 					if order==0:
+						totalError=0
 						print ('****************************************************************')
 						print ('******************** INSTALLING APPLICATION ********************')
 						print ('****************************************************************')
@@ -657,44 +673,50 @@ class EPIC(object):
 					result=self.add_repository_keys(order)
 					if result:
 						result=self.update_keyring()
-						result=self.download_app()
+						result=self.check_arquitecture()
 						if result:
-							result=self.preinstall_app()
+							result=self.check_update_repos()
 							if result:
-								result=self.check_arquitecture()
-								if result:
-									result=self.check_update_repos()
+								if order>0 or not self.sequentialProcess:
+									result=self._pkgInstallProcess('all')
 									if result:
-										result=self.install_app()
-										if result:
-											result=self.postinstall_app()
-											if result:
-												self.epicore.zerocenter_feedback(order,'install',result)
-											else:
-												error=True	
-										else:
-											error=True
+										self.epicore.zerocenter_feedback(order,'install',True)
 									else:
-										error=True		
+										error=True
 								else:
-									error=True
+									for pkg_id in self.epicore.packages_selected:
+										self.pkg_log=pkg_id
+										print('  [EPIC]: Processing the installation of: %s'%pkg_id)
+										result=self._pkgInstallProcess(pkg_id)
+										if not result:
+											totalError+=1 
+
+									if totalError>0:
+										error=True
+									else:
+										self.epicore.zerocenter_feedback(order,'install',True)
+
 							else:
 								error=True
-									
 						else:
 							error=True
 					else:
 						error=True
 
 					if error:
-						self.epicore.zerocenter_feedback(order,'install',result)
+						self.epicore.zerocenter_feedback(order,'install',False)
 						self.epicore.remove_repo_keys()
+						self.epicore.empty_cache_folder()
+						msg_log="Installation endind with errors"
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
 						return 1
 
 				msg_log='Installation completed successfully'
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				self.epicore.remove_repo_keys()
+				self.epicore.empty_cache_folder()
 				return 0
 			else:
 				msg_log="Internet connection not detected: "+connection[1] 
@@ -706,9 +728,24 @@ class EPIC(object):
 			print ('  [EPIC]: '+msg_log)
 			self.write_log(msg_log)
 			self.epicore.remove_repo_keys()
+			self.epicore.empty_cache_folder()
 			return 0
 
-	#def install_process		
+	#def install_process
+
+	def _pkgInstallProcess(self,pkg_id):
+
+		result=self.download_app(pkg_id)
+		if result:
+			result=self.preinstall_app(pkg_id)
+			if result:
+				result=self.install_app(pkg_id)
+				if result:
+					result=self.postinstall_app(pkg_id)
+
+		return result
+
+	#def _pkgInstallProcess		
 
 	def install(self,mode,nocheck):
 
@@ -737,26 +774,29 @@ class EPIC(object):
 
 	#def install		
 
-	def uninstall_app(self):
+	def uninstall_app(self,pkg_id):
 
-		cmd=self.epicore.uninstall_app(0)
+		cmd=self.epicore.uninstall_app(0,pkg_id)
 
 		if cmd !="":
 			print('  [EPIC]: Uninstall application...')
 			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
 			output=p.communicate()
 			error=self.readErrorOutput(output[1])
-			if error:
-				msg_log='Uninstalled process ending with errors:' +'\n'+str(output[1])
+			if error[0]:
+				msg_log='Uninstalled process for %s ending with errors. Details:\n%s'%(self.pkg_log,str(error[1]))
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
 				return False
 			else:
-				dpkg_status,result=self.epicore.check_install_remove("uninstall")
+				dpkg_status,result=self.epicore.check_install_remove("uninstall",pkg_id)
 				if result:
+					msg_log='Uninstalled process for %s ending OK'%self.pkg_log
+					print('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)			
 					return True	
 				else:
-					msg_log='Uninstalled process ending with errors'
+					msg_log='Uninstalled process for %s ending with errors'%self.pkg_log
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 					return False	
@@ -784,23 +824,52 @@ class EPIC(object):
 				self.stop_uninstall=self.check_remove_meta()
 
 				if not self.stop_uninstall:
-					result=self.uninstall_app()
+					totalUninstallError=0
+					if not self.sequentialProcess:
+						result=self.uninstall_app('all')
+					else:
+						for pkg in self.epicore.packages_selected:
+							self.pkg_log=pkg
+							print('  [EPIC]: Processing the uninstallation of: %s'%pkg)
+							result=self.uninstall_app(pkg)
+							if not result:
+								if pkg not in self.epicore.blocked_remove_pkgs_list and pkg not in  self.epicore.blocked_remove_skipped_pkgs_list:
+									totalUninstallError+=1
+							if totalUninstallError==0:
+								result=True
+							else:
+								result=False
 					if result:
-						if not self.metaRemovedWarning:
-							msg_log='Application successfully uninstalled'
+						if not self.meta_remove_warning:
+							if not self.skipped_remove_warning:
+								msg_log='Uninstall ending successfully'
+							else:
+								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
 						else:
-							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blockedPkgs
-						
+							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blocked_pkgs_meta
+							if self.skipped_remove_warning:
+								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
+												
 						print('  [EPIC]: '+msg_log)
 						self.write_log(msg_log)
-						self.epicore.zerocenter_feedback(0,'uninstall',result)
+						self.epicore.zerocenter_feedback(0,'uninstall',True)
 						return 0
 
 					else:
-						self.epicore.zerocenter_feedback(0,'uninstall',result)
+						msg_log="Uninstall process ending with errors"
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
+						self.epicore.zerocenter_feedback(0,'uninstall',False)
 						return 1
 				else:
-					msg_log='Uninstall blocked because remove metapackage.'
+					if self.meta_remove_warning:
+						if not self.skipped_remove_warning:
+							msg_log='Uninstall blocked because remove metapackage.'
+						else:
+							msg_log='Uninstall blocked because remove metapackage and not enough permissions'
+					else:
+						msg_log='Uninstall blocked because yo do not have enough permissions'
+
 					print('  [EPIC]: '+msg_log)
 					self.write_log(msg_log)
 					return 1
@@ -847,27 +916,57 @@ class EPIC(object):
 
 	def check_remove_meta(self):
 
-		self.blockedPkgs=""
+		self.blocked_pkgs_meta=""
+		self.blocked_pkgs_skipped=""
 		stop_uninstall=False
 
 		print('  [EPIC]: Checking if selected applications can be uninstalled...')
-		self.metaRemovedWarning=self.epicore.check_remove_meta()
+		self.meta_remove_warning=self.epicore.check_remove_meta()
+		self.skipped_remove_warning=self.epicore.check_remove_skip_pkg()
 
-		if self.metaRemovedWarning:
+		if self.meta_remove_warning:
 			count=1
-			for item in self.epicore.blockedRemovePkgsList:
-				if count<len(self.epicore.blockedRemovePkgsList):
-					self.blockedPkgs=self.blockedPkgs+item+", "
+			for item in self.epicore.blocked_remove_pkgs_list:
+				if count<len(self.epicore.blocked_remove_pkgs_list):
+					self.blocked_pkgs_meta=self.blocked_pkgs_meta+item+", "
 				else:
-					self.blockedPkgs=self.blockedPkgs+item
+					self.blocked_pkgs_meta=self.blocked_pkgs_meta+item
 				count+=1	
 
-			if len(self.epicore.packages_selected)==len(self.epicore.blockedRemovePkgsList):
+			if len(self.epicore.packages_selected)==len(self.epicore.blocked_remove_pkgs_list):
 				stop_uninstall=True
 
-		msg_log="Packages blocked because remove metapackage: %s"%self.blockedPkgs
-		print('  [EPIC]: '+msg_log)
-		self.write_log(msg_log)
+		if not stop_uninstall:
+			if self.skipped_remove_warning:
+				count=1
+				for item in self.epicore.blocked_remove_skipped_pkgs_list:
+					if count<len(self.epicore.blocked_remove_skipped_pkgs_list):
+						self.blocked_pkgs_skipped=self.blocked_pkgs_skipped+item+", "
+					else:
+						self.blocked_pkgs_skipped=self.blocked_pkgs_skipped+item
+					count+=1
+
+				if len(self.epicore.packages_selected)==len(self.epicore.blocked_remove_skipped_pkgs_list):
+					stop_uninstall=True
+					msg_log="Packages blocked because you do not have permission to uninstall them: %s"%self.blocked_pkgs_skipped	
+					print('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)
+				else:
+					total_pkgs=len(self.epicore.blocked_remove_skipped_pkgs_list)+len(self.epicore.blocked_remove_pkgs_list)
+					if total_pkgs==len(self.epicore.packages_selected):
+						stop_uninstall=True
+						msg_log="Packages blocked because you do not have permission to uninstall them and remove metapackage: by permision:%s - by meta:%s"%(self.blocked_pkgs_skipped,self.blocked_pkgs_meta)	
+						print('  [EPIC]: '+msg_log)
+						self.write_log(msg_log)
+			else:
+				if self.meta_remove_warning:
+					msg_log="Packages blocked because remove metapackage: %s"%self.blocked_pkgs_meta
+					print('  [EPIC]: '+msg_log)
+					self.write_log(msg_log)
+		else:
+			msg_log="Packages blocked because remove metapackage: %s"%self.blocked_pkgs_meta
+			print('  [EPIC]: '+msg_log)
+			self.write_log(msg_log)
 
 		return stop_uninstall
 
@@ -884,9 +983,9 @@ class EPIC(object):
 				cont=cont+1
 
 		if cont>0:
-			return True
+			return [True,output]
 		else:
-			return False	
+			return [False,output]	
 
 	# def readErrorOutput		
 
@@ -894,6 +993,7 @@ class EPIC(object):
 
 		print("\n  [EPIC]: Cancel process with Ctrl+C signal")
 		self.epicore.remove_repo_keys()
+		self.epicore.empty_cache_folder()
 		msg_log="Cancel process with Ctrl+C signal"
 		self.write_log(msg_log)
 		sys.exit(0)
