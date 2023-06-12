@@ -27,13 +27,13 @@ Description:Easy package installer (EPI). CLI tool
 
 Package: epi-gtk
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, dpkgunlocker-cli,  gir1.2-webkit2-4.0, gir1.2-vte-2.91, debconf-kde-helper
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, dpkgunlocker-cli, debconf-kde-helper, qml-module-qmltermwidget,python3-pyside2.qtqml, python3-pyside2.qtquick, python3-pyside2.qtgui, python3-pyside2.qtwidgets, python3-pyside2.qtquickwidgets, python3-pyside2.qtsvg
 Recommends: epi-cli (= ${binary:Version}),epi-local-installer (= ${binary:Version})
 Description:Easy package installer (EPI). GUI tool
   Provides the graphic version (EPI-gtk) of EPI
 
 Package: epi-local-installer
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk(= ${binary:Version}),python3-magic, xpkexec
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, epi-gtk(= ${binary:Version}),python3-magic, xpkexec, zstd
 Description:Local package installer for EPI
 

@@ -5,9 +5,15 @@ set -e
 case $1 in 
 
     configure)
-    	update-mime-database /usr/share/mime || true
-	gtk-update-icon-cache /usr/share/icons/hicolor -f || true
-	
+        
+    	newVersion=$(dpkg-query --showformat='${Version}' --show epi-gtk)
+        tokenDir=/var/lib/epi-gtk/version
+
+        echo "$newVersion" > "$tokenDir" || true
+      
+        update-mime-database /usr/share/mime || true
+        gtk-update-icon-cache /usr/share/icons/hicolor -f || true
+
     ;;
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
