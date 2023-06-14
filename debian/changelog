@@ -1,3 +1,9 @@
+epi (0.5) focal; urgency=medium
+
+  * New version in PySide2-QML.
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 14 Jun 2023 17:12:16 +0200
+
 epi (0.4.35) focal; urgency=medium
 
   * Fixed management of EULAS.
