@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+dpkg-divert --package epi-local-installer --rename --quiet --add --divert /usr/share/applications/kde-mimeapps.list.real /usr/share/applications/kde-mimeapps.list || echo "Unable to divert file \"/usr/share/applications/kde-mimeapps.list.real\"" >&2
+
+#DEBHELPER#
+
+exit 0
