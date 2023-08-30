@@ -1,3 +1,9 @@
+epi (0.15.1) jammy; urgency=medium
+
+  * Initial release for Jammy
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 30 Aug 2023 13:58:58 +0200
+
 epi (0.5.1) focal; urgency=medium
 
   * Dummy upgrade
