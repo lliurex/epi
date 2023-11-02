@@ -27,7 +27,7 @@ Rectangle{
             id:packagesList
             Layout.fillHeight:true
             Layout.fillWidth:true
-            packagesModel:epiBridge.packagesModel
+            packagesModel:packageStackBridge.packagesModel
         }
     
     }

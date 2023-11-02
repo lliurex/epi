@@ -31,9 +31,9 @@ GridLayout{
                 optionVisible:true
                 Connections{
                     function onMenuOptionClicked(){
-                        epiBridge.manageTransitions(0)
-                        if (epiBridge.currentPkgOption==2){
-                            epiBridge.showPkgInfo([1,""])
+                        mainStackBridge.manageTransitions(0)
+                        if (packageStackBridge.currentPkgOption==2){
+                            packageStackBridge.showPkgInfo([1,""])
                         }
                     }
                 }
@@ -44,10 +44,10 @@ GridLayout{
                 optionText:i18nd("epi-gtk","View details")
                 optionIcon:"/usr/share/icons/breeze/apps/22/utilities-terminal.svg"
                 optionVisible:true
-                enabled:epiBridge.enableKonsole
+                enabled:mainStackBridge.enableKonsole
                 Connections{
                     function onMenuOptionClicked(){
-                        epiBridge.manageTransitions(1)
+                        mainStackBridge.manageTransitions(1)
                     }
                 }
             }
@@ -57,7 +57,7 @@ GridLayout{
                 optionText:i18nd("epi-gtk","Help")
                 optionIcon:"/usr/share/icons/breeze/actions/22/help-contents.svg"
                 optionVisible:{
-                    if (epiBridge.wikiUrl!=""){
+                    if (packageStackBridge.wikiUrl!=""){
                         true
                     }else{
                         false
@@ -65,7 +65,7 @@ GridLayout{
                 }
                 Connections{
                     function onMenuOptionClicked(){
-                        epiBridge.openHelp()
+                        mainStackBridge.openHelp()
                     }
                 }
             }
@@ -80,7 +80,7 @@ GridLayout{
 
         StackLayout {
             id: optionsLayout
-            currentIndex:epiBridge.currentOptionsStack
+            currentIndex:mainStackBridge.currentOptionsStack
             Layout.fillHeight:true
             Layout.fillWidth:true
             Layout.alignment:Qt.AlignHCenter
@@ -96,8 +96,8 @@ GridLayout{
 
          Kirigami.InlineMessage {
             id: messageLabel
-            visible:epiBridge.showStatusMessage[0]
-            text:getFeedBackText(epiBridge.showStatusMessage[1])
+            visible:mainStackBridge.showStatusMessage[0]
+            text:getFeedBackText(mainStackBridge.showStatusMessage[1])
             type:getMsgType()
             Layout.minimumWidth:555
             Layout.fillWidth:true
@@ -115,8 +115,8 @@ GridLayout{
             PC3.Button {
                 id:uninstallBtn
                 visible:{
-                   if (epiBridge.currentPkgOption==0){
-                       if (epiBridge.showRemoveBtn){
+                   if (packageStackBridge.currentPkgOption==0){
+                       if (mainStackBridge.showRemoveBtn){
                            true
                        }else{
                            false
@@ -128,7 +128,7 @@ GridLayout{
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:{
-                    switch (epiBridge.currentPkgOption){
+                    switch (packageStackBridge.currentPkgOption){
                         case 0:
                             "remove"
                             break;
@@ -141,7 +141,7 @@ GridLayout{
                     }
                 }
                 text:{
-                    switch (epiBridge.currentPkgOption){
+                    switch (packageStackBridge.currentPkgOption){
                         case 0:
                             i18nd("epi-gtk","Uninstall")
                             break;
@@ -154,10 +154,10 @@ GridLayout{
                     }
                 }
                 enabled:{
-                    if (epiBridge.enableRemoveBtn){
+                    if (mainStackBridge.enableRemoveBtn){
                         true
                     }else{
-                        if (epiBridge.currentPkgOption==2){
+                        if (packageStackBridge.currentPkgOption==2){
                             true
                         }else{
                             false
@@ -170,15 +170,15 @@ GridLayout{
                 Keys.onReturnPressed: uninstallBtn.clicked()
                 Keys.onEnterPressed: uninstallBtn.clicked()
                 onClicked:{
-                    switch (epiBridge.currentPkgOption){
+                    switch (packageStackBridge.currentPkgOption){
                         case 0:
                             uninstallDialog.open()
                             break;
                         case 1:
-                            epiBridge.rejectEula()
+                            packageStackBridge.rejectEula()
                             break;
                         case 2:
-                            epiBridge.showPkgInfo([1,""])
+                            packageStackBridge.showPkgInfo([1,""])
                             break;
                     }
                 }
@@ -189,7 +189,7 @@ GridLayout{
                 Layout.alignment:Qt.AlignHCenter
                 Text{
                     id:feedBackText
-                    text:getFeedBackText(epiBridge.feedbackCode)
+                    text:getFeedBackText(mainStackBridge.feedbackCode)
                     visible:true
                     font.family: "Quattrocento Sans Bold"
                     font.pointSize: 10
@@ -203,7 +203,7 @@ GridLayout{
                 ProgressBar{
                     id:feedBackBar
                     indeterminate:true
-                    visible:epiBridge.isProgressBarVisible
+                    visible:mainStackBridge.isProgressBarVisible
                     implicitWidth:100
                     Layout.alignment:Qt.AlignHCenter
                 }
@@ -213,7 +213,7 @@ GridLayout{
             PC3.Button {
                 id:installBtn
                 visible:{
-                    if (epiBridge.currentPkgOption!=2){
+                    if (packageStackBridge.currentPkgOption!=2){
                         true
                     }else{
                         false
@@ -223,9 +223,9 @@ GridLayout{
                 display:AbstractButton.TextBesideIcon
                 icon.name:"dialog-ok"
                 text:{
-                    switch (epiBridge.currentPkgOption){
+                    switch (packageStackBridge.currentPkgOption){
                         case 0:
-                            if (epiBridge.isAllInstalled){
+                            if (packageStackBridge.isAllInstalled){
                                 i18nd("epi-gtk","Reinstall")
                             }else{
                                 i18nd("epi-gtk","Install")
@@ -240,7 +240,7 @@ GridLayout{
                     }
                 }
                 enabled:{
-                    if (epiBridge.enableApplyBtn){
+                    if (mainStackBridge.enableApplyBtn){
                         true
                   }else{
                         false
@@ -252,14 +252,14 @@ GridLayout{
                 Keys.onReturnPressed: installBtn.clicked()
                 Keys.onEnterPressed: installBtn.clicked()
                 onClicked:{
-                    if (epiBridge.currentPkgOption==0){
+                    if (packageStackBridge.currentPkgOption==0){
                         konsolePanel.runCommand('history -c\n')
                         applyChanges()
-                        epiBridge.launchInstallProcess()
+                        mainStackBridge.launchInstallProcess()
                     }else{
                         konsolePanel.runCommand('history -c\n')
                         applyChanges()
-                        epiBridge.acceptEula()
+                        packageStackBridge.acceptEula()
                     }
      
                 }
@@ -283,7 +283,7 @@ GridLayout{
                 uninstallDialog.close()
                 konsolePanel.runCommand('history -c\n')
                 applyChanges()
-                epiBridge.launchUninstallProcess()
+                mainStackBridge.launchUninstallProcess()
             }
             function onCancelDialogClicked(){
                 uninstallDialog.close()
@@ -298,7 +298,7 @@ GridLayout{
         dialogTitle:"EPI"
         dialogMsg:i18nd("epi-gtk","It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?") 
         dialogWidth:600
-        dialogVisible:epiBridge.showCloseDialog
+        dialogVisible:mainStackBridge.showCloseDialog
         btnAcceptVisible:true
         btnCancelText:i18nd("epi-gtk","Cancel")
         btnCancelIcon:"dialog-cancel"
@@ -306,11 +306,11 @@ GridLayout{
         Connections{
             target:closeDialog
             function onDialogApplyClicked(){
-                epiBridge.forceClossing()
+                mainStackBridge.forceClossing()
             }
             function onCancelDialogClicked(){
                 closeTimer.stop()
-                epiBridge.cancelClossing()
+                mainStackBridge.cancelClossing()
             } 
 
         }        
@@ -329,13 +329,13 @@ GridLayout{
    
     function applyChanges(){
         delay(100, function() {
-            if (epiBridge.endProcess){
+            if (mainStackBridge.endProcess){
                 timer.stop()
                 
             }else{
-                if (epiBridge.endCurrentCommand){
-                    epiBridge.getNewCommand()
-                    var newCommand=epiBridge.currentCommand
+                if (mainStackBridge.endCurrentCommand){
+                    mainStackBridge.getNewCommand()
+                    var newCommand=mainStackBridge.currentCommand
                     konsolePanel.runCommand(newCommand)
                 }
             }
@@ -388,7 +388,7 @@ GridLayout{
                 msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
                 break;
             case 7:
-                msg=i18nd("epi-gtk","Showing the end user license agreement for:\n")+epiBridge.currentEulaPkg;
+                msg=i18nd("epi-gtk","Showing the end user license agreement for:\n")+packageStackBridge.currentEulaPkg;
                 break;
             case 8:
                 msg=i18nd("epi-gtk","Checking if repositories need updating...")
@@ -446,7 +446,7 @@ GridLayout{
 
     function getMsgType(){
 
-        switch(epiBridge.showStatusMessage[2]){
+        switch(mainStackBridge.showStatusMessage[2]){
             case "Ok":
                 return Kirigami.MessageType.Positive;
             case "Error":

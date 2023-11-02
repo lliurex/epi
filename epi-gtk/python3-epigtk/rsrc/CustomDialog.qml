@@ -25,7 +25,7 @@ Dialog {
     
     onVisibleChanged:{
         if (!this.visible && xButton){
-            if (epiBridge.showDialog){
+            if (mainStackBridge.showDialog){
                 cancelDialogClicked()
             }
         }else{
