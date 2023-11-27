@@ -1,3 +1,9 @@
+epi (0.5.2) focal; urgency=medium
+
+  * Refactorize code
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 27 Nov 2023 12:10:57 +0100
+
 epi (0.5.1) focal; urgency=medium
 
   * Dummy upgrade
