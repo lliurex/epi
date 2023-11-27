@@ -13,7 +13,7 @@ GridLayout{
  
     StackView{
         id:generalPkgView
-        property int currentPkgOption:epiBridge.currentPkgOption
+        property int currentPkgOption:packageStackBridge.currentPkgOption
         Layout.fillHeight:true
         Layout.fillWidth:true
         Layout.alignment:Qt.AlignHCenter
@@ -61,7 +61,7 @@ GridLayout{
             id:pkgEulaView
             EulaPanel{
                 id:eulaPanel
-                eulaUrl:epiBridge.eulaUrl
+                eulaUrl:packageStackBridge.eulaUrl
             }
         }
 

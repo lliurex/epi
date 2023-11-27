@@ -1,5 +1,5 @@
-import QtQuick 2.6
-import QtQuick.Controls 2.6
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQml.Models 2.8
 import org.kde.plasma.components 2.0 as Components
 import org.kde.plasma.components 3.0 as PC3
@@ -46,13 +46,13 @@ Components.ListItem{
             checked:isChecked
             onToggled:{
                 console.log()
-                epiBridge.onCheckPkg([pkgId,checked])
+                packageStackBridge.onCheckPkg([pkgId,checked])
             }
             anchors.left:parent.left
             anchors.leftMargin:5
             anchors.verticalCenter:parent.verticalCenter
             visible:showCb
-            enabled:epiBridge.enablePkgList
+            enabled:packageStackBridge.enablePkgList
         }
 
         Image {
@@ -153,7 +153,7 @@ Components.ListItem{
             anchors.verticalCenter:parent.verticalCenter
             visible:{
                 if ((packageCheck.checked) && (showSpinner)){
-                    epiBridge.isProcessRunning
+                    mainStackBridge.isProcessRunning
                 }else{
                     false
                 }
@@ -179,7 +179,7 @@ Components.ListItem{
                     if ((status=="installed") && (entryPoint!="")){
                         false
                     }else{
-                        if (!epiBridge.isProcessRunning){
+                        if (!mainStackBridge.isProcessRunning){
                             true
                         }else{
                             false
@@ -194,7 +194,7 @@ Components.ListItem{
             ToolTip.visible: hovered
             ToolTip.text:i18nd("epi-gtk","Press to view application information")
             onClicked:{
-                epiBridge.showPkgInfo([0,pkgId])
+                packageStackBridge.showPkgInfo([0,pkgId])
             }
         }
 
@@ -208,7 +208,7 @@ Components.ListItem{
             visible:{
                 if (listPkgItem.ListView.isCurrentItem){
                     if ((status=="installed") && (entryPoint!="")){
-                        if (!epiBridge.isProcessRunning){
+                        if (!mainStackBridge.isProcessRunning){
                             true
                         }else{
                             false
@@ -225,7 +225,7 @@ Components.ListItem{
             ToolTip.visible: hovered
             ToolTip.text:i18nd("epi-gtk","Click to launch the application")
             onClicked:{
-                epiBridge.launchApp(entryPoint)
+                packageStackBridge.launchApp(entryPoint)
                 mainWindow.close()
             }
         }

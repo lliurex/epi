@@ -1,7 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import QMLTermWidget 1.0
 import org.kde.plasma.components 3.0 as PC3
 
 
@@ -30,7 +29,7 @@ Rectangle{
 
             Image{
                 id:pkgIcon
-                source:epiBridge.pkgStoreInfo[0]
+                source:packageStackBridge.pkgStoreInfo[0]
                 sourceSize.width:64
                 sourceSize.height:64
                 Layout.alignment:Qt.AlignVCenter
@@ -41,7 +40,7 @@ Rectangle{
                 Layout.alignment:Qt.AlignVCenter
                 Text{
                     id:pkgNameText
-                    text:epiBridge.pkgStoreInfo[1]
+                    text:packageStackBridge.pkgStoreInfo[1]
                     visible:true
                     font.family: "Quattrocento Sans Bold"
                     font.pointSize: 14
@@ -51,7 +50,7 @@ Rectangle{
                 }
                 Text{
                     id:pkgSummayText
-                    text:epiBridge.pkgStoreInfo[2]
+                    text:packageStackBridge.pkgStoreInfo[2]
                     visible:true
                     font.family: "Quattrocento Sans"
                     font.pointSize: 12
@@ -77,7 +76,7 @@ Rectangle{
                    anchors.leftMargin:11
                    Text{
                        id:pkgDescriptionText
-                       text:epiBridge.pkgStoreInfo[3]
+                       text:packageStackBridge.pkgStoreInfo[3]
                        font.family: "Quattrocento Sans"
                        font.pointSize: 11
                        horizontalAlignment:Text.AlignLeft

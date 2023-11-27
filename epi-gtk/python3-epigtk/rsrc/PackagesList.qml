@@ -1,10 +1,10 @@
-import QtQuick 2.6
-import QtQuick.Controls 2.6
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import QtQml.Models 2.8
 import org.kde.plasma.components 2.0 as Components
 import org.kde.plasma.components 3.0 as PC3
-import org.kde.kirigami 2.12 as Kirigami
-import QtQuick.Layouts 1.12
+import org.kde.kirigami 2.16 as Kirigami
+import QtQuick.Layouts 1.15
 
 
 Rectangle{
@@ -29,8 +29,8 @@ Rectangle{
             Layout.topMargin:40
             focus:true
             width:100
-            visible:epiBridge.selectPkg
-            enabled:epiBridge.enablePkgList
+            visible:packageStackBridge.selectPkg
+            enabled:packageStackBridge.enablePkgList
             placeholderText:i18nd("epi-gtk","Search...")
             onTextChanged:{
                 filterModel.update()
@@ -44,7 +44,7 @@ Rectangle{
             Layout.fillHeight:true
             Layout.fillWidth:true
             Layout.topMargin:{
-                if(epiBridge.selectPkg){
+                if(packageStackBridge.selectPkg){
                     0
                 }else{
                     40
@@ -75,7 +75,7 @@ Rectangle{
                         id:filterModel
                         model:packagesModel
                         role:"customName"
-                        showDepend:epiBridge.showDependEpi
+                        showDepend:packageStackBridge.showDependEpi
                         search:pkgSearchEntry.text.trim()
                         
                         delegate: ListDelegatePkgItem{
@@ -111,37 +111,37 @@ Rectangle{
 
             PC3.Button {
                 id:selectBtn
-                visible:epiBridge.selectPkg
+                visible:packageStackBridge.selectPkg
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:{
-                    if (epiBridge.uncheckAll){
+                    if (packageStackBridge.uncheckAll){
                         "list-remove"
                     }else{
                         "list-add"
                     }
                 }
                 text:{
-                    if (epiBridge.uncheckAll){
+                    if (packageStackBridge.uncheckAll){
                         i18nd("epi-gtk","Uncheck all packages")
                     }else{
                         i18nd("epi-gtk","Check all packages")
                     }
                 }
-                enabled:epiBridge.enablePkgList
+                enabled:packageStackBridge.enablePkgList
                 Layout.preferredHeight:40
                 Layout.rightMargin:10
                 Keys.onReturnPressed: selectBtn.clicked()
                 Keys.onEnterPressed: selectBtn.clicked()
                 onClicked:{
-                    epiBridge.selectAll()
+                    packageStackBridge.selectAll()
                 }
             }
 
             Text{
                 id:dependText
                 text:i18nd("epi-gtk","(D) Addicitional application required")
-                visible:epiBridge.showDependLabel
+                visible:packageStackBridge.showDependLabel
                 font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10
                 horizontalAlignment:Text.AlignLeft

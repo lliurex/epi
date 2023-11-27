@@ -8,7 +8,7 @@ Rectangle{
     color:"transparent"
     Text{ 
         text:{
-            if (epiBridge.launchedProcess=="uninstall"){  
+            if (mainStackBridge.launchedProcess=="uninstall"){  
                 i18nd("epi-gtk","Uninstall process details")
             }else{
                 i18nd("epi-gtk","Installation process details")

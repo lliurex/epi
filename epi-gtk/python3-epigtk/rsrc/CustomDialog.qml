@@ -1,6 +1,6 @@
-import QtQuick 2.6      
-import QtQuick.Controls 2.6
-import QtQuick.Layouts 1.12
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 import QtQuick.Dialogs 1.3
 import org.kde.plasma.components 3.0 as PC3
 
@@ -25,7 +25,7 @@ Dialog {
     
     onVisibleChanged:{
         if (!this.visible && xButton){
-            if (epiBridge.showDialog){
+            if (mainStackBridge.showDialog){
                 cancelDialogClicked()
             }
         }else{
