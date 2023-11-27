@@ -28,7 +28,7 @@ GridLayout{
                 id:packagesOption
                 optionText:i18nd("epi-gtk","Home")
                 optionIcon:"/usr/share/icons/breeze/places/22/user-home.svg"
-                optionVisible:true
+                visible:true
                 Connections{
                     function onMenuOptionClicked(){
                         mainStackBridge.manageTransitions(0)
@@ -43,8 +43,7 @@ GridLayout{
                 id:detailsOption
                 optionText:i18nd("epi-gtk","View details")
                 optionIcon:"/usr/share/icons/breeze/apps/22/utilities-terminal.svg"
-                optionVisible:true
-                enabled:mainStackBridge.enableKonsole
+                visible:mainStackBridge.enableKonsole
                 Connections{
                     function onMenuOptionClicked(){
                         mainStackBridge.manageTransitions(1)
@@ -56,7 +55,7 @@ GridLayout{
                 id:helpOption
                 optionText:i18nd("epi-gtk","Help")
                 optionIcon:"/usr/share/icons/breeze/actions/22/help-contents.svg"
-                optionVisible:{
+                visible:{
                     if (packageStackBridge.wikiUrl!=""){
                         true
                     }else{
