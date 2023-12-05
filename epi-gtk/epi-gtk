@@ -13,8 +13,10 @@ _ = gettext.gettext
 
 
 
-import epigtk.EpiGui as EpiGui
+from epigtk.Core import Core
 import epigtk.IconProvider as IconProvider
+
+c=Core.get_core()
 
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"]="--no-sandbox"
 
@@ -22,9 +24,11 @@ app = QApplication(sys.argv)
 engine = QQmlApplicationEngine()
 engine.clearComponentCache()
 context=engine.rootContext()
-epiBridge=EpiGui.EpiGui()
+mainStackBridge=c.mainStack
+packageStackBridge=c.packageStack
 engine.addImageProvider("iconProvider",IconProvider.IconProvider())
-context.setContextProperty("epiBridge", epiBridge)
+context.setContextProperty("mainStackBridge", mainStackBridge)
+context.setContextProperty("packageStackBridge",packageStackBridge)
 
 url = QUrl("/usr/lib/python3/dist-packages/epigtk/rsrc/epi-gui.qml")
 

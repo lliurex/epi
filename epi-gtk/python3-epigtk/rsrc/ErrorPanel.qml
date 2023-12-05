@@ -18,9 +18,9 @@ Rectangle{
         Kirigami.InlineMessage {
             id: errorLabel
             visible:true
-            text:getErrorText(epiBridge.loadErrorCode)
+            text:getErrorText(mainStackBridge.loadErrorCode)
             type:{
-                if (loadGrid.warningCode.includes(epiBridge.loadErrorCode)){
+                if (loadGrid.warningCode.includes(mainStackBridge.loadErrorCode)){
                     Kirigami.MessageType.Warning;
                 }else{
                     Kirigami.MessageType.Error;
@@ -34,9 +34,9 @@ Rectangle{
 
         Text{
             id:loadtext
-            text:i18nd("epi-gtk","Addittional information:\n")+epiBridge.localDebError
+            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.localDebError
             visible:{
-                if (epiBridge.localDebError!=""){
+                if (mainStackBridge.localDebError!=""){
                     true
                 }else{
                     false

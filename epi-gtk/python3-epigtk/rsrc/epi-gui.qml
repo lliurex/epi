@@ -23,9 +23,9 @@ ApplicationWindow {
     }
     onClosing: {
         close.accepted=closing;
-        epiBridge.closeApplication()
+        mainStackBridge.closeApplication()
         delay(100, function() {
-            if (epiBridge.closeGui){
+            if (mainStackBridge.closeGui){
                 closing=true,
                 closeTimer.stop(), 
                 mainWindow.close();
@@ -63,7 +63,7 @@ ApplicationWindow {
 
         StackView {
             id: mainView
-            property int currentView:epiBridge.currentStack
+            property int currentView:mainStackBridge.currentStack
             Layout.minimumWidth:800
             Layout.preferredWidth: 800
             Layout.minimumHeight:460

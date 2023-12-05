@@ -48,7 +48,7 @@ Rectangle{
         id:unlockDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
         dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Unlock process")
-        dialogVisible:epiBridge.showDialog
+        dialogVisible:mainStackBridge.showDialog
         dialogMsg:i18nd("epi-gtk","Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem") 
         dialogWidth:550
         btnAcceptVisible:false
@@ -58,7 +58,7 @@ Rectangle{
         Connections{
             target:unlockDialog
             function onCancelDialogClicked(){
-                epiBridge.launchUnlockProcess()
+                mainStackBridge.launchUnlockProcess()
             } 
 
         }
@@ -68,7 +68,7 @@ Rectangle{
     function getMsg(){
 
         var msg=""
-        switch(epiBridge.loadMsgCode){
+        switch(mainStackBridge.loadMsgCode){
             case 0:
                 msg=i18nd("epi-gtk","Loading information. Wait a moment...")
                 break;
