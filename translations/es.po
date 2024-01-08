@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-09 13:28+0200\n"
-"PO-Revision-Date: 2023-06-09 13:39+0200\n"
+"PO-Revision-Date: 2024-01-08 11:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -324,7 +324,7 @@ msgstr "Buscando información. Espere un momento..."
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:392
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:433
 msgid "Information not availabled"
-msgstr "Información no disponibles"
+msgstr "Información no disponible"
 
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:395
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:436
