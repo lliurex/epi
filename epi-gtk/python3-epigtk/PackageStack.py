@@ -379,7 +379,7 @@ class Bridge(QObject):
 		if len(self.getPkgInfoT.ret)==0:
 			self.core.mainStack.feedbackCode=Bridge.epiGuiManager.MSG_FEEDBACK_STORE_EMPTY
 		else:
-			self.feedbackCode=""
+			self.core.mainStack.feedbackCode=""
 			self.pkgStoreInfo=self.getPkgInfoT.ret
 			self.currentPkgOption=2
 
