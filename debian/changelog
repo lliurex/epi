@@ -1,3 +1,9 @@
+epi (0.15.3.2) jammy; urgency=medium
+
+  * Hide msg when show pkg info
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 14 Feb 2024 08:11:25 +0100
+
 epi (0.15.3.1) jammy; urgency=medium
 
   * Fixed translations
