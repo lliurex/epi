@@ -374,6 +374,9 @@ GridLayout{
             case -22:
                 msg=errorHeaded+i18nd("epi-gtk","Action blocked due to insufficient permissions and meta-package protection")
                 break;
+            case -23:
+                msg=i18nd("epi-gtk","The installation process ended with errors")
+                break;
             case 3:
                 msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
                 break;
