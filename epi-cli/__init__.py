@@ -419,8 +419,6 @@ class EPIC(object):
 			time.sleep(0.5)
 			per=i%16
 			print("  [EPIC]: The unlocking process is running. Wait a moment " + progressbar[per],end='\r')
-			#sys.stdout.flush()
-			#sys.stdout.write("\r\33[2K")
 			i+=1
 
 		result=result_queue.get()
@@ -461,17 +459,8 @@ class EPIC(object):
 				msg_log='Error gathering information. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
-			'''
-				return False
-			else:
-				msg_log='Gathering information: OK'
-				self.write_log(msg_log)
-				return True	
-
-		else:
-			return True		
-		'''
-	#def add_repository_keys
+	
+		#def add_repository_keys
 
 	def update_keyring(self):
 
@@ -489,7 +478,7 @@ class EPIC(object):
 
 		if cmd !="":
 			print('  [EPIC]: Downloading application....')
-			os.system(cmd)
+			p=subprocess.run(cmd,shell=True,check=False)
 			result=self.epicore.check_download(pkg_id)
 			if result:
 				msg_log='Downloading %s - Result: OK'%self.pkg_log
@@ -511,21 +500,9 @@ class EPIC(object):
 
 		if cmd !="":
 			print('  [EPIC]: Preparing installation...')
-			os.system(cmd)
-			os.system(cmd)
-			'''
-			p=subprocess.call(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			output=p.communicate()
-			error=self.readErrorOutput(output[1])
-			if error[0]:
-				msg_log='Installation aborted. Error preparing system for %s. Details:\n%s'%(self.pkg_log,str(error[1]))
-				print('  [EPIC]: ' +msg_log)
-				self.write_log(msg_log)
-				return False
-			else:
-			'''
+			p=subprocess.run(cmd,shell=True,check=False)
+
 			result=self.epicore.check_preinstall(pkg_id)
-			print("RESULTADO:%s"%str(result))
 			if result:
 				msg_log='Preparing installation of %s - Result: OK'%self.pkg_log
 				self.write_log(msg_log)
@@ -553,13 +530,7 @@ class EPIC(object):
 				msg_log='Error checking architecture. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
-		'''
-				return False
-			else:
-				return True
-		else:
-			return True
-		'''
+
 	# def check_arquitecture
 
 	def check_update_repos(self):
@@ -575,13 +546,7 @@ class EPIC(object):
 				msg_log='Error Checking if repositories need updating. Details:\n%s'%str(error[1])
 				print('  [EPIC]: '+msg_log)
 				self.write_log(msg_log)
-		'''
-				return False
-			else:
-				return True
-		else:
-			return True
-		'''
+
 	#def check_update_repos
 				
 	def install_app(self,pkg_id):
@@ -590,18 +555,8 @@ class EPIC(object):
 
 		if cmd !="":
 			print('  [EPIC]: Installing application...')
-			os.system(cmd)
-			'''
-			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
-			output=p.communicate()
-			error=self.readErrorOutput(output[1])
-			if error[0]:
-				msg_log='Installation aborted. Error installing: %s. Details:\n%s' %(self.pkg_log,str(error[1]))
-				print('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				return False
-			else:
-			'''
+			p=subprocess.run(cmd,shell=True,check=False)
+
 			dpkg_status,result=self.epicore.check_install_remove("install",pkg_id)
 			if result:
 				msg_log='Installing %s - Result: OK'%(self.pkg_log)
@@ -623,18 +578,8 @@ class EPIC(object):
 
 		if cmd !="":
 			print('  [EPIC]: Ending installation...')
-			os.system(cmd)
-			'''
-			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
-			output=p.communicate()
-			error=self.readErrorOutput(output[1])
-			if error[0]:
-				msg_log='Installation aborted. Error ending installation of %s. Details:\n%s'%(self.pkg_log,str(error[1]))
-				print('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				return False
-			else:
-			'''
+			p=subprocess.run(cmd,shell=True,check=False)
+
 			result=self.epicore.check_postinstall(pkg_id)
 			if result:
 				msg_log='Ending installation of: %s - Result: OK'%self.pkg_log
@@ -785,18 +730,8 @@ class EPIC(object):
 
 		if cmd !="":
 			print('  [EPIC]: Uninstall application...')
-			os.system(cmd)
-			'''
-			p=subprocess.Popen(cmd,shell=True,stderr=subprocess.PIPE)
-			output=p.communicate()
-			error=self.readErrorOutput(output[1])
-			if error[0]:
-				msg_log='Uninstalled process for %s ending with errors. Details:\n%s'%(self.pkg_log,str(error[1]))
-				print('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				return False
-			else:
-			'''
+			p=subprocess.run(cmd,shell=True,check=False)
+
 			dpkg_status,result=self.epicore.check_install_remove("uninstall",pkg_id)
 			if result:
 				msg_log='Uninstalled process for %s ending OK'%self.pkg_log
