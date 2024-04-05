@@ -831,7 +831,6 @@ class EpiManager:
 
 	#def preinstall_app	
 	
-
 	def check_preinstall(self,pkg_id):
 		
 		result=True
@@ -853,7 +852,6 @@ class EpiManager:
 	
 		return result
 
-
 	#def check_preinstall_app	
 
 	def install_app(self,calledfrom,pkg_id):
@@ -862,41 +860,23 @@ class EpiManager:
 		pkgs_apt=0
 		add_i386=""
 		cmd=""
-	
-		if self.type=="mix":
-			result_mix=self._check_epi_mix_content(calledfrom,pkg_id)
-			pkgs_apt=result_mix[0]
-			pkgs_deb=result_mix[1]
-			cmd_dpkg=result_mix[2]
-			pkgs_file=result_mix[3]
-			cmd_file=result_mix[4]
-			pkgs_snap=result_mix[5]
-			cmd_snap=result_mix[6]
-			pkgs_flatpak=result_mix[7]
-			cmd_flatpak=result_mix[8]
-		
-		if self.type=="apt" or pkgs_apt>0:
-			cmd=self._get_install_cmd_base(calledfrom,"apt")
-			
-		if self.type=="apt":	
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					if pkg_id!="all" and item["name"]!=pkg_id:
-						pass
-					else:
-						app=item["name"]
-						cmd="%s %s "%(cmd,app)
+
+		info_to_install=self._get_app_to_install(pkg_id)
+
+		if self.type=="apt" or info_to_install[0]=="apt":
+			cmd=self._get_install_cmd_base(calledfrom,"apt")	
+			cmd="%s%s"%(cmd,info_to_install[1])
 				
-		elif self.type=="deb":
+		elif self.type=="deb" or info_to_install[0]=="deb":
 			pkg=""
 			cmd=self._get_install_cmd_base(calledfrom,"deb")
 			for item in self.download_folder:
 				if os.path.exists(item):
-					if pkg_id!="all" and pkg_id not in item:
-						pass
-					else:
-						pkg="%s %s "%(pkg,item)
-					
+					for app in info_to_install[1]:
+						if app in item:
+							pkg="%s %s"%(pkg,item)
+							break
+						
 			cmd=cmd+pkg	
 
 		elif self.type=="localdeb":
@@ -907,95 +887,23 @@ class EpiManager:
 				if pkg_id!="all" and item["name"]!=pkg_id:
 					pass
 				else:
-					cmd="%s%s "%(cmd,pkg)
+					cmd="%s%s"%(cmd,pkg)
 
-
-		elif self.type=="file":
+		elif self.type=="file" or info_to_install[0]=="file":
 			cmd=self._get_install_file_cmd_base()
 			if cmd !="":
-				for item in self.epi_conf["pkg_list"]:
-					if item["name"] in self.packages_selected:
-						if pkg_id!="all" and item["name"]!=pkg_id:
-							pass
-						else:
-							cmd+="%s "%item["name"]
-					
-				cmd='%s; echo $? > %s'%(cmd,self.token_result_install[1]	)
+				cmd="%s %s"%(cmd,info_to_install[1])
+				cmd_file_token='; echo $? > %s'%self.token_result_install[1]
+				cmd='%s%s'%(cmd,cmd_file_token)
 		
-		elif self.type=="mix":
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					if pkg_id!="all" and item["name"]!=pkg_id:
-						pass
-					else:
-						if item["type"]=="apt":
-							cmd="%s %s "%(cmd,item["name"])
-						
-						elif item["type"]=="deb":
-							for pkg in self.download_folder:
-								if os.path.exists(pkg):
-									if item["name"] in pkg:
-										cmd_dpkg="%s %s "%(cmd_dpkg,pkg)	
-						
-						elif item["type"]=="file":
-							if cmd_file!="":
-								cmd_file+="%s "%item["name"]
-
-						elif item["type"]=="snap":
-							if cmd_snap!="":
-								cmd_snap+="%s "%item["name"] 
-						
-						elif item["type"]=="flatpak":
-							if cmd_flatpak!="":
-								cmd_flatpak+="%s "%item["name"] 
-					
-					
-			if cmd_dpkg!="":
-				if cmd!="":
-					cmd="%s; %s"%(cmd,cmd_dpkg)
-				else:
-					cmd=cmd_dpkg	
-			
-			if cmd_file!="":
-				cmd_file+='; echo $? > %s'%self.token_result_install[1]
-				if cmd!="":
-					cmd="%s; %s "%(cmd,cmd_file)
-				else:
-					cmd=cmd_file
-
-			if cmd_snap!="":
-				if cmd!="":
-					cmd="%s; %s "%(cmd,cmd_snap)
-				else:
-					cmd=cmd_snap		
-			
-			if cmd_flatpak!="":
-				if cmd!="":
-					cmd="%s; %s "%(cmd,cmd_flatpak)
-				else:
-					cmd=cmd_flatpak		
-
-
-		elif self.type=="snap":
+		elif self.type=="snap" or info_to_install[0]=="snap":
 			cmd=self._get_install_snap_cmd_base()
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					app=item["name"]
-					if pkg_id!="all" and pkg_id!=app:
-						pass
-					else:
-						cmd="%s %s "%(cmd,app)
-					
-		elif self.type=="flatpak":
+			cmd="%s%s"%(cmd,info_to_install[1])
+			
+		elif self.type=="flatpak" or info_to_install[0]=="flatpak":
 			cmd=self._get_install_flatpak_cmd_base()
-			for item in self.epi_conf["pkg_list"]:
-				if item["name"] in self.packages_selected:
-					app=item["name"]
-					if pkg_id!="all" and pkg_id!=app:
-						pass
-					else:
-						cmd="%s %s"%(cmd,app)
-		#if cmd!="":
+			cmd="%s%s"%(cmd,info_to_install[1])
+		
 		cmd="%s;"%cmd
 		cmd=cmd.strip()
 		if cmd==";":
@@ -1006,6 +914,26 @@ class EpiManager:
 		return cmd	
 
 	#def install_app
+
+	def _get_app_to_install(self,pkg_id):
+
+		app_to_install=""
+		app_type=""
+
+		for item in self.epi_conf["pkg_list"]:
+			if item["name"] in self.packages_selected:
+				app=item["name"]
+				if pkg_id!="all" and pkg_id!=app:
+					pass
+				else:
+					app_to_install="%s %s"%(app_to_install,app)
+					if self.type=="mix":
+						app_type=item["type"]
+						break
+
+		return [app_type,app_to_install]
+
+	#def _get_app_to_install
 
 	def _get_install_cmd_base(self,calledfrom,pkg_type):
 
@@ -1029,57 +957,6 @@ class EpiManager:
 		return cmd_headed		
 
 	# def _check_debconf_required
-
-	def _check_epi_mix_content(self,calledfrom,pkg_id):
-		
-		pkgs_apt=0
-		pkgs_file=0
-		pkgs_deb=0
-		pkgs_snap=0
-		pkgs_flatpak=0
-		cmd_file=""
-		cmd_dpkg=""
-		cmd_snap=""
-		cmd_flatpak=""
-		result=[]
-
-		for item in self.epi_conf["pkg_list"]:
-			if item["name"] in self.packages_selected:
-				if pkg_id!="all" and item["name"]!=pkg_id:
-					pass
-				else:
-					if item["type"]=="apt":
-						pkgs_apt+=1
-						
-					elif item["type"]=="deb":
-						pkgs_deb+=1
-
-					elif item["type"]=="file":
-						pkgs_file+=1
-
-					elif item["type"]=="snap":
-						pkgs_snap+=1
-				
-					elif item["type"]=="flatpak":
-						pkgs_flatpak+=1
-				
-		if pkgs_deb>0:
-			cmd_dpkg=self._get_install_cmd_base(calledfrom,"deb")	
-
-		if pkgs_file>0:
-			cmd_file=self._get_install_file_cmd_base()
-
-		if pkgs_snap>0:
-			cmd_snap=self._get_install_snap_cmd_base()	
-
-		if pkgs_flatpak>0:
-			cmd_flatpak=self._get_install_flatpak_cmd_base()	
-
-		result=[pkgs_apt,pkgs_deb,cmd_dpkg,pkgs_file,cmd_file,pkgs_snap,cmd_snap,pkgs_flatpak,cmd_flatpak]
-
-		return result
-
-	#def _check_epi_mix_content
 
 	def _get_install_file_cmd_base(self):
 

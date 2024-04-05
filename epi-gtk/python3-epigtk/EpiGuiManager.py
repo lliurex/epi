@@ -39,6 +39,7 @@ class EpiGuiManager:
 	ERROR_INSTALL_DOWNLOAD=-18
 	ERROR_INSTALL_INSTALL=-19
 	ERROR_INSTALL_ENDING=-20
+	ERROR_PARTIAL_INSTALL=-23
 	
 	MSG_LOADING_INFO=0
 	MSG_LOADING_WAIT=1
@@ -764,7 +765,6 @@ class EpiGuiManager:
 			msgCode=EpiGuiManager.ERROR_INSTALL_INIT
 			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,'install',False,None)
-			#self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
 			self.feedBackCheck=[preInstallRet,msgCode,typeMsg]
 			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 
@@ -826,7 +826,6 @@ class EpiGuiManager:
 			self._updateProcessModelInfo(self.order,pkgId,'install',self.installed,self.dpkgStatus)
 			msgCode=EpiGuiManager.ERROR_INSTALL_INSTALL
 			typeMsg="Error"
-			#self.epiManager.zerocenter_feedback(self.order,pkgId,"install",False)
 			self.feedBackCheck=[self.installed,msgCode,typeMsg]
 			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))
 	
@@ -859,12 +858,10 @@ class EpiGuiManager:
 			if not postInstallRet:
 				msgCode=EpiGuiManager.ERROR_INSTALL_ENDING
 				typeMsg="Error"
-				#self.epiManager.zerocenter_feedback(self.order,"install",False)
 		
 			else:
 				msgCode=EpiGuiManager.SUCCESS_INSTALL_PROCESS
 				typeMsg="Ok"
-				#self.epiManager.zerocenter_feedback(self.order,"install",True)
 
 			self.feedBackCheck=[postInstallRet,msgCode,typeMsg]
 			self._writeLog("Install process. Result: PkgId: %s - Status: %s - Code: %s"%(pkgId,typeMsg,msgCode))

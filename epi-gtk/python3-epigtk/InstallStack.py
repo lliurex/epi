@@ -241,7 +241,10 @@ class InstallStack(QObject):
 
 			if self.showError:
 				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",False)
-				self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
+				if self.countLimit==1:
+					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
+				else:
+					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.ERROR_PARTIAL_INSTALL,"Error"]
 				InstallStack.epiGuiManager.clearEnvironment()
 			else:
 				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",True)
