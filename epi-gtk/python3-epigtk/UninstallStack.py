@@ -60,6 +60,7 @@ class UninstallStack(QObject):
 			self.core.mainStack.isProcessRunning=True
 			self.core.mainStack.launchedProcess="uninstall"
 			UninstallStack.epiGuiManager.totalUninstallError=0
+			self.core.packageStack.totalErrorInProcess=UninstallStack.epiGuiManager.totalUninstallError
 			self.endAction=False
 			self.pkgProcessed=False
 			countLimit=len(UninstallStack.epiGuiManager.pkgSelectedFromList)
@@ -116,6 +117,7 @@ class UninstallStack(QObject):
 			self.core.mainStack.enableApplyBtn=True
 			self.core.packageStack.enablePkgList=True
 			self.core.packageStack.isAllInstalled=UninstallStack.epiGuiManager.isAllInstalled()
+			self.core.packageStack.totalErrorInProcess=UninstallStack.epiGuiManager.totalUninstallError
 			self.core.mainStack.manageRemoveBtn(True)
 			self.uninstallProcessTimer.stop()
 			if UninstallStack.epiGuiManager.totalUninstallError>0:

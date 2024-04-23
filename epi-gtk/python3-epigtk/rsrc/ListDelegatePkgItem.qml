@@ -45,7 +45,6 @@ Components.ListItem{
             id:packageCheck
             checked:isChecked
             onToggled:{
-                console.log()
                 packageStackBridge.onCheckPkg([pkgId,checked])
             }
             anchors.left:parent.left

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-03 13:10+0200\n"
+"POT-Creation-Date: 2024-04-23 15:24+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -321,26 +321,47 @@ msgstr ""
 msgid "Applications availables"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:34
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:49
+msgid "Click to filter applications by status"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
+msgid "Show installed apps"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
+msgid "Show uninstalled apps"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:84
+msgid "Show apps with error"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:100
+msgid "Remove filter"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:122
 msgid "Search..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:103
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:193
 msgid "Applications not found"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:126
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:216
 msgid "Uncheck all packages"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:128
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:218
 msgid "Check all packages"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:143
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:233
 msgid "(D) Addicitional application required"
 msgstr ""
 
+#: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 #: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 msgid "Additional information"
 msgstr ""

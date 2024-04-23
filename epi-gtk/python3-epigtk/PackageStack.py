@@ -50,7 +50,10 @@ class Bridge(QObject):
 		self._showDependLabel=False
 		self._launchedProcess=""
 		self._pkgStoreInfo=["","","",""]
-		self._isAllInstalled=False
+		self._isAllInstalled=[False,False]
+		self._filterStatusValue="all"
+		self._totalErrorInProcess=0
+
 
 	#def __init__
 
@@ -234,6 +237,34 @@ class Bridge(QObject):
 
 	#def _setIsAllInstalled
 
+	def _getFilterStatusValue(self):
+
+		return self._filterStatusValue
+
+	#def _getFilterStatusValue
+
+	def _setFilterStatusValue(self,filterStatusValue):
+
+		if self._filterStatusValue!=filterStatusValue:
+			self._filterStatusValue=filterStatusValue
+			self.on_filterStatusValue.emit()
+
+	#def _setFilterStatusValue
+
+	def _getTotalErrorInProcess(self):
+
+		return self._totalErrorInProcess
+
+	#def _getTotalErrorInProcess
+
+	def _setTotalErrorInProcess(self,totalErrorInProcess):
+
+		if self._totalErrorInProcess!=totalErrorInProcess:
+			self._totalErrorInProcess=totalErrorInProcess
+			self.on_totalErrorInProcess.emit()
+
+	#def _setTotalErrorInProcess
+
 	@Slot('QVariantList')
 	def onCheckPkg(self,info):
 
@@ -246,6 +277,7 @@ class Bridge(QObject):
 	def selectAll(self):
 
 		Bridge.epiGuiManager.selectAll()
+		self.filterStatusValue="all"
 		self._refreshInfo()
 		
 	#def selectAll
@@ -401,6 +433,13 @@ class Bridge(QObject):
 
 	#def _launchAppRet
 
+	@Slot(str)
+	def manageStatusFilter(self,value):
+
+		self.filterStatusValue=value
+
+	#def manageStatusFilter
+
 	on_currentPkgOption=Signal()
 	currentPkgOption=Property(int,_getCurrentPkgOption,_setCurrentPkgOption,notify=on_currentPkgOption)
 	
@@ -432,8 +471,14 @@ class Bridge(QObject):
 	pkgStoreInfo=Property('QVariantList',_getPkgStoreInfo,_setPkgStoreInfo,notify=on_pkgStoreInfo)
 	
 	on_isAllInstalled=Signal()
-	isAllInstalled=Property(bool,_getIsAllInstalled,_setIsAllInstalled,notify=on_isAllInstalled)
+	isAllInstalled=Property('QVariantList',_getIsAllInstalled,_setIsAllInstalled,notify=on_isAllInstalled)
 
+	on_filterStatusValue=Signal()
+	filterStatusValue=Property(str,_getFilterStatusValue,_setFilterStatusValue,notify=on_filterStatusValue)
+
+	on_totalErrorInProcess=Signal()
+	totalErrorInProcess=Property(int,_getTotalErrorInProcess,_setTotalErrorInProcess,notify=on_totalErrorInProcess)
+	
 	packagesModel=Property(QObject,_getPackagesModel,constant=True)
 
 #class Bridge
