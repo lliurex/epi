@@ -260,7 +260,6 @@ class Bridge(QObject):
 	def _setTotalErrorInProcess(self,totalErrorInProcess):
 
 		if self._totalErrorInProcess!=totalErrorInProcess:
-			print("cambio: %s"%str(totalErrorInProcess))
 			self._totalErrorInProcess=totalErrorInProcess
 			self.on_totalErrorInProcess.emit()
 
@@ -437,7 +436,6 @@ class Bridge(QObject):
 	@Slot(str)
 	def manageStatusFilter(self,value):
 
-		print(value)
 		self.filterStatusValue=value
 
 	#def manageStatusFilter
