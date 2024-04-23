@@ -495,6 +495,7 @@ class Bridge(QObject):
 
 		self.showStatusMessage=[False,"","Ok"]
 		self.core.packageStack.enablePkgList=False
+		self.core.packageStack.filterStatusValue="all"
 		self.endProcess=False
 		self.enableApplyBtn=False
 		if not Bridge.epiGuiManager.noCheck:
@@ -512,6 +513,7 @@ class Bridge(QObject):
 		self.enableApplyBtn=False
 		self.enableRemoveBtn=False
 		self.core.packageStack.enablePkgList=False
+		self.core.packageStack.filterStatusValue="all"
 		self.showStatusMessage=[False,"","Ok"]
 		self.endProcess=False
 		self.isProgressBarVisible=True

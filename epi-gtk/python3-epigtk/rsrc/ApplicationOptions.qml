@@ -224,7 +224,7 @@ GridLayout{
                 text:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
-                            if (packageStackBridge.isAllInstalled){
+                            if (packageStackBridge.isAllInstalled[0]){
                                 i18nd("epi-gtk","Reinstall")
                             }else{
                                 i18nd("epi-gtk","Install")

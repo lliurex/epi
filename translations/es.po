@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-03 13:10+0200\n"
-"PO-Revision-Date: 2024-04-03 13:12+0200\n"
+"POT-Creation-Date: 2024-04-23 15:24+0200\n"
+"PO-Revision-Date: 2024-04-23 15:25+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: epi-gtk/python3-epigtk/rsrc/Loading.qml:50
 msgid "Unlock process"
@@ -340,23 +340,43 @@ msgstr "Haga clic para lanzar la aplicación"
 msgid "Applications availables"
 msgstr "Aplicaciones disponibles"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:34
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:49
+msgid "Click to filter applications by status"
+msgstr "Haga clic para filtrar las aplicaciones por estado"
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
+msgid "Show installed apps"
+msgstr "Mostrar aplicaciones instaladas"
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
+msgid "Show uninstalled apps"
+msgstr "Mostrar aplicaciones no instaladas"
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:84
+msgid "Show apps with error"
+msgstr "Mostrar aplicaciones con error"
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:100
+msgid "Remove filter"
+msgstr "Eliminar filtro"
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:122
 msgid "Search..."
 msgstr "Buscar..."
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:103
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:193
 msgid "Applications not found"
 msgstr "No se han encontrado aplicaciones"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:126
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:216
 msgid "Uncheck all packages"
 msgstr "Deseleccionar todos los paquetes"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:128
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:218
 msgid "Check all packages"
 msgstr "Seleccionar todos los paquetes"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:143
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:233
 msgid "(D) Addicitional application required"
 msgstr "(D) Aplicación adicional requerida"
 
