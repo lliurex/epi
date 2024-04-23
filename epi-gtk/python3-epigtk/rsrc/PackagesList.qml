@@ -22,7 +22,13 @@ Rectangle{
         RowLayout{
             Layout.alignment:Qt.AlignRight
             spacing:10
-            Layout.topMargin:40
+            Layout.topMargin:{
+                if(packageStackBridge.selectPkg){
+                    40
+                }else{
+                    0
+                }
+            }
             PC3.Button{
                 id:statusFilterBtn
                 display:AbstractButton.IconOnly
