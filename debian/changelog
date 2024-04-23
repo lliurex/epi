@@ -1,3 +1,9 @@
+epi (0.5.4) focal; urgency=medium
+
+  * Added option to filter list of apps by status
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 23 Apr 2024 17:05:14 +0200
+
 epi (0.5.3) focal; urgency=medium
 
   * Improved feedback when installing multiple app
