@@ -1,3 +1,9 @@
+epi (0.15.5) jammy; urgency=medium
+
+  * Added option to filter the list of apps by status
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 23 Apr 2024 16:53:06 +0200
+
 epi (0.15.4) jammy; urgency=medium
 
   * Improved feedback when installing multiple apps
