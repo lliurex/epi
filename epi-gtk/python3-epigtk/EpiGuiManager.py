@@ -1118,10 +1118,15 @@ class EpiGuiManager:
 
 	def isAllInstalled(self):
 
+		pkgAvailable=0
 		if self.totalPackages==len(self.pkgsInstalled):
-			return True
-
-		return False
+			return [True,False]
+		else:
+			pkgAvailable=self.totalPackages-len(self.pkgsInstalled)
+			if pkgAvailable==self.totalPackages:
+				return [False,True]
+			else:
+				return [False,False]
 
 	#def isAllInstalled
 

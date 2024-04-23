@@ -54,6 +54,7 @@ class InstallStack(QObject):
 		self.core.mainStack.enableKonsole=True
 		self.core.mainStack.isProgressBarVisible=True
 		self.totalError=0
+		self.core.packageStack.totalErrorInProcess=0
 		self.launchedProcess="install"
 		self._initInstallProcess()
 		self.installProcessTimer=QTimer(None)
@@ -237,6 +238,7 @@ class InstallStack(QObject):
 			self.core.mainStack.isProcessRunning=False
 			self.core.packageStack.showDependEpi=False
 			self.core.packageStack.isAllInstalled=InstallStack.epiGuiManager.isAllInstalled()
+			self.core.packageStack.totalErrorInProcess=self.totalError
 			self.installProcessTimer.stop()
 
 			if self.showError:

@@ -1,7 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQml.Models 2.8
-import org.kde.plasma.components 2.0 as Components
 import org.kde.plasma.components 3.0 as PC3
 import org.kde.kirigami 2.16 as Kirigami
 import QtQuick.Layouts 1.15
@@ -20,20 +19,110 @@ Rectangle{
         rowSpacing:10
         anchors.left:parent.left
         anchors.fill:parent
-
-        PC3.TextField{
-            id:pkgSearchEntry
-            font.pointSize:10
-            horizontalAlignment:TextInput.AlignLeft
+        RowLayout{
             Layout.alignment:Qt.AlignRight
+            spacing:10
             Layout.topMargin:40
-            focus:true
-            width:100
-            visible:packageStackBridge.selectPkg
-            enabled:packageStackBridge.enablePkgList
-            placeholderText:i18nd("epi-gtk","Search...")
-            onTextChanged:{
-                filterModel.update()
+            PC3.Button{
+                id:statusFilterBtn
+                display:AbstractButton.IconOnly
+                icon.name:"view-filter"
+                visible:packageStackBridge.selectPkg
+                enabled:{
+                    if (packageStackBridge.totalErrorInProcess==0){
+                        if (packageStackBridge.enablePkgList){
+                            if (packageStackBridge.isAllInstalled[0] || packageStackBridge.isAllInstalled[1]){
+                                false
+                            }else{
+                                true
+                            }
+                        }else{
+                            false
+                        }
+                    }else{
+                        true
+                    }
+                }
+                ToolTip.delay: 1000
+                ToolTip.timeout: 3000
+                ToolTip.visible: hovered
+                ToolTip.text:i18nd("epi-gtk","Click to filter applications by status")
+                onClicked:optionsMenu.open();
+               
+                PC3.Menu{
+                    id:optionsMenu
+                    y: statusFilterBtn.height
+                    x:-(optionsMenu.width-statusFilterBtn.width/2)
+
+                    PC3.MenuItem{
+                        icon.name:"installed"
+                        text:i18nd("epi-gtk","Show installed apps")
+                        enabled:{
+                            if (packageStackBridge.filterStatusValue!="installed"){
+                                true
+                            }else{
+                                false
+                            }
+                        }
+                        onClicked:packageStackBridge.manageStatusFilter("installed")
+                    }
+
+                    PC3.MenuItem{
+                        icon.name:"noninstalled"
+                        text:i18nd("epi-gtk","Show uninstalled apps")
+                        enabled:
+                            if (packageStackBridge.filterStatusValue!="available"){
+                                true
+                            }else{
+                                false
+                            }
+
+                        onClicked:packageStackBridge.manageStatusFilter("available")
+                    }
+                    PC3.MenuItem{
+                        icon.name:"emblem-error"
+                        text:i18nd("epi-gtk","Show apps with error")
+                        enabled:
+                            if (packageStackBridge.filterStatusValue!="error"){
+                                if (packageStackBridge.totalErrorInProcess>0){
+                                    true
+                                }else{
+                                    false
+                                }
+                            }else{
+                                false
+                            }
+
+                        onClicked:packageStackBridge.manageStatusFilter("error")
+                    }
+                    PC3.MenuItem{
+                        icon.name:"kt-remove-filters"
+                        text:i18nd("epi-gtk","Remove filter")
+                        enabled:{
+                            if (packageStackBridge.filterStatusValue!="all"){
+                                true
+                            }else{
+                                false
+                            }
+                        }
+                        onClicked:packageStackBridge.manageStatusFilter("all")
+                    }
+                }
+            }
+                
+            PC3.TextField{
+                id:pkgSearchEntry
+                font.pointSize:10
+                horizontalAlignment:TextInput.AlignLeft
+                Layout.alignment:Qt.AlignRight
+                focus:true
+                width:100
+                visible:packageStackBridge.selectPkg
+                enabled:packageStackBridge.enablePkgList
+                placeholderText:i18nd("epi-gtk","Search...")
+                onTextChanged:{
+                    filterModel.update()
+                }
             }
         }
 
@@ -77,6 +166,7 @@ Rectangle{
                         role:"customName"
                         showDepend:packageStackBridge.showDependEpi
                         search:pkgSearchEntry.text.trim()
+                        statusFilter:packageStackBridge.filterStatusValue
                         
                         delegate: ListDelegatePkgItem{
                             width:pkgTable.width
