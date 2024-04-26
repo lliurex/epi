@@ -53,6 +53,7 @@ class Bridge(QObject):
 		self._isAllInstalled=[False,False]
 		self._filterStatusValue="all"
 		self._totalErrorInProcess=0
+		self.getPkgInfoRunning=False
 
 
 	#def __init__
@@ -393,16 +394,19 @@ class Bridge(QObject):
 	@Slot('QVariantList')
 	def showPkgInfo(self,params):
 
-		self.core.mainStack.showStatusMessage=[False,"","Ok"]
+		if not self.getPkgInfoRunning:
 
-		if params[0]==0:
-			self.core.mainStack.feedbackCode=Bridge.epiGuiManager.MSG_FEEDBACK_STORE_INFO
-			self.getPkgInfoT=GetPkgInfo(params[1])
-			self.getPkgInfoT.start()
-			self.getPkgInfoT.finished.connect(self._getPkgInfoRet)
-		else:
-			self.core.mainStack.feedbackCode=""
-			self.currentPkgOption=0
+			self.core.mainStack.showStatusMessage=[False,"","Ok"]
+
+			if params[0]==0:
+				self.getPkgInfoRunning=True
+				self.core.mainStack.feedbackCode=Bridge.epiGuiManager.MSG_FEEDBACK_STORE_INFO
+				self.getPkgInfoT=GetPkgInfo(params[1])
+				self.getPkgInfoT.start()
+				self.getPkgInfoT.finished.connect(self._getPkgInfoRet)
+			else:
+				self.core.mainStack.feedbackCode=""
+				self.currentPkgOption=0
 
 	#def showPkgInfo
 
@@ -415,6 +419,7 @@ class Bridge(QObject):
 			self.pkgStoreInfo=self.getPkgInfoT.ret
 			self.currentPkgOption=2
 
+		self.getPkgInfoRunning=False
 	#def _getPkgInfoRet
 
 	@Slot(str)
