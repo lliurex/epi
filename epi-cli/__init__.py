@@ -45,7 +45,7 @@ class EPIC(object):
 				msg_log='APP epi file loaded by EPIC: ' + app
 				self.write_log(msg_log)	
 				self.remote_install=self.epicore.check_remote_epi(app)
-
+				self.all_install=self.epicore.check_all_epi(app)
 
 	#def __init__
 
@@ -58,6 +58,12 @@ class EPIC(object):
 		pkgs_default=""
 		tmp_list=[]
 		pkgs_installed=""
+		pkgs_list_ref=[]
+
+		if show_all:
+			pkgs_list_ref=self.all_install
+		else:
+			pkgs_list_ref=self.remote_install
 
 		for item in self.epicore.epiFiles:
 			order=order-1
@@ -67,8 +73,8 @@ class EPIC(object):
 					depends=depends+item["name"]+" "
 					self.epicore.packages_selected.append(item["name"])
 			else:
-				if len(self.remote_install)>0:
-					for item in self.remote_install:
+				if len(pkgs_list_ref)>0:
+					for item in pkgs_list_ref:
 						if  self.epicore.pkg_info[item["name"]]["status"]=="installed":
 							pkgs_installed=pkgs_installed+item["name"]+" "
 						pkgs_available=pkgs_available+item["name"]+" "
@@ -85,7 +91,7 @@ class EPIC(object):
 							else:
 								if 'all' in self.pkgsToInstall:
 									pkgs_selected='all'
-									for item in self.remote_install:
+									for item in self.all_install:
 										self.epicore.packages_selected.append(item["name"])
 								else:
 									for item in self.pkgsToInstall:
@@ -93,7 +99,7 @@ class EPIC(object):
 										self.epicore.packages_selected.append(item)
 						else:
 							pkgs_selected=pkgs_available
-							for item in self.remote_install:
+							for item in pkgs_list_ref:
 								self.epicore.packages_selected.append(item["name"])
 
 		return depends,pkgs_available,pkgs_default,pkgs_installed,pkgs_selected
@@ -121,6 +127,28 @@ class EPIC(object):
 			print ('  [EPIC]: No available epi file app detected')
 
 	#def listEpi	
+
+	def listAllEpi(self):
+
+		epi_list=sorted(self.epicore.all_available_epis, key=lambda d: list(d.keys()))
+		count_epi=len(epi_list)
+		tmp=""
+		count=1
+
+		if count_epi>0:				
+			for item in epi_list:
+				for element in item:
+					if count<count_epi:
+						tmp=tmp+element+", "
+					else:
+						tmp=tmp+element
+					count+=1
+			print ('  [EPIC]: List of all epi files availables in the system: '+tmp)
+		
+		else:
+			print ('  [EPIC]: No available epi file app detected')
+
+	#def listAllEpi	
 	
 	def showInfo(self,checked=None):
 		
@@ -194,6 +222,11 @@ class EPIC(object):
 			print ("     - Uninstall process availabled: " + self.uninstall)
 			if len(depends)>0:
 				print ("     - Additional application required: " + depends)
+
+			if self.epicore.epiFiles[0]["required_x"]:
+				print ("     - Can be installed from terminal: No")
+			else:
+				print ("     - Can be installed from terminal: Yes")
 
 			return 0
 		else:

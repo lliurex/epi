@@ -1239,55 +1239,56 @@ class EpiManager:
 	def cli_install(self):
 
 		remote_available=[]
+		all_available=[]
 		selection_enabled={}
 		zomando=""
+		required_x=False
 
 		if self.epiFiles[0]["required_x"]:
-			return [remote_available,selection_enabled]									
+			required_x=True
 
-		else:
-			path_custom_icons=self.epiFiles[0]["custom_icon_path"]
-			selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
-			zomando=self.epiFiles[0]["zomando"]
-			add_to_list=True
-			for item in self.epiFiles[0]["pkg_list"]:
-				try:
-					if item["required_x"]:
-						add_to_list=False
-				except:
-					add_to_list=True
+		path_custom_icons=self.epiFiles[0]["custom_icon_path"]
+		selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
+		zomando=self.epiFiles[0]["zomando"]
+		add_to_list=True
+		for item in self.epiFiles[0]["pkg_list"]:
+			try:
+				if item["required_x"]:
+					add_to_list=False
+			except:
+				add_to_list=True
 
-				if add_to_list:
-					pkg={}
-					pkg["name"]=item["name"]
-					try:
-						pkg["custom_name"]=item["custom_name"]
-					except:
-						pkg["custom_name"]=item["name"]
-					try:
-						if path_custom_icons!="":
-							pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
-						else:
-							pkg["custom_icon"]=""
-					except:
-						pkg["custom_icon"]=""
-					try:
-						pkg["default_pkg"]=item["default_pkg"]
-					except:
-						pkg["default_pkg"]=False
-					
-					try:
-						pkg["skip_flavours"]=item["skip_flavours"]
-					except:
-						pkg["skip_flavours"]=[]
-					try:
-						pkg["skip_groups"]=item["skip_groups"]
-					except:
-						pkg["skip_groups"]=[]
-					
-					remote_available.append(pkg)			
+			pkg={}
+			pkg["name"]=item["name"]
+			try:
+				pkg["custom_name"]=item["custom_name"]
+			except:
+				pkg["custom_name"]=item["name"]
+			try:
+				if path_custom_icons!="":
+					pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
+				else:
+					pkg["custom_icon"]=""
+			except:
+				pkg["custom_icon"]=""
+			try:
+				pkg["default_pkg"]=item["default_pkg"]
+			except:
+				pkg["default_pkg"]=False
+			try:
+				pkg["skip_flavours"]=item["skip_flavours"]
+			except:
+				pkg["skip_flavours"]=[]
+			try:
+				pkg["skip_groups"]=item["skip_groups"]
+			except:
+				pkg["skip_groups"]=[]
+
+			all_available.append(pkg)
+			if add_to_list:
+				remote_available.append(pkg)			
 		
-		return [remote_available,selection_enabled,zomando]									
+		return [remote_available,selection_enabled,zomando,all_available,required_x]									
 
 	#def cli_install	
 
@@ -1296,6 +1297,7 @@ class EpiManager:
 		self.remote_available_epis=[]
 		self.available_epis=[]
 		self.cli_available_epis=[]
+		self.all_available_epis=[]
 		self.skipped_pkgs_groups=[]
 		self.skipped_pkgs_flavours=[]
 
@@ -1312,7 +1314,7 @@ class EpiManager:
 							check=self.read_conf(line,False,True)["status"]
 							if check:
 								remote=self.cli_install()
-								if len(remote[0])>0:
+								if not remote[4] and len(remote[0])>0:
 									tmp={}
 									epi_name=os.path.basename(line)
 									tmp[epi_name]={}
@@ -1323,6 +1325,15 @@ class EpiManager:
 									if not self.is_zmd_service(remote[2]):
 										tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
 										self.remote_available_epis.append(tmp)
+								
+								if len(remote[3])>0:
+									tmp={}
+									epi_name=os.path.basename(line)
+									tmp[epi_name]={}
+									tmp[epi_name]=remote[1]
+									tmp[epi_name]["zomando"]=remote[2]
+									tmp[epi_name]["pkg_list"]=remote[3]
+									self.all_available_epis.append(tmp)
 								
 								self.available_epis.append(line)
 
@@ -1337,6 +1348,23 @@ class EpiManager:
 		tmp=[]
 		epi=os.path.basename(epi)
 		for item in self.cli_available_epis:
+			for element in item:
+				if epi==element:
+					for pkg in item[element]["pkg_list"]:
+						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
+							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
+								tmp.append(pkg)
+					#return item[element]["pkg_list"]
+
+		return tmp	
+
+	#def check_remote_epi
+
+	def check_all_epi(self,epi):
+
+		tmp=[]
+		epi=os.path.basename(epi)
+		for item in self.all_available_epis:
 			for element in item:
 				if epi==element:
 					for pkg in item[element]["pkg_list"]:

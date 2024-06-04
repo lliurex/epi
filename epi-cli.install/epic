@@ -9,10 +9,22 @@ _epic()
     #
     #  The basic options we'll complete.
     #
-    opts="showinfo showlist install uninstall help"
+    opts="show all showinfo showlist install uninstall help"
 
     case "${prev}" in 
-        showinfo | install | uninstall)
+        showinfo)
+            local epis=$(epic showall)
+            if [[ $epis == *"List of all epi"* ]];then
+                epis=${epis//"[EPIC]: List of all epi files availables in the system: "/}
+                epis=${epis//,/}
+                COMPREPLY=( $(compgen -W "${epis}" -- ${cur}) )
+            else
+                COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+            fi
+            return 0
+
+        ;;
+        install | uninstall)
             local epis=$(epic showlist)
             if [[ $epis == *"List of all epi"* ]];then
                 epis=${epis//"[EPIC]: List of all epi files that can be installed with EPIC: "/}
