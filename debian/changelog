@@ -1,3 +1,9 @@
+epi (0.5.6) focal; urgency=medium
+
+  * Improved check result of install/uninstall process in file epi type
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 01 Jul 2024 12:36:02 +0200
+
 epi (0.5.5) focal; urgency=medium
 
   * Fixed scroll when filter/search is applied.
