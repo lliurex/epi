@@ -1,3 +1,9 @@
+epi (0.15.7) jammy; urgency=medium
+
+  * Improved check result in install/uninstall process in file epi type
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 01 Jul 2024 12:28:13 +0200
+
 epi (0.15.6) jammy; urgency=medium
 
   * Fixed scroll when filter/search is applied
