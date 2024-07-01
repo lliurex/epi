@@ -51,7 +51,7 @@ Components.ListItem{
 
         Image {
             id:packageIcon
-            source:"image://iconProvider"+pkgIcon
+            source:"image://iconProvider/"+pkgIcon
             sourceSize.width:32
             sourceSize.height:32
             anchors.left:{
