@@ -1058,8 +1058,19 @@ class EpiManager:
 					result=False
 
 				else:
-					result=True	
-							
+					script=self.check_getStatus_byScript(0)
+					status=self.check_pkg_status(pkg_id,epi_type,script)
+					print(status)
+					if status!="installed":
+						if action=="install":
+							result=False
+						else:
+							result=True
+					else:
+						if action=="install":
+							result=True
+						else:
+							result=False
 				file.close()
 				os.remove(token)
 
