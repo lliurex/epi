@@ -5,6 +5,7 @@ from PySide2.QtGui import *
 from PySide2.QtSvg import *
 from PySide2.QtQuick import QQuickImageProvider
 import os
+import urllib.request
 
 class IconProvider(QQuickImageProvider):
 
@@ -18,6 +19,7 @@ class IconProvider(QQuickImageProvider):
 	
 	def requestImage(self,imagePath,size1,size2):
 
+		print(imagePath)
 		return self.createIcon("/%s"%imagePath)
 
 	#def requestImage
@@ -46,7 +48,14 @@ class IconProvider(QQuickImageProvider):
 			else:
 				destImage.load(appIcon,"png")
 		else:
-			destImage.load(self.localPackage,"png")
+			if 'http' in appIcon:
+				try:
+					res=urllib.request.urlopen(appIcon[1:],timeout=5).read()
+					destImage.loadFromData(res,"png")
+				except:
+					destImage.load(self.localPackage,"png")
+			else:
+				destImage.load(self.localPackage,"png")
 		
 		s=QSize(48,48)
 		destImage=destImage.scaled(s,aspectMode=Qt.KeepAspectRatio,mode=Qt.SmoothTransformation)
