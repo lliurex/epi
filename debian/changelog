@@ -1,3 +1,9 @@
+epi (0.5.7) focal; urgency=medium
+
+  * Supported app icon from url in app list
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 30 Jul 2024 12:09:11 +0200
+
 epi (0.5.6) focal; urgency=medium
 
   * Improved check result of install/uninstall process in file epi type
