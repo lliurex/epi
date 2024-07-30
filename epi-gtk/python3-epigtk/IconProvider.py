@@ -19,7 +19,6 @@ class IconProvider(QQuickImageProvider):
 	
 	def requestImage(self,imagePath,size1,size2):
 
-		print(imagePath)
 		return self.createIcon("/%s"%imagePath)
 
 	#def requestImage
