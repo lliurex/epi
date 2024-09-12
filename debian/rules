@@ -28,3 +28,5 @@ override_dh_auto_install:
 	python3 setup_cli.py clean --all
 	python3 setup_gtk.py install --root $(CURDIR)/debian/epi-gtk --prefix=/usr
 	python3 setup_gtk.py clean --all
+
+override_dh_usrlocal:
