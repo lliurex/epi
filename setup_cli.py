@@ -39,7 +39,7 @@ if __name__ == '__main__':
 		platforms='UNIX',
 		packages = ['epicli'],
 		package_dir = {'epicli':'epi-cli'},
-		data_files = [('sbin',['epi-cli/epic'])],
+		data_files = [('/usr/sbin',['epi-cli/epic'])],
 		classifiers=[
 			'Development Status :: 4 - Beta',
 			'Environment :: Console'
