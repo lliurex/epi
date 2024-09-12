@@ -1,12 +1,12 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQml.Models 2.8
-import org.kde.plasma.components 2.0 as Components
-import org.kde.plasma.components 3.0 as PC3
+//import org.kde.plasma.components 2.0 as Components
+//import org.kde.plasma.components 3.0 as PC3
 
 
-Components.ListItem{
-
+//Components.ListItem{
+ItemDelegate{
     id: listPkgItem
     property string pkgId
     property bool showCb
@@ -20,23 +20,27 @@ Components.ListItem{
     property bool showSpinner
     property string entryPoint
 
+    height:60
+
+    //color:"transparent"
+
     enabled:true
+    /*onContainsMouseChanged:{
+            if (containsMouse){
+                listPkg.currentIndex=filterModel.visibleElements.indexOf(index)
+            }else{
+                listPkg.currentIndex=-1
+            }
 
-   onContainsMouseChanged:{
-        if (containsMouse){
-            listPkg.currentIndex=filterModel.visibleElements.indexOf(index)
-        }else{
-            listPkg.currentIndex=-1
-        }
-
-    }
-
+    }*/
+   
     Item{
         id: menuItem
         height:visible?50:0
-        width:parent.width-15
-
-        PC3.CheckBox {
+        //width:parent.width-15
+	width:parent.width-35
+        //PC3.CheckBox {
+        CheckBox{
             id:packageCheck
             checked:isChecked
             onToggled:{
@@ -73,11 +77,12 @@ Components.ListItem{
                 if (order==0){
                     customName
                 }else{
-                    i18nd("epi-gtk","Previous actions: executing ")+customName
+                    //i18nd("epi-gtk","Previous actions: executing ")+customName
+                    "Previous actions: executing "+customName
                 }
             }
             width: {
-                if (listPkgItem.ListView.isCurrentItem){
+                /*if (listPkgItem.ListView.isCurrentItem){
                     if (resultImg.visible){
                         parent.width-resultImg.width-showInfoBtn.width-150
                     }else{
@@ -89,7 +94,8 @@ Components.ListItem{
                     }else{
                         parent.width-150
                     }
-                }
+                }*/
+		parent.width-resultImg.width-showInfoBtn.width-150
             }
             elide:Text.ElideMiddle
             clip: true
@@ -161,15 +167,17 @@ Components.ListItem{
             }
         }
 
-        PC3.Button{
+        //PC3.Button{
+        Button{
             id:showInfoBtn
             display:AbstractButton.IconOnly
-            icon.name:"help-about"
+            //icon.name:"help-about"
+            icon.source:"/usr/share/icons/breeze/actions/22/help-about"
             anchors.leftMargin:10
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
             visible:{
-                if (listPkgItem.ListView.isCurrentItem){
+               // if (listPkgItem.ListView.isCurrentItem){
                     if ((status=="installed") && (entryPoint!="")){
                         false
                     }else{
@@ -179,28 +187,31 @@ Components.ListItem{
                             false
                         }
                     }
-                }else{
+                /*}else{
                     false
-                }
+                }*/
             }
             ToolTip.delay: 1000
             ToolTip.timeout: 3000
             ToolTip.visible: hovered
-            ToolTip.text:i18nd("epi-gtk","Press to view application information")
+            //ToolTip.text:i18nd("epi-gtk","Press to view application information")
+            ToolTip.text:"Press to view application information"
             onClicked:{
                 packageStackBridge.showPkgInfo([0,pkgId])
             }
         }
 
-        PC3.Button{
+        //PC3.Button{
+        Button{
             id:entryPointBtn
             display:AbstractButton.IconOnly
-            icon.name:"media-playback-playing"
+            //icon.name:"media-playback-playing"
+            icon.source:"/usr/share/icons/breeze/status/22/media-playback-playing"
             anchors.leftMargin:10
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
             visible:{
-                if (listPkgItem.ListView.isCurrentItem){
+               // if (listPkgItem.ListView.isCurrentItem){
                     if ((status=="installed") && (entryPoint!="")){
                         if (!mainStackBridge.isProcessRunning){
                             true
@@ -210,14 +221,15 @@ Components.ListItem{
                     }else{
                         false
                     }
-                }else{
+                /*}else{
                     false
-                }
+                }*/
             }
             ToolTip.delay: 1000
             ToolTip.timeout: 3000
             ToolTip.visible: hovered
-            ToolTip.text:i18nd("epi-gtk","Click to launch the application")
+            //ToolTip.text:i18nd("epi-gtk","Click to launch the application")
+            ToolTip.text:"Click to launch the application"
             onClicked:{
                 packageStackBridge.launchApp(entryPoint)
                 mainWindow.close()
@@ -227,5 +239,6 @@ Components.ListItem{
 
 
     }
+   
 
 }

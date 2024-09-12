@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Dialogs 1.3
-import org.kde.plasma.components 3.0 as PC3
+//import org.kde.plasma.components 3.0 as PC3
 
 Dialog {
     id: customDialog
@@ -57,11 +57,14 @@ Dialog {
             anchors.leftMargin:10
         
         }
-        PC3.Button {
+        //PC3.Button {
+        Button{
             id:dialogApplyBtn
             display:AbstractButton.TextBesideIcon
-            icon.name:"dialog-ok"
-            text: i18nd("epi-gtk","Accept")
+            //icon.name:"dialog-ok"
+            icon.source:"/usr/share/icons/breeze/actions/22/dialog-ok"
+            //text: i18nd("epi-gtk","Accept")
+            text:"Accept"
             focus:true
             visible:btnAcceptVisible
             font.family: "Quattrocento Sans Bold"
@@ -78,10 +81,12 @@ Dialog {
             }
         }
 
-        PC3.Button {
+        //PC3.Button {
+        Button{
             id:dialogCancelBtn
             display:AbstractButton.TextBesideIcon
-            icon.name: btnCancelIcon
+            //icon.name: btnCancelIcon
+            icon.source:"/usr/share/icons/breeze/actions/22/"+btnCancelIcon
             text: btnCancelText
             focus:true
             font.family: "Quattrocento Sans Bold"

@@ -9,9 +9,11 @@ Rectangle{
     Text{ 
         text:{
             if (mainStackBridge.launchedProcess=="uninstall"){  
-                i18nd("epi-gtk","Uninstall process details")
+                //i18nd("epi-gtk","Uninstall process details")
+                "Uninstall process details"
             }else{
-                i18nd("epi-gtk","Installation process details")
+                //i18nd("epi-gtk","Installation process details")
+                "Installation process details"
             }
         }
         font.family: "Quattrocento Sans Bold"

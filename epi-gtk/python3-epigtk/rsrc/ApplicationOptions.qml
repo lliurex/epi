@@ -2,7 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Dialogs 1.3
-import org.kde.plasma.components 3.0 as PC3
+//import org.kde.plasma.components 3.0 as PC3
 import org.kde.kirigami 2.16 as Kirigami
 
 GridLayout{
@@ -26,7 +26,8 @@ GridLayout{
 
             MenuOptionBtn {
                 id:packagesOption
-                optionText:i18nd("epi-gtk","Home")
+                //optionText:i18nd("epi-gtk","Home")
+                optionText:"Home"
                 optionIcon:"/usr/share/icons/breeze/places/22/user-home.svg"
                 visible:true
                 Connections{
@@ -41,7 +42,8 @@ GridLayout{
 
             MenuOptionBtn {
                 id:detailsOption
-                optionText:i18nd("epi-gtk","View details")
+                //optionText:i18nd("epi-gtk","View details")
+                optionText:"View details"
                 optionIcon:"/usr/share/icons/breeze/apps/22/utilities-terminal.svg"
                 visible:mainStackBridge.enableKonsole
                 Connections{
@@ -53,7 +55,8 @@ GridLayout{
 
             MenuOptionBtn {
                 id:helpOption
-                optionText:i18nd("epi-gtk","Help")
+                //optionText:i18nd("epi-gtk","Help")
+                optionText:"Help"
                 optionIcon:"/usr/share/icons/breeze/actions/22/help-contents.svg"
                 visible:{
                     if (packageStackBridge.wikiUrl!=""){
@@ -111,7 +114,8 @@ GridLayout{
             Layout.bottomMargin:10
             Layout.fillWidth:true
 
-            PC3.Button {
+            //PC3.Button {
+            Button{
                 id:uninstallBtn
                 visible:{
                    if (packageStackBridge.currentPkgOption==0){
@@ -126,7 +130,7 @@ GridLayout{
                 }
                 focus:true
                 display:AbstractButton.TextBesideIcon
-                icon.name:{
+                /*icon.name:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
                             "remove"
@@ -138,17 +142,33 @@ GridLayout{
                             "arrow-left"
                             break;
                     }
+                }*/
+                icon.source:{
+                    switch (packageStackBridge.currentPkgOption){
+                        case 0:
+                            "/usr/share/icons/breeze/actions/22/remove"
+                            break;
+                        case 1:
+                            "/usr/share/icons/breeze/actions/22/dialog-cancel"
+                            break;
+                        case 2:
+                            "/usr/share/icons/breeze/actions/22/arrow-left"
+                            break;
+                    }
                 }
                 text:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
-                            i18nd("epi-gtk","Uninstall")
+                            //i18nd("epi-gtk","Uninstall")
+                            "Uninstall"
                             break;
                         case 1:
-                            i18nd("epi-gtk","Reject Eula")
+                            //i18nd("epi-gtk","Reject Eula")
+                            "Eula"
                             break;
                         case 2:
-                            i18nd("epi-gtk","Back")
+                            //i18nd("epi-gtk","Back")
+                            "Back"
                             break;
                     }
                 }
@@ -209,7 +229,8 @@ GridLayout{
                 
             }
                
-            PC3.Button {
+            //PC3.Button {
+            Button{
                 id:installBtn
                 visible:{
                     if (packageStackBridge.currentPkgOption!=2){
@@ -220,18 +241,22 @@ GridLayout{
                 }
                 focus:true
                 display:AbstractButton.TextBesideIcon
-                icon.name:"dialog-ok"
+                //icon.name:"dialog-ok"
+                icon.source:"/usr/share/icons/breeze/actions/22/dialog-ok"
                 text:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
                             if (packageStackBridge.isAllInstalled[0]){
-                                i18nd("epi-gtk","Reinstall")
+                                //i18nd("epi-gtk","Reinstall")
+                                "Reinstall"
                             }else{
-                                i18nd("epi-gtk","Install")
+                                //i18nd("epi-gtk","Install")
+                                "Install"
                             }
                             break;
                         case 1:
-                            i18nd("epi-gtk","Accept Eula")
+                            //i18nd("epi-gtk","Accept Eula")
+                            "Accept Eula"
                             break;
                         case 2:
                             ""
@@ -269,11 +294,14 @@ GridLayout{
     CustomDialog{
         id:uninstallDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
-        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Uninstall process")
-        dialogMsg:i18nd("epi-gtk","Do you want uninstall the application?") 
+        //dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Uninstall process")
+        dialogTitle:"EPI - Uninstall process"
+        //dialogMsg:i18nd("epi-gtk","Do you want uninstall the application?")
+        dialogMsg:"Do you want uninstall the application?"
         dialogWidth:350
         btnAcceptVisible:true
-        btnCancelText:i18nd("epi-gtk","Cancel")
+        //btnCancelText:i18nd("epi-gtk","Cancel")
+        btnCancelText:"Cancel"
         btnCancelIcon:"dialog-cancel"
 
         Connections{
@@ -295,11 +323,13 @@ GridLayout{
         id:closeDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
         dialogTitle:"EPI"
-        dialogMsg:i18nd("epi-gtk","It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?") 
+        //dialogMsg:i18nd("epi-gtk","It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?")
+        dialogMsg:"It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?"
         dialogWidth:600
         dialogVisible:mainStackBridge.showCloseDialog
         btnAcceptVisible:true
-        btnCancelText:i18nd("epi-gtk","Cancel")
+        //btnCancelText:i18nd("epi-gtk","Cancel")
+        btnCancelText:"Cancel"
         btnCancelIcon:"dialog-cancel"
 
         Connections{
@@ -344,101 +374,134 @@ GridLayout{
     function getFeedBackText(code){
 
         var msg="";
-        var errorHeaded=i18nd("epi-gtk","The selected applications cannot be uninstalled.\n")
-        var warningHeaded=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because ")
+        //var errorHeaded=i18nd("epi-gtk","The selected applications cannot be uninstalled.\n")
+        var errorHeaded="The selected applications cannot be uninstalled.\n"
+        //var warningHeaded=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because ")
+        var warningHeaded="Some selected application successfully uninstalled.\nOthers not because "
         switch (code){
             case -14:
-                msg=i18nd("epi-gtk","Internet connection not detected")
+                //msg=i18nd("epi-gtk","Internet connection not detected")
+                msg="Internet connection not detected"
                 break;
             case -15:
-                msg=errorHeaded+i18nd("epi-gtk","It is part of the system meta-package");
+                //msg=errorHeaded+i18nd("epi-gtk","It is part of the system meta-package");
+                msg=errorHeaded+"It is part of the system meta-package";
                 break;
             case -16:
-                msg=i18nd("epi-gtk","Uninstalled process ending with errors");
+                //msg=i18nd("epi-gtk","Uninstalled process ending with errors");
+                msg="Uninstalled process ending with errors";
                 break;
             case -17:
-                msg=i18nd("epi-gtk","Installation aborted. Error preparing system")
+                //msg=i18nd("epi-gtk","Installation aborted. Error preparing system")
+                msg="Installation aborted. Error preparing system"
                 break;
             case -18:
-                msg=i18nd("epi-gtk","Installation aborted. Unable to download package")
+                //msg=i18nd("epi-gtk","Installation aborted. Unable to download package")
+                msg="Installation aborted. Unable to download package"
                 break;
             case -19:
-                msg=i18nd("epi-gtk","Installation aborted. Error installing application")
+                //msg=i18nd("epi-gtk","Installation aborted. Error installing application")
+                msg="Installation aborted. Error installing application"
                 break;
             case -20:
-                msg=i18nd("epi-gtk","Installation aborted. Error ending installation")
+                //msg=i18nd("epi-gtk","Installation aborted. Error ending installation")
+                msg="Installation aborted. Error ending installation"
                 break;
             case -21:
-                msg=errorHeaded+i18nd("epi-gtk","You do not have permissions to perfom this action")
+                //msg=errorHeaded+i18nd("epi-gtk","You do not have permissions to perfom this action")
+                msg=errorHeaded+"You do not have permissions to perfom this action"
                 break;
             case -22:
-                msg=errorHeaded+i18nd("epi-gtk","Action blocked due to insufficient permissions and meta-package protection")
+                //msg=errorHeaded+i18nd("epi-gtk","Action blocked due to insufficient permissions and meta-package protection")
+                msg=errorHeaded+"Action blocked due to insufficient permissions and meta-package protection"
                 break;
             case -23:
-                msg=i18nd("epi-gtk","The installation process ended with errors")
+                //msg=i18nd("epi-gtk","The installation process ended with errors")
+                msg="The installation process ended with errors"
                 break;
             case 3:
-                msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
+                //msg=i18nd("epi-gtk","Checking internet connection. Wait a moment...");
+                msg="Checking internet connection. Wait a moment...";
                 break;
             case 4:
-                msg=i18nd("epi-gtk","Application already installed");
+                //msg=i18nd("epi-gtk","Application already installed");
+                msg="Application already installed";
                 break;
             case 5:
-                msg=i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
+                //msg=i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
+                msg="It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation";
                 break;
             case 6:
-                msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
+                //msg=i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
+                msg="It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation";
                 break;
             case 7:
-                msg=i18nd("epi-gtk","Showing the end user license agreement for:\n")+packageStackBridge.currentEulaPkg;
+                //msg=i18nd("epi-gtk","Showing the end user license agreement for:\n")+packageStackBridge.currentEulaPkg;
+                msg="Showing the end user license agreement for:\n"+packageStackBridge.currentEulaPkg;
                 break;
             case 8:
-                msg=i18nd("epi-gtk","Checking if repositories need updating...")
+                //msg=i18nd("epi-gtk","Checking if repositories need updating...")
+                msg="Checking if repositories need updating..."
                 break;
             case 9:
-                msg=i18nd("epi-gtk","Checking system architecture...")
+                //msg=i18nd("epi-gtk","Checking system architecture...")
+                msg="Checking system architecture..."
                 break;
             case 10:
-                msg=i18nd("epi-gtk","Gathering Information...")
+                //msg=i18nd("epi-gtk","Gathering Information...")
+                msg="Gathering Information..."
                 break;
             case 11:
-                msg=i18nd("epi-gtk","Downloading application...")
+                //msg=i18nd("epi-gtk","Downloading application...")
+                msg="Downloading application..."
                 break;
             case 12:
-                msg=i18nd("epi-gtk","Preparing installation...")
+                //msg=i18nd("epi-gtk","Preparing installation...")
+                msg="Preparing installation..."
                 break;
             case 13:
-                msg=i18nd("epi-gtk","Installing application...")
+                //msg=i18nd("epi-gtk","Installing application...")
+                msg="Installing application..."
                 break;
             case 14:
-                msg=i18nd("epi-gtk","Ending the installation...")
+                //msg=i18nd("epi-gtk","Ending the installation...")
+                msg="Ending the installation..."
                 break;
             case 15:
-                msg=i18nd("epi-gtk","Installation completed successfully")
+                //msg=i18nd("epi-gtk","Installation completed successfully")
+                msg="Installation completed successfully"
                 break;
             case 16:
-                msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...")
+                //msg=i18nd("epi-gtk","Checking if selected applications can be uninstalled...")
+                msg="Checking if selected applications can be uninstalled..."
                 break;
             case 17:
-                msg=i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
+                //msg=i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
+                msg="Uninstall selected applications. Wait a moment..."
                 break;
             case 18:
-                msg=i18nd("epi-gtk","Applications successfully uninstalled");
+                //msg=i18nd("epi-gtk","Applications successfully uninstalled");
+                msg="Applications successfully uninstalled";
                 break;
             case 19:
-                msg=warningHeaded+i18nd("epi-gtk","they are part of the system's meta-package");
+                //msg=warningHeaded+i18nd("epi-gtk","they are part of the system's meta-package");
+                msg=warningHeaded+"they are part of the system's meta-package";
                 break;
             case 20:
-                msg=i18nd("epi-gtk","Searching information.Wait a moment...")
+                //msg=i18nd("epi-gtk","Searching information.Wait a moment...")
+                msg="Searching information.Wait a moment..."
                 break;
             case 21:
-                msg=i18nd("epi-gtk","Information not availabled")
+                //msg=i18nd("epi-gtk","Information not availabled")
+                msg="Information not availabled"
                 break;
             case 22:
-                msg=warningHeaded+i18nd("epi-gtk","you do not have permissions to uninstall them")
+                //msg=warningHeaded+i18nd("epi-gtk","you do not have permissions to uninstall them")
+                msg=warningHeaded+"you do not have permissions to uninstall them"
                 break;
             case 23:
-                msg=warningHeaded+i18nd("epi-gtk","you do not have permissions and meta-package protection")
+                //msg=warningHeaded+i18nd("epi-gtk","you do not have permissions and meta-package protection")
+                msg=warningHeaded+"you do not have permissions and meta-package protection"
                 break;
             default:
                 break;
