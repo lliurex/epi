@@ -26,7 +26,7 @@ import sys
 
 if __name__ == '__main__':
 	
-	pinstaller = poinstaller.PoInstaller('translations','epi-gtk','')
+	pinstaller = poinstaller.PoInstaller('translations','epi-gtk','/usr')
 	pinstaller.build()
 	polist = pinstaller.setup_install()
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 		package_data = {'epigtk':['rsrc/*']},
 		data_files = [('share/mime/packages',['epi-gtk/data_files/epi.xml']),
 			      ('share/icons/hicolor/scalable/mimetypes',['epi-gtk/data_files/application-easy-package-installer.svg']),
-			      ('sbin',['epi-gtk/epi-gtk'])
+			      ('/usr/sbin',['epi-gtk/epi-gtk'])
 			     ] + polist ,
 		classifiers=[
 			'Development Status :: 4 - Beta',
