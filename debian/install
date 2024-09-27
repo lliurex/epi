@@ -1,1 +1,2 @@
 install-files/*	/
+debian/output/usr/lib/python3.12/dist-packages/epi /usr/lib/python3.12/dist-packages/

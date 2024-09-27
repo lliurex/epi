@@ -1,0 +1,5 @@
+epi-gtk/data_files/epi.xml /usr/share/mime/packages/
+epi-gtk/data_files/application-easy-package-installer.svg /usr/share/icons/hicolor/scalable/mimetypes/
+epi-gtk/epi-gtk /usr/sbin/
+debian/output/usr/lib/python3.12/dist-packages/epigtk /usr/lib/python3.12/dist-packages
+
