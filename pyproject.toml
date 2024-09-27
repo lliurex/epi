@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools","setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "epi"
+version = "0.1"
+description = "Easy package installer"
+authors = [
+	{ name = "Juan Ramon Pelegrina", email="juapesai@hotmail.com" },
+	{ name = "LliureX Team"}
+]
+license = {text="GPL-3"}
+urls = {repository="https://github.com/lliurex/epi"}
+
+[tool.setuptools]
+packages = ["epi","epigtk","epicli"]
+
+[tool.setuptools.package-dir]
+epi = "python3-epi"
+epigtk = "epi-gtk/python3-epigtk"
+epicli = "epi-cli"
+
+[tool.setuptools.package-data]
+epigtk = ["rsrc/*"]
+
+[tool.setuptools.exclude-package-data]
+epigtk = ["epi-gtk"]
+epicli = ["epic"]
+
+[tool.setuptools.data-files]
+"sbin" = ["epi-cli/epic"]
