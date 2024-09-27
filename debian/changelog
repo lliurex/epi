@@ -1,3 +1,9 @@
+epi (0.25.9) noble; urgency=medium
+
+  * Changed to use pyproject instead setup.py
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 27 Sep 2024 09:40:32 +0200
+
 epi (0.25.8) noble; urgency=medium
 
   * Initial release for noble
