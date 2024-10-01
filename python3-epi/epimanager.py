@@ -980,7 +980,7 @@ class EpiManager:
 
 	def _get_install_flatpak_cmd_base(self):
 
-		cmd="flatpak -y install "
+		cmd="flatpak -y --system install "
 		return cmd
 
 	#def _get_install_flatpak_cmd_base
