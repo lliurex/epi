@@ -1,3 +1,9 @@
+epi (0.25.10) noble; urgency=medium
+
+  * Forced flatpak system installation
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 01 Oct 2024 08:41:31 +0200
+
 epi (0.25.9) noble; urgency=medium
 
   * Changed to use pyproject instead setup.py
