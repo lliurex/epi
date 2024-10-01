@@ -1,3 +1,9 @@
+epi (0.15.9) jammy; urgency=medium
+
+  * Forced flatpak system installation.
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 01 Oct 2024 08:23:14 +0200
+
 epi (0.15.8) jammy; urgency=medium
 
   * Supported app icon from url in app list
