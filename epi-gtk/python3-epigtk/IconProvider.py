@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-from PySide2.QtCore import *
-from PySide2.QtGui import *
-from PySide2.QtSvg import *
-from PySide2.QtQuick import QQuickImageProvider
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtSvg import *
+from PySide6.QtQuick import QQuickImageProvider
 import os
 import urllib.request
 

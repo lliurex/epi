@@ -1,8 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 import QtQml.Models 2.8
-//import org.kde.plasma.components 2.0 as Components
-//import org.kde.plasma.components 3.0 as PC3
+import org.kde.plasma.components as PC
 
 
 //Components.ListItem{
@@ -38,9 +37,8 @@ ItemDelegate{
         id: menuItem
         height:visible?50:0
         //width:parent.width-15
-	width:parent.width-35
-        //PC3.CheckBox {
-        CheckBox{
+        width:parent.width-35
+        PC.CheckBox {
             id:packageCheck
             checked:isChecked
             onToggled:{
@@ -77,8 +75,7 @@ ItemDelegate{
                 if (order==0){
                     customName
                 }else{
-                    //i18nd("epi-gtk","Previous actions: executing ")+customName
-                    "Previous actions: executing "+customName
+                    i18nd("epi-gtk","Previous actions: executing ")+customName
                 }
             }
             width: {
@@ -95,7 +92,7 @@ ItemDelegate{
                         parent.width-150
                     }
                 }*/
-		parent.width-resultImg.width-showInfoBtn.width-150
+                parent.width-resultImg.width-showInfoBtn.width-150
             }
             elide:Text.ElideMiddle
             clip: true
@@ -167,12 +164,10 @@ ItemDelegate{
             }
         }
 
-        //PC3.Button{
-        Button{
+        PC.Button{
             id:showInfoBtn
             display:AbstractButton.IconOnly
-            //icon.name:"help-about"
-            icon.source:"/usr/share/icons/breeze/actions/22/help-about"
+            icon.name:"help-about"
             anchors.leftMargin:10
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
@@ -194,19 +189,16 @@ ItemDelegate{
             ToolTip.delay: 1000
             ToolTip.timeout: 3000
             ToolTip.visible: hovered
-            //ToolTip.text:i18nd("epi-gtk","Press to view application information")
-            ToolTip.text:"Press to view application information"
+            ToolTip.text:i18nd("epi-gtk","Press to view application information")
             onClicked:{
                 packageStackBridge.showPkgInfo([0,pkgId])
             }
         }
 
-        //PC3.Button{
-        Button{
+        PC.Button{
             id:entryPointBtn
             display:AbstractButton.IconOnly
-            //icon.name:"media-playback-playing"
-            icon.source:"/usr/share/icons/breeze/status/22/media-playback-playing"
+            icon.name:"media-playback-playing"
             anchors.leftMargin:10
             anchors.right:parent.right
             anchors.verticalCenter:parent.verticalCenter
@@ -227,8 +219,7 @@ ItemDelegate{
             }
             ToolTip.delay: 1000
             ToolTip.timeout: 3000
-            ToolTip.visible: hovered
-            //ToolTip.text:i18nd("epi-gtk","Click to launch the application")
+            ToolTip.text:i18nd("epi-gtk","Click to launch the application")
             ToolTip.text:"Click to launch the application"
             onClicked:{
                 packageStackBridge.launchApp(entryPoint)

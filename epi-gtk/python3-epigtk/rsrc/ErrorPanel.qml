@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import org.kde.kirigami 2.16 as Kirigami
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
 
 Rectangle{
     visible: true
@@ -34,8 +34,7 @@ Rectangle{
 
         Text{
             id:loadtext
-            //text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.localDebError
-            text:"Addittional information:\n"+mainStackBridge.localDebError
+            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.localDebError
             visible:{
                 if (mainStackBridge.localDebError!=""){
                     true
@@ -56,52 +55,40 @@ Rectangle{
         var msg=""
         switch (code){
             case -1:
-                //msg=i18nd("epi-gtk","Application epi file does not exist or its path is invalid");
-                msg="Application epi file does not exist or its path is invalid";
+                msg=i18nd("epi-gtk","Application epi file does not exist or its path is invalid");
                 break;
             case -2:
-                //msg=i18nd("epi-gtk","Application epi file is empty")
-                msg="Application epi file is empty"
+                msg=i18nd("epi-gtk","Application epi file is empty")
                 break;
             case -3:
-                //msg=i18nd("epi-gtk","Application epi file it is not a valid json")
-                msg="Application epi file it is not a valid json"
+                msg=i18nd("epi-gtk","Application epi file it is not a valid json")
                 break;
             case -4:
-                //msg=i18nd("epi-gtk","Associated script does not exist or its path is invalid")
-                msg="Associated script does not exist or its path is invalid"
+                msg=i18nd("epi-gtk","Associated script does not exist or its path is invalid")
                 break;
             case -5:
-                //msg=i18nd("epi-gtk","Associated script does not have execute permissions")
-                msg="Associated script does not have execute permissions"
+                msg=i18nd("epi-gtk","Associated script does not have execute permissions")
                 break;
             case -6:
-                //msg=i18nd("epi-gtk","You need root privileges")
-                msg="You need root privileges"
+                msg=i18nd("epi-gtk","You need root privileges")
                 break;
             case -7:
-                //msg=i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
-                msg="The package will not be able to be installed\nAn error occurred during processing"
+                msg=i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
                 break;
             case -8:
-                //msg=i18nd("epi-gtk","The package will not be able to be installed. Problems with dependencies")
-                msg="The package will not be able to be installed. Problems with dependencies"
+                msg=i18nd("epi-gtk","The package will not be able to be installed. Problems with dependencies")
                 break;
             case -9:
-                //msg=i18nd("epi-gtk","The package will not be able to be installed. Error has been detected")
-                msg="The package will not be able to be installed. Error has been detected"
+                msg=i18nd("epi-gtk","The package will not be able to be installed. Error has been detected")
                 break;
             case -10:
-                //msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
-                msg="The system is being updated. Wait a few minutes and try again"
+                msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
                 break;
             case -11:
-               //msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Wait a few minutes and try again")
-                msg="Apt or Dpkg are being executed. Wait a few minutes and try again"
+                msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Wait a few minutes and try again")
                 break;
             case -13:
-                //msg=i18nd("epi-gtk","The unlocking process has failed")
-                msg="The unlocking process has failed"
+                msg=i18nd("epi-gtk","The unlocking process has failed")
                 break;
         }
         return msg
