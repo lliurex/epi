@@ -1,14 +1,13 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-//import org.kde.plasma.components 3.0 as PC3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import org.kde.plasma.components as PC
 
 
 Rectangle{
     color:"transparent"
     Text{ 
-        //text:i18nd("epi-gtk","Additional information")
-        text:"Additional information"
+        text:i18nd("epi-gtk","Additional information")
         font.family: "Quattrocento Sans Bold"
         font.pointSize: 16
     }
@@ -71,8 +70,7 @@ Rectangle{
                height:parent.height
                clip:true
 
-               //PC3.ScrollView{
-               ScrollView{
+               PC.ScrollView{
                    implicitWidth:parent.width
                    implicitHeight:parent.height
                    anchors.leftMargin:11

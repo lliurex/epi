@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QMLTermWidget 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QMLTermWidget
 
 
 Rectangle{
@@ -9,11 +9,9 @@ Rectangle{
     Text{ 
         text:{
             if (mainStackBridge.launchedProcess=="uninstall"){  
-                //i18nd("epi-gtk","Uninstall process details")
-                "Uninstall process details"
+                i18nd("epi-gtk","Uninstall process details")
             }else{
-                //i18nd("epi-gtk","Installation process details")
-                "Installation process details"
+                i18nd("epi-gtk","Installation process details")
             }
         }
         font.family: "Quattrocento Sans Bold"

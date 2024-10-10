@@ -1,9 +1,9 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+import QtQuick
+import QtQuick.Controls
 import QtQml.Models 2.8
-//import org.kde.plasma.components 3.0 as PC3
-import org.kde.kirigami 2.16 as Kirigami
-import QtQuick.Layouts 1.15
+import org.kde.plasma.components as PC
+import org.kde.kirigami as Kirigami
+import QtQuick.Layouts
 
 
 Rectangle{
@@ -29,12 +29,10 @@ Rectangle{
                     0
                 }
             }
-            //PC3.Button{
-            Button{
+            PC.Button{
                 id:statusFilterBtn
                 display:AbstractButton.IconOnly
-                //icon.name:"view-filter"
-                icon.source:"/usr/share/icons/breeze/actions/22/view-filter"
+                icon.name:"view-filter"
                 visible:packageStackBridge.selectPkg
                 enabled:{
                     if (packageStackBridge.totalErrorInProcess==0){
@@ -54,22 +52,17 @@ Rectangle{
                 ToolTip.delay: 1000
                 ToolTip.timeout: 3000
                 ToolTip.visible: hovered
-                //ToolTip.text:i18nd("epi-gtk","Click to filter applications by status")
-                ToolTip.text:"Click to filter applications by status"
+                ToolTip.text:i18nd("epi-gtk","Click to filter applications by status")
                 onClicked:optionsMenu.open();
                
-                //PC3.Menu{
-                Menu{
+                PC.Menu{
                     id:optionsMenu
                     y: statusFilterBtn.height
                     x:-(optionsMenu.width-statusFilterBtn.width/2)
 
-                    //PC3.MenuItem{
-                    MenuItem{
-                        //icon.name:"installed"
-                        icon.source:"/usr/share/icons/breeze/emblems/16/installed"
-                        //text:i18nd("epi-gtk","Show installed apps")
-                        text:"Show installed apps"
+                    PC.MenuItem{
+                        icon.name:"installed"
+                        text:i18nd("epi-gtk","Show installed apps")
                         enabled:{
                             if (packageStackBridge.filterStatusValue!="installed"){
                                 true
@@ -80,12 +73,9 @@ Rectangle{
                         onClicked:packageStackBridge.manageStatusFilter("installed")
                     }
 
-                    //PC3.MenuItem{
-                    MenuItem{
-                        //icon.name:"noninstalled"
-                        icon.source:"/usr/share/icons/breeze/emblems/16/noninstalled"
-                        //text:i18nd("epi-gtk","Show uninstalled apps")
-                        text:"Show uninstalled apps"
+                    PC.MenuItem{
+                        icon.name:"noninstalled"
+                        text:i18nd("epi-gtk","Show uninstalled apps")
                         enabled:
                             if (packageStackBridge.filterStatusValue!="available"){
                                 true
@@ -95,12 +85,9 @@ Rectangle{
 
                         onClicked:packageStackBridge.manageStatusFilter("available")
                     }
-                    //PC3.MenuItem{
-                    MenuItem{
-                        //icon.name:"emblem-error"
-                        icon.source:"/usr/share/icons/breeze/emblems/16/emblem-error"
-                        //text:i18nd("epi-gtk","Show apps with error")
-                        text:"Show apps with error"
+                    PC.MenuItem{
+                        icon.name:"emblem-error"
+                        text:i18nd("epi-gtk","Show apps with error")
                         enabled:
                             if (packageStackBridge.filterStatusValue!="error"){
                                 if (packageStackBridge.totalErrorInProcess>0){
@@ -114,12 +101,9 @@ Rectangle{
 
                         onClicked:packageStackBridge.manageStatusFilter("error")
                     }
-                    //PC3.MenuItem{
-                    MenuItem{
-                        //icon.name:"kt-remove-filters"
-                        icon.source:"/usr/share/icons/breeze/actions/22/kt-remove-filters"
-                        //text:i18nd("epi-gtk","Remove filter")
-                        text:"Remove filter"
+                    PC.MenuItem{
+                        icon.name:"kt-remove-filters"
+                        text:i18nd("epi-gtk","Remove filter")
                         enabled:{
                             if (packageStackBridge.filterStatusValue!="all"){
                                 true
@@ -132,8 +116,7 @@ Rectangle{
                 }
             }
                 
-            //PC3.TextField{
-            TextField{
+            PC.TextField{
                 id:pkgSearchEntry
                 font.pointSize:10
                 horizontalAlignment:TextInput.AlignLeft
@@ -142,8 +125,7 @@ Rectangle{
                 width:100
                 visible:packageStackBridge.selectPkg
                 enabled:packageStackBridge.enablePkgList
-                //placeholderText:i18nd("epi-gtk","Search...")
-                placeholderText:"Search..."
+                placeholderText:i18nd("epi-gtk","Search...")
                 onTextChanged:{
                     filterModel.update()
                 }
@@ -166,8 +148,7 @@ Rectangle{
 
             border.color: "#d3d3d3"
 
-            //PC3.ScrollView{
-            ScrollView{
+            PC.ScrollView{
                 implicitWidth:parent.width
                 implicitHeight:parent.height
                 anchors.leftMargin:10
@@ -213,10 +194,9 @@ Rectangle{
                     Kirigami.PlaceholderMessage { 
                         id: emptyHint
                         anchors.centerIn: parent
-                        width: parent.width - (units.largeSpacing * 4)
+                        width: parent.width - (Kirigami.Units.largeSpacing * 4)
                         visible: listPkg.count==0?true:false
-                        //text: i18nd("epi-gtk","Applications not found")
-                        text:"Applications not found"
+                        text: i18nd("epi-gtk","Applications not found")
                     }
 
                  } 
@@ -225,33 +205,23 @@ Rectangle{
         RowLayout{
             Layout.fillWidth:true
 
-            //PC3.Button {
-            Button{
+            PC.Button {
                 id:selectBtn
                 visible:packageStackBridge.selectPkg
                 focus:true
                 display:AbstractButton.TextBesideIcon
-                /*icon.name:{
+                icon.name:{
                     if (packageStackBridge.uncheckAll){
                         "list-remove"
                     }else{
                         "list-add"
                     }
-                }*/
-                icon.source:{
-                    if (packageStackBridge.uncheckAll){
-                        "/usr/share/icons/breeze/actions/22/list-remove"
-                    }else{
-                        "/usr/share/icons/breeze/actions/22/list-add"
-                    }
                 }
                 text:{
                     if (packageStackBridge.uncheckAll){
-                        //i18nd("epi-gtk","Uncheck all packages")
-                        "Uncheck all packages"
+                        i18nd("epi-gtk","Uncheck all packages")
                     }else{
-                        //i18nd("epi-gtk","Check all packages")
-                        "Check all packages"
+                        i18nd("epi-gtk","Check all packages")
                     }
                 }
                 enabled:packageStackBridge.enablePkgList
@@ -266,8 +236,7 @@ Rectangle{
 
             Text{
                 id:dependText
-                //text:i18nd("epi-gtk","(D) Addicitional application required")
-                text:"(D) Addicitional application required"
+                text:i18nd("epi-gtk","(D) Addicitional application required")
                 visible:packageStackBridge.showDependLabel
                 font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10

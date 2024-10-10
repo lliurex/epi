@@ -1,7 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
-import QtQuick.Dialogs 1.3
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Dialogs
 
 
 Rectangle{
@@ -47,15 +47,12 @@ Rectangle{
     CustomDialog{
         id:unlockDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
-        //dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Unlock process")
-        dialogTitle:"EPI - Unlock process"
+        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Unlock process")
         dialogVisible:mainStackBridge.showDialog
-        //dialogMsg:i18nd("epi-gtk","Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem")
-        dialogMsg:"Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem"
+        dialogMsg:i18nd("epi-gtk","Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem")
         dialogWidth:550
         btnAcceptVisible:false
-        //btnCancelText:i18nd("epi-gtk","Unlock")
-        btnCancelText:"Unlock"
+        btnCancelText:i18nd("epi-gtk","Unlock")
         btnCancelIcon:"dialog-ok"
 
         Connections{
@@ -73,16 +70,13 @@ Rectangle{
         var msg=""
         switch(mainStackBridge.loadMsgCode){
             case 0:
-                //msg=i18nd("epi-gtk","Loading information. Wait a moment...")
-                msg="Loading information. Wait a moment..."
+                msg=i18nd("epi-gtk","Loading information. Wait a moment...")
                 break;
             case 1:
-                //msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Checking if they have finished")
-                msg="Apt or Dpkg are being executed. Checking if they have finished"
+                msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Checking if they have finished")
                 break;
             case 2:
-                //msg=i18nd("epi-gtk","Executing the unlocking process. Wait a moment...")
-                msg="Executing the unlocking process. Wait a moment..."
+                msg=i18nd("epi-gtk","Executing the unlocking process. Wait a moment...")
                 break
         }
         return msg
