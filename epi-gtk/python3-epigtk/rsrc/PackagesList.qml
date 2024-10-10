@@ -194,7 +194,7 @@ Rectangle{
                     Kirigami.PlaceholderMessage { 
                         id: emptyHint
                         anchors.centerIn: parent
-                        width: parent.width - (units.largeSpacing * 4)
+                        width: parent.width - (Kirigami.Units.largeSpacing * 4)
                         visible: listPkg.count==0?true:false
                         text: i18nd("epi-gtk","Applications not found")
                     }
