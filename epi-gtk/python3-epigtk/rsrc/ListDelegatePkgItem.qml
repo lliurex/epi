@@ -35,10 +35,6 @@ PC.ItemDelegate{
 			onEntered: {
 				listPkg.currentIndex=filterModel.visibleElements.indexOf(index)
 			}
-			onExited: {
-				listPkg.currentIndex=-1
-			}
-		 
 		} 
 
 		PC.CheckBox {
