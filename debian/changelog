@@ -1,3 +1,9 @@
+epi (0.25.12) noble; urgency=medium
+
+  * Fixed pkg list usage
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 11 Oct 2024 08:59:22 +0200
+
 epi (0.25.11) noble; urgency=medium
 
   * Migrated to PySide6
