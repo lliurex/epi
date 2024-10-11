@@ -28,7 +28,7 @@ Description:Easy package installer (EPI). CLI tool
 
 Package: epi-gtk
 Architecture: all
-Depends:  ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, dpkgunlocker-cli, debconf-kde-helper, qml-module-termwidget,pyside6-tools,python3-pyside6.qtqml, python3-pyside6.qtquick, python3-pyside6.qtgui, python3-pyside6.qtwidgets, python3-pyside6.qtquickwidgets, python3-pyside6.qtsvg,python3-pyside6.qtwebenginecore,python3-pyside6.qtwebenginequick,qml-module-qtwebengine
+Depends:  ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}, python3-epi (= ${binary:Version}), python3-html2text, dpkgunlocker-cli, debconf-kde-helper, qml-module-termwidget,pyside6-tools,python3-pyside6.qtqml, python3-pyside6.qtquick, python3-pyside6.qtgui, python3-pyside6.qtwidgets, python3-pyside6.qtquickwidgets, python3-pyside6.qtsvg,python3-pyside6.qtwebenginecore,python3-pyside6.qtwebenginequick,qml6-module-qtwebengine
 Recommends: epi-cli (= ${binary:Version}),epi-local-installer (= ${binary:Version})
 Description:Easy package installer (EPI). GUI tool
   Provides the graphic version (EPI-gtk) of EPI
