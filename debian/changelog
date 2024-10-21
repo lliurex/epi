@@ -1,3 +1,9 @@
+epi (0.25.13) noble; urgency=medium
+
+  * Fixed Dialog style
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 21 Oct 2024 12:22:04 +0200
+
 epi (0.25.12) noble; urgency=medium
 
   * Fixed pkg list usage
