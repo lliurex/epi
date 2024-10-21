@@ -23,8 +23,13 @@ Dialog {
     //modality:Qt.WindowModal
     modal:true
     anchors.centerIn:Overlay.overlay
+    background:Rectangle{
+        color:"#ebeced"
+        border.color:"#b8b9ba"
+        border.width:1
+        radius:0,5
+    }
 
-    
     onVisibleChanged:{
         if (!this.visible && xButton){
             if (mainStackBridge.showDialog){
