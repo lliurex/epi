@@ -66,8 +66,8 @@ Rectangle{
            Rectangle{
                id:container
                color:"transparent"
-               width:parent.width
-               height:parent.height
+               Layout.fillWidth:true
+	       Layout.fillHeight:true
                clip:true
 
                PC.ScrollView{
