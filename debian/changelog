@@ -1,3 +1,9 @@
+epi (0.25.15) noble; urgency=medium
+
+  * Fixed InfoPanel to correctly display application information
+
+ -- Juan Ramon Pelegrinalliurex <juapesai@hotmail.com>  Thu, 21 Nov 2024 10:30:01 +0100
+
 epi (0.25.14) noble; urgency=medium
 
   * Minor fixes in style
