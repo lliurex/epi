@@ -1,3 +1,9 @@
+epi (0.25.16) noble; urgency=medium
+
+  * Fixed launcher to show app icon in Wayland
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 22 Nov 2024 09:47:15 +0100
+
 epi (0.25.15) noble; urgency=medium
 
   * Fixed InfoPanel to correctly display application information
