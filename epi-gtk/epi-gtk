@@ -22,6 +22,7 @@ c=Core.get_core()
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"]="--no-sandbox"
 
 app = QApplication(sys.argv)
+app.setDesktopFileName("epi-gtk")
 engine = QQmlApplicationEngine()
 engine.clearComponentCache()
 context=engine.rootContext()
@@ -38,7 +39,6 @@ if not engine.rootObjects():
 	sys.exit(-1)
 
 engine.quit.connect(QApplication.quit)
-app.setWindowIcon(QIcon("/usr/share/icons/hicolor/scalable/apps/epi-gtk.svg"));
 ret=app.exec()
 del engine
 del app

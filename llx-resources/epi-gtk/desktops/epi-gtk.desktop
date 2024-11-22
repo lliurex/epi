@@ -1,19 +1,19 @@
 [Desktop Entry]
 Encoding=UTF-8
 Version=1.0
-Name=EPI-GTK
-Name[es]=EPI-GTK
-Name[ca_ES@valencia]=EPI-GTK
-Name[ca_ES]=EPI-GTK
-Name[ca]=EPI-GTK
-Name[ca_ES.UTF-8@valencia]=EPI-GTK
+Name=EPI
+Name[es]=EPI
+Name[ca_ES@valencia]=EPI
+Name[ca_ES]=EPI
+Name[ca]=EPI
+Name[ca_ES.UTF-8@valencia]=EPI
 Comment=Program to install/uninstall applications
 Comment[es]=Programa para instalar/desinstalar aplicaciones 
 Comment[ca_ES@valencia]=Programa per a instalar/desinstalar aplicacions 
 Comment[ca_ES]=Programa per a instalar/desinstalar aplicacions 
 Comment[ca]=Programa per a instalar/desinstalar aplicacions 
 Comment[ca_ES.UTF-8@valencia]=Programa per a instalar/desinstalar aplicacions 
-GenericName=EPI GTK
+GenericName=EPI
 Type=Application
 Exec=epi-gtk %F
 TryExec=epi-gtk
