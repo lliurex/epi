@@ -38,7 +38,6 @@ class Core:
 		self.installStack=InstallStack.InstallStack()
 		self.packageStack=PackageStack.Bridge()
 		self.mainStack=MainStack.Bridge()
-		self.mainStack=MainStack.Bridge()
 		
 		self.mainStack.initBridge()
 	
