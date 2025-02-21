@@ -87,19 +87,25 @@ class Bridge(QObject):
 		noCheck=False
 		epiFile=""
 		app=None
+		indexToPop=[]
 		
 		sys.argv.pop(0)
 
 		for item in range(len(sys.argv)-1,-1,-1):
 			if "-d" in sys.argv[item] or "--debug" in sys.argv[item]:
-				debug=True
-				sys.argv.pop(item)
+				if '.epi' not in sys.argv[item]:
+					debug=True
+					indexToPop.append(item)
 			if "-nc" in sys.argv[item] or "--no-check" in sys.argv[item]:
-				noCheck=True
-				sys.argv.pop(item)
+				if '.epi' not in sys.argv[item]:
+					noCheck=True
+					indexToPop.append(item)
 			if ".epi" in sys.argv[item]:
 				epiFile=sys.argv[item]
-				sys.argv.pop(item)
+				indexToPop.append(item)
+
+		for item in indexToPop:
+			sys.argv.pop(item)
 
 		if len(sys.argv)>0:
 			app=sys.argv[0]
