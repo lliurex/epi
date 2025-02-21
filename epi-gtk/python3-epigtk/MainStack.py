@@ -19,12 +19,13 @@ class GatherInfo(QThread):
 		self.epiFile=args[0]
 		self.noCheck=args[1]
 		self.debug=args[2]
+		self.app=args[3]
 	
 	#def __init__
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug)
+		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
 
 	#def run
 
@@ -85,21 +86,31 @@ class Bridge(QObject):
 		debug=False
 		noCheck=False
 		epiFile=""
+		app=None
+		
+		sys.argv.pop(0)
 
-		for item in sys.argv:
-			if item=="-d" or item=="--debug":
+		for item in range(len(sys.argv)-1,-1,-1):
+			if "-d" in sys.argv[item] or "--debug" in sys.argv[item]:
 				debug=True
-			if item=="-nc" or item=="--no-check":
+				sys.argv.pop(item)
+			if "-nc" in sys.argv[item] or "--no-check" in sys.argv[item]:
 				noCheck=True
-			if ".epi" in item:
-				epiFile=item
+				sys.argv.pop(item)
+			if ".epi" in sys.argv[item]:
+				epiFile=sys.argv[item]
+				sys.argv.pop(item)
+
+		if len(sys.argv)>0:
+			app=sys.argv[0]
 
 		if epiFile!=None:
 			if epiFile!="error":
-				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug)
+				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug,app)
 				self.gatherInfoT.start()
 				self.gatherInfoT.finished.connect(self._gatherInfoRet)
 
+	
 	#def initBridge
 
 	def _gatherInfoRet(self):

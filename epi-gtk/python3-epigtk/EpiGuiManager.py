@@ -80,15 +80,17 @@ class EpiGuiManager:
 		self.totalWarningMeta=0
 		self.totalWarningSkipPkg=0
 		self.totalWarningSkipMeta=0
+		self.appFromStore=""
 		self.clearCache()
 
 	#def __init__
 
-	def initProcess(self,epiFile,noCheck,debug):
+	def initProcess(self,epiFile,noCheck,debug,app):
 
 		self.epiManager=EpiManager.EpiManager([debug,False])
 		self.epiFile=epiFile
 		self.noCheck=noCheck
+		self.tmpAppFromStore=app
 		ret=self._checkEpiFile()
 
 		if ret[0]:
@@ -308,17 +310,29 @@ class EpiGuiManager:
 										tmp["isChecked"]=element["default_pkg"]
 										if tmp["isChecked"]:
 											self._managePkgSelected(element["name"],True,order)
-									except:
-										tmp["isChecked"]=False			
+									except Exception as e:
+										if self.tmpAppFromStore!=None:
+											if tmp["pkgId"]==self.tmpAppFromStore:
+												tmp["isChecked"]=True
+												self.appFromStore=self.tmpAppFromStore
+												self.selectPkg=False
+												self._managePkgSelected(element["name"],True,order)
+											else:
+												tmp["isChecked"]=False
+										else:
+											tmp["isChecked"]=False			
 							
 							if order!=0:
 								tmp["customName"]=self.info[item]["zomando"]
 								tmp["entryPoint"]=""
+								tmp["metaInfo"]=tmp["customName"]
 							else:
 								try:
 									tmp["customName"]=element["custom_name"]
+									tmp["metaInfo"]="%s-%s"%(tmp["pkgId"],tmp["customName"])
 								except:
 									tmp["customName"]=element["name"]
+									tmp["metaInfo"]=element["name"]
 
 								try:
 									tmp["entryPoint"]=element["entrypoint"]
