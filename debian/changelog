@@ -1,3 +1,9 @@
+epi (0.15.9.2) jammy-testing; urgency=medium
+
+  * Fixed detection of sys.argv
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 21 Feb 2025 14:22:13 +0100
+
 epi (0.15.9.1) jammy-testing; urgency=medium
 
   * Test option to launch epi-gtk with pkgname as param
