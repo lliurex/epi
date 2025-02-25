@@ -247,6 +247,8 @@ class EpiGuiManager:
 		self.pkgSelectedFromList=[]
 		defaultChecked=False
 		self.wikiUrl=""
+		self.defaultPkg=False
+		self.matchWithAppFromStore=False
 
 		if len(self.info)>1:
 			self.areDepends=True
@@ -263,6 +265,7 @@ class EpiGuiManager:
 					if self.info[item]["selection_enabled"]["all_selected"]:
 						defaultChecked=True
 						self.uncheckAll=True
+						self.defaultPkg=True
 
 				try:
 					if self.info[item]["script"]["remove"]:
@@ -275,6 +278,7 @@ class EpiGuiManager:
 				self.totalPackages=len(self.info[item]["pkg_list"])
 				
 			for element in self.info[item]["pkg_list"]:
+				matchWithAppFromStore=False
 				if order>0 and pkgOrder>0:
 					pass
 				else:
@@ -309,19 +313,26 @@ class EpiGuiManager:
 									try:
 										tmp["isChecked"]=element["default_pkg"]
 										if tmp["isChecked"]:
+											self.defaultPkg=True
 											self._managePkgSelected(element["name"],True,order)
+										else:
+											if self.tmpAppFromStore!=None:
+												if tmp["pkgId"]==self.tmpAppFromStore:
+													matchWithAppFromStore=True
 									except Exception as e:
 										if self.tmpAppFromStore!=None:
 											if tmp["pkgId"]==self.tmpAppFromStore:
-												tmp["isChecked"]=True
-												self.appFromStore=self.tmpAppFromStore
-												self.selectPkg=False
-												self._managePkgSelected(element["name"],True,order)
+												matchWithAppFromStore=True
 											else:
 												tmp["isChecked"]=False
 										else:
-											tmp["isChecked"]=False			
-							
+											tmp["isChecked"]=False
+
+									if matchWithAppFromStore:
+										tmp["isChecked"]=True
+										self.matchWithAppFromStore=True
+										self._managePkgSelected(element["name"],True,order)
+						
 							if order!=0:
 								tmp["customName"]=self.info[item]["zomando"]
 								tmp["entryPoint"]=""
@@ -359,9 +370,11 @@ class EpiGuiManager:
 									self.packagesData.append(tmp)
 							else:
 								self.packagesData.append(tmp)
-				
 				pkgOrder+=1
 
+			if not self.defaultPkg and self.matchWithAppFromStore:
+				self.appFromStore=self.tmpAppFromStore
+				self.selectPkg=False
 			
 			if self.showRemoveBtn:
 				if len(self.epiManager.skipped_pkgs_groups)==self.totalPackages:
