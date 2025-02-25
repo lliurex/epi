@@ -1,3 +1,9 @@
+epi (0.15.9.3) jammy-testing; urgency=medium
+
+  * Improved detection of pkganme as param
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 25 Feb 2025 16:04:47 +0100
+
 epi (0.15.9.2) jammy-testing; urgency=medium
 
   * Fixed detection of sys.argv
