@@ -123,6 +123,7 @@ Rectangle{
                 Layout.alignment:Qt.AlignRight
                 focus:true
                 width:100
+                text:packageStackBridge.appFromStore
                 visible:packageStackBridge.selectPkg
                 enabled:packageStackBridge.enablePkgList
                 placeholderText:i18nd("epi-gtk","Search...")
@@ -169,7 +170,7 @@ Rectangle{
                     model:FilterDelegateModel{
                         id:filterModel
                         model:packagesModel
-                        role:"customName"
+                        role:"metaInfo"
                         showDepend:packageStackBridge.showDependEpi
                         search:pkgSearchEntry.text.trim()
                         statusFilter:packageStackBridge.filterStatusValue
@@ -187,6 +188,7 @@ Rectangle{
                             order:model.order
                             showSpinner:model.showSpinner
                             entryPoint:model.entryPoint
+                            metaInfo:model.metaInfo
 
                         }
                     }
