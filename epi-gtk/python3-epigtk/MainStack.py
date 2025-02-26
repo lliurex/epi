@@ -19,12 +19,13 @@ class GatherInfo(QThread):
 		self.epiFile=args[0]
 		self.noCheck=args[1]
 		self.debug=args[2]
+		self.app=args[3]
 	
 	#def __init__
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug)
+		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
 
 	#def run
 
@@ -77,6 +78,7 @@ class Bridge(QObject):
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
+		self._runPkexec=Bridge.epiGuiManager.runPkexec
 
 	#def __init__
 
@@ -85,18 +87,33 @@ class Bridge(QObject):
 		debug=False
 		noCheck=False
 		epiFile=""
+		app=None
+		indexToPop=[]
+		
+		sys.argv.pop(0)
 
-		for item in sys.argv:
-			if item=="-d" or item=="--debug":
-				debug=True
-			if item=="-nc" or item=="--no-check":
-				noCheck=True
-			if ".epi" in item:
-				epiFile=item
+		for item in range(len(sys.argv)-1,-1,-1):
+			if "-d" in sys.argv[item] or "--debug" in sys.argv[item]:
+				if '.epi' not in sys.argv[item]:
+					debug=True
+					indexToPop.append(item)
+			if "-nc" in sys.argv[item] or "--no-check" in sys.argv[item]:
+				if '.epi' not in sys.argv[item]:
+					noCheck=True
+					indexToPop.append(item)
+			if ".epi" in sys.argv[item]:
+				epiFile=sys.argv[item]
+				indexToPop.append(item)
+
+		for item in indexToPop:
+			sys.argv.pop(item)
+
+		if len(sys.argv)>0:
+			app=sys.argv[0]
 
 		if epiFile!=None:
 			if epiFile!="error":
-				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug)
+				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug,app)
 				self.gatherInfoT.start()
 				self.gatherInfoT.finished.connect(self._gatherInfoRet)
 
@@ -440,6 +457,12 @@ class Bridge(QObject):
 
 	#def _setCloseGui
 
+	def _getRunPkexec(self):
+
+		return self._runPkexec
+
+	#def _getRunPkexec
+
 	@Slot()
 	def getNewCommand(self):
 		
@@ -537,14 +560,9 @@ class Bridge(QObject):
 	@Slot()
 	def openHelp(self):
 
-		runPkexec=False
-
-		if 'PKEXEC_UID' in os.environ:
-			runPkexec=True
-
 		self.helpCmd='xdg-open %s'%self.core.packageStack.wikiUrl
 
-		if runPkexec:
+		if self.runPkexec:
 			user=pwd.getpwuid(int(os.environ["PKEXEC_UID"])).pw_name
 			self.helpCmd="su -c '%s' %s"%(self.helpCmd,user)
 		else:
@@ -654,6 +672,8 @@ class Bridge(QObject):
 
 	on_closeGui=Signal()
 	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)
+
+	runPkexec=Property(bool,_getRunPkexec,constant=True)
 
 #class Bridge
 
