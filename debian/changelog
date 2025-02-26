@@ -1,3 +1,10 @@
+epi (0.25.18) noble; urgency=medium
+
+  * Changeg icons for installation status
+  * Added support to launch epi-gtk with pkgname as param
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 26 Feb 2025 13:16:17 +0100
+
 epi (0.25.17) noble; urgency=medium
 
   * Minor fixes
