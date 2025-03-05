@@ -1,3 +1,9 @@
+epi (0.25.19) noble; urgency=medium
+
+  * Fixed tooltip style
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 05 Mar 2025 16:45:44 +0100
+
 epi (0.25.18) noble; urgency=medium
 
   * Changeg icons for installation status
