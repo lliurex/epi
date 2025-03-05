@@ -184,10 +184,18 @@ PC.ItemDelegate{
 					false
 				}
 			}
-			ToolTip.delay: 1000
-			ToolTip.timeout: 3000
-			ToolTip.visible: hovered
-			ToolTip.text:i18nd("epi-gtk","Press to view application information")
+			ToolTip{
+                id:showInfoToolTip
+                delay:1000
+                timeout:3000
+                visible:showInfoBtn.hovered
+                text:i18nd("epi-gtk","Press to view application information")
+                background:Rectangle{
+                    color:"white"
+                    border.color:"#b8b9ba"
+                    radius:5.0
+                }
+            }
 			onClicked:{
 				packageStackBridge.showPkgInfo([0,pkgId])
 			}
@@ -215,10 +223,18 @@ PC.ItemDelegate{
 					false
 				}
 			}
-			ToolTip.delay: 1000
-			ToolTip.timeout: 3000
-			ToolTip.visible: hovered
-			ToolTip.text:i18nd("epi-gtk","Click to launch the application")
+			ToolTip{
+                id:entryPointToolTip
+                delay:1000
+                timeout:3000
+                visible:entryPointBtn.hovered
+                text:i18nd("epi-gtk","Click to launch the application")
+                background:Rectangle{
+                    color:"white"
+                    border.color:"#b8b9ba"
+                    radius:5.0
+                }
+            }
 			onClicked:{
 				packageStackBridge.launchApp(entryPoint)
 				mainWindow.close()
