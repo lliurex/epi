@@ -100,6 +100,9 @@ class Bridge(QObject):
 				if '.epi' not in sys.argv[item]:
 					noCheck=True
 					indexToPop.append(item)
+			if "-u" in sys.argv[item] or "--unattended" in sys.argv[item]:
+				if '.epi' not in sys.argv[item]:
+					indexToPop.append(item)
 			if ".epi" in sys.argv[item]:
 				epiFile=sys.argv[item]
 				indexToPop.append(item)
