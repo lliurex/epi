@@ -1,3 +1,10 @@
+epi (0.15.10) jammy; urgency=medium
+
+  * Added support to launch epi-gtk with app as param
+  * Added support to new epi key that disable meta checking
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 13 Mar 2025 12:03:11 +0100
+
 epi (0.15.9) jammy; urgency=medium
 
   * Forced flatpak system installation.
