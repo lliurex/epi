@@ -24,7 +24,7 @@ Rectangle{
                 height:30
                 
                 AnimatedImage{
-                    source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
+                    source: "/usr/lib/python3/dist-packages/dpkgunlockergui/rsrc/loading.gif"
                     transform: Scale {xScale:0.45;yScale:0.45}
                 }
             }

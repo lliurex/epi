@@ -19,6 +19,7 @@ Components.ListItem{
     property int order
     property bool showSpinner
     property string entryPoint
+    property string metaInfo
 
     enabled:true
 
@@ -104,10 +105,9 @@ Components.ListItem{
             id: resultImg
             source:{
                 if (resultProcess==0){
-                    "/usr/lib/python3/dist-packages/epigtk/rsrc/ok.png"
+                    "/usr/share/icons/breeze/status/24/data-success.svg"
                 }else{
-                    "/usr/lib/python3/dist-packages/epigtk/rsrc/error.png"
-                                 
+                    "/usr/share/icons/breeze/status/24/data-error.svg"
                 }
             }
             visible:{

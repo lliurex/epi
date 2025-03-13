@@ -54,7 +54,7 @@ class Bridge(QObject):
 		self._filterStatusValue="all"
 		self._totalErrorInProcess=0
 		self.getPkgInfoRunning=False
-
+		self._appFromStore=""
 
 	#def __init__
 
@@ -65,6 +65,7 @@ class Bridge(QObject):
 		self.selectPkg=Bridge.epiGuiManager.selectPkg
 		self.wikiUrl=Bridge.epiGuiManager.wikiUrl
 		self.isAllInstalled=Bridge.epiGuiManager.isAllInstalled()
+		self.appFromStore=Bridge.epiGuiManager.appFromStore
 
 	#def showInfo
 
@@ -136,7 +137,7 @@ class Bridge(QObject):
 		packagesEntries=Bridge.epiGuiManager.packagesData
 		for item in packagesEntries:
 			if item["pkgId"]!="":
-				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["resultProcess"],item["order"],item["showSpinner"],item["entryPoint"])
+				self._packagesModel.appendRow(item["pkgId"],item["showCb"],item["isChecked"],item["customName"],item["pkgIcon"],item["status"],item["isVisible"],item["resultProcess"],item["order"],item["showSpinner"],item["entryPoint"],item["metaInfo"])
 
 	#def _updatePackagesModel
 
@@ -265,6 +266,20 @@ class Bridge(QObject):
 			self.on_totalErrorInProcess.emit()
 
 	#def _setTotalErrorInProcess
+
+	def _getAppFromStore(self):
+
+		return self._appFromStore
+
+	#def _getAppFromStore
+
+	def _setAppFromStore(self,appFromStore):
+
+		if self._appFromStore!=appFromStore:
+			self._appFromStore=appFromStore
+			self.on_appFromStore.emit()
+
+	#def _setAppFromStore
 
 	@Slot('QVariantList')
 	def onCheckPkg(self,info):
@@ -484,6 +499,9 @@ class Bridge(QObject):
 	on_totalErrorInProcess=Signal()
 	totalErrorInProcess=Property(int,_getTotalErrorInProcess,_setTotalErrorInProcess,notify=on_totalErrorInProcess)
 	
+	on_appFromStore=Signal()
+	appFromStore=Property(str,_getAppFromStore,_setAppFromStore,notify=on_appFromStore)
+
 	packagesModel=Property(QObject,_getPackagesModel,constant=True)
 
 #class Bridge

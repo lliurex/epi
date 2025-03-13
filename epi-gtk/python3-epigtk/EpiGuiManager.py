@@ -80,15 +80,17 @@ class EpiGuiManager:
 		self.totalWarningMeta=0
 		self.totalWarningSkipPkg=0
 		self.totalWarningSkipMeta=0
+		self.appFromStore=""
 		self.clearCache()
 
 	#def __init__
 
-	def initProcess(self,epiFile,noCheck,debug):
+	def initProcess(self,epiFile,noCheck,debug,app):
 
 		self.epiManager=EpiManager.EpiManager([debug,False])
 		self.epiFile=epiFile
 		self.noCheck=noCheck
+		self.tmpAppFromStore=app
 		ret=self._checkEpiFile()
 
 		if ret[0]:
@@ -245,6 +247,8 @@ class EpiGuiManager:
 		self.pkgSelectedFromList=[]
 		defaultChecked=False
 		self.wikiUrl=""
+		self.defaultPkg=False
+		self.matchWithAppFromStore=False
 
 		if len(self.info)>1:
 			self.areDepends=True
@@ -261,6 +265,7 @@ class EpiGuiManager:
 					if self.info[item]["selection_enabled"]["all_selected"]:
 						defaultChecked=True
 						self.uncheckAll=True
+						self.defaultPkg=True
 
 				try:
 					if self.info[item]["script"]["remove"]:
@@ -273,6 +278,7 @@ class EpiGuiManager:
 				self.totalPackages=len(self.info[item]["pkg_list"])
 				
 			for element in self.info[item]["pkg_list"]:
+				matchWithAppFromStore=False
 				if order>0 and pkgOrder>0:
 					pass
 				else:
@@ -307,18 +313,37 @@ class EpiGuiManager:
 									try:
 										tmp["isChecked"]=element["default_pkg"]
 										if tmp["isChecked"]:
+											self.defaultPkg=True
 											self._managePkgSelected(element["name"],True,order)
-									except:
-										tmp["isChecked"]=False			
-							
+										else:
+											if self.tmpAppFromStore!=None:
+												if tmp["pkgId"]==self.tmpAppFromStore:
+													matchWithAppFromStore=True
+									except Exception as e:
+										if self.tmpAppFromStore!=None:
+											if tmp["pkgId"]==self.tmpAppFromStore:
+												matchWithAppFromStore=True
+											else:
+												tmp["isChecked"]=False
+										else:
+											tmp["isChecked"]=False
+
+									if matchWithAppFromStore:
+										tmp["isChecked"]=True
+										self.matchWithAppFromStore=True
+										self._managePkgSelected(element["name"],True,order)
+						
 							if order!=0:
 								tmp["customName"]=self.info[item]["zomando"]
 								tmp["entryPoint"]=""
+								tmp["metaInfo"]=tmp["customName"]
 							else:
 								try:
 									tmp["customName"]=element["custom_name"]
+									tmp["metaInfo"]="%s-%s"%(tmp["pkgId"],tmp["customName"])
 								except:
 									tmp["customName"]=element["name"]
+									tmp["metaInfo"]=element["name"]
 
 								try:
 									tmp["entryPoint"]=element["entrypoint"]
@@ -348,6 +373,9 @@ class EpiGuiManager:
 				
 				pkgOrder+=1
 
+			if not self.defaultPkg and self.matchWithAppFromStore:
+				self.appFromStore=self.tmpAppFromStore
+				self.selectPkg=False
 			
 			if self.showRemoveBtn:
 				if len(self.epiManager.skipped_pkgs_groups)==self.totalPackages:
