@@ -70,7 +70,8 @@ class EpiManager:
 					"custom_icon_path":"",
 					"check_zomando_state":True,
 					"wiki":"",
-					"lock_remove_groups":[]
+					"lock_remove_groups":[],
+					"check_meta":True
 					}
 
 		self.packages_selected=[]
@@ -96,6 +97,7 @@ class EpiManager:
 		self.blocked_remove_pkgs_list=[]
 		self.meta_removed_warning=False
 		self.download_path="/var/cache/epi-downloads"
+		self.check_meta=True
 		
 
 	#def __init__	
@@ -206,7 +208,7 @@ class EpiManager:
 			cont=0
 			if item==0:
 				self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
-
+				self.check_meta=tmp_list[item]["check_meta"]
 			for element in pkg_list:
 				name=element["name"]
 				if info[name]["status"]=="installed":
@@ -1445,29 +1447,33 @@ class EpiManager:
 		self.blocked_remove_pkgs_list=[]
 		tmp_blocked_remove_pkgs_list=[]
 
-		for pkg in self.packages_selected:
-			tmp_blocked_remove_pkgs_list=[]
-			cmd="apt-get remove --simulate %s"%pkg
-			psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			rawoutputsimulate=psimulate.stdout.readlines()
-			rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
+		if self.check_meta:
+			for pkg in self.packages_selected:
+				tmp_blocked_remove_pkgs_list=[]
+				cmd="apt-get remove --simulate %s"%pkg
+				psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				rawoutputsimulate=psimulate.stdout.readlines()
+				rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
 
-			r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
+				r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
 
-			if len(r)>0:
-				for item in r:
-					tmp=item.split(' ')[0]
-					tmp_blocked_remove_pkgs_list.append(tmp)
+				if len(r)>0:
+					for item in r:
+						tmp=item.split(' ')[0]
+						tmp_blocked_remove_pkgs_list.append(tmp)
 
-				for item in tmp_blocked_remove_pkgs_list:
-					if item in self.lliurex_meta_pkgs:
-						self.blocked_remove_pkgs_list.append(pkg) 
-						break	
+					for item in tmp_blocked_remove_pkgs_list:
+						if item in self.lliurex_meta_pkgs:
+							self.blocked_remove_pkgs_list.append(pkg) 
+							break	
 
-		if len(self.blocked_remove_pkgs_list)>0:
-			self.meta_removed_warning=True 
+			if len(self.blocked_remove_pkgs_list)>0:
+				self.meta_removed_warning=True 
 
-		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
+			self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
+		else:
+			self.meta_removed_warning=False
+			self._show_debug("check_remove_meta. Check if pkg uninstall remove llliurex-meta","Checking is disabled")	
 		
 		return self.meta_removed_warning
 

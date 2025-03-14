@@ -49,10 +49,18 @@ Rectangle{
                         true
                     }
                 }
-                ToolTip.delay: 1000
-                ToolTip.timeout: 3000
-                ToolTip.visible: hovered
-                ToolTip.text:i18nd("epi-gtk","Click to filter applications by status")
+                ToolTip{
+                    id:filterToolTip
+                    delay: 1000
+                    timeout: 3000
+                    visible: statusFilterBtn.hovered
+                    text:i18nd("epi-gtk","Click to filter applications by status")
+                    background:Rectangle{
+                    color:"#ffffff"
+                    border.color:"#b8b9ba"
+                    radius:5.0
+                    }
+                }
                 onClicked:optionsMenu.open();
                
                 PC.Menu{
