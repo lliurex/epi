@@ -1,3 +1,9 @@
+epi (0.15.11) jammy; urgency=medium
+
+  * Fixed translation
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 14 Mar 2025 12:03:18 +0100
+
 epi (0.15.10) jammy; urgency=medium
 
   * Added support to launch epi-gtk with app as param
