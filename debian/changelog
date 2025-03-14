@@ -1,3 +1,9 @@
+epi (0.25.20) noble; urgency=medium
+
+  * Added support for new epi key to not check meta
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 14 Mar 2025 12:00:02 +0100
+
 epi (0.25.19) noble; urgency=medium
 
   * Fixed tooltip style
