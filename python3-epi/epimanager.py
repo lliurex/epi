@@ -70,7 +70,8 @@ class EpiManager:
 					"custom_icon_path":"",
 					"check_zomando_state":True,
 					"wiki":"",
-					"lock_remove_groups":[]
+					"lock_remove_groups":[],
+					"check_meta":True
 					}
 
 		self.packages_selected=[]
@@ -96,6 +97,7 @@ class EpiManager:
 		self.blocked_remove_pkgs_list=[]
 		self.meta_removed_warning=False
 		self.download_path="/var/cache/epi-downloads"
+		self.check_meta=True
 		
 
 	#def __init__	
@@ -206,7 +208,7 @@ class EpiManager:
 			cont=0
 			if item==0:
 				self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
-
+				self.check_meta=tmp_list[item]["check_meta"]
 			for element in pkg_list:
 				name=element["name"]
 				if info[name]["status"]=="installed":
@@ -1252,53 +1254,55 @@ class EpiManager:
 		remote_available=[]
 		selection_enabled={}
 		zomando=""
+		required_x=False
 
 		if self.epiFiles[0]["required_x"]:
-			return [remote_available,selection_enabled]									
+			required_x=True
+			#return [remote_available,selection_enabled]									
 
-		else:
-			path_custom_icons=self.epiFiles[0]["custom_icon_path"]
-			selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
-			zomando=self.epiFiles[0]["zomando"]
-			add_to_list=True
-			for item in self.epiFiles[0]["pkg_list"]:
-				try:
-					if item["required_x"]:
-						add_to_list=False
-				except:
-					add_to_list=True
-
-				if add_to_list:
-					pkg={}
-					pkg["name"]=item["name"]
-					try:
-						pkg["custom_name"]=item["custom_name"]
-					except:
-						pkg["custom_name"]=item["name"]
-					try:
-						if path_custom_icons!="":
-							pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
-						else:
-							pkg["custom_icon"]=""
-					except:
-						pkg["custom_icon"]=""
-					try:
-						pkg["default_pkg"]=item["default_pkg"]
-					except:
-						pkg["default_pkg"]=False
-					
-					try:
-						pkg["skip_flavours"]=item["skip_flavours"]
-					except:
-						pkg["skip_flavours"]=[]
-					try:
-						pkg["skip_groups"]=item["skip_groups"]
-					except:
-						pkg["skip_groups"]=[]
-					
-					remote_available.append(pkg)			
 		
-		return [remote_available,selection_enabled,zomando]									
+		path_custom_icons=self.epiFiles[0]["custom_icon_path"]
+		selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
+		zomando=self.epiFiles[0]["zomando"]
+		add_to_list=True
+		for item in self.epiFiles[0]["pkg_list"]:
+			try:
+				if item["required_x"]:
+					add_to_list=False
+			except:
+				add_to_list=True
+
+			if add_to_list:
+				pkg={}
+				pkg["name"]=item["name"]
+				try:
+					pkg["custom_name"]=item["custom_name"]
+				except:
+					pkg["custom_name"]=item["name"]
+				try:
+					if path_custom_icons!="":
+						pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
+					else:
+						pkg["custom_icon"]=""
+				except:
+					pkg["custom_icon"]=""
+				try:
+					pkg["default_pkg"]=item["default_pkg"]
+				except:
+					pkg["default_pkg"]=False
+					
+				try:
+					pkg["skip_flavours"]=item["skip_flavours"]
+				except:
+					pkg["skip_flavours"]=[]
+				try:
+					pkg["skip_groups"]=item["skip_groups"]
+				except:
+					pkg["skip_groups"]=[]
+					
+				remote_available.append(pkg)			
+		
+		return [remote_available,selection_enabled,zomando,required_x]									
 
 	#def cli_install	
 
@@ -1306,6 +1310,7 @@ class EpiManager:
 
 		self.remote_available_epis=[]
 		self.available_epis=[]
+		self.all_available_epis=[]
 		self.cli_available_epis=[]
 		self.skipped_pkgs_groups=[]
 		self.skipped_pkgs_flavours=[]
@@ -1323,31 +1328,31 @@ class EpiManager:
 							check=self.read_conf(line,False,True)["status"]
 							if check:
 								remote=self.cli_install()
+								tmp={}
+								epi_name=os.path.basename(line)
+								tmp[epi_name]={}
+								tmp[epi_name]=remote[1]
+								tmp[epi_name]["zomando"]=remote[2]
+								tmp[epi_name]["pkg_list"]=remote[0]
 								if len(remote[0])>0:
-									tmp={}
-									epi_name=os.path.basename(line)
-									tmp[epi_name]={}
-									tmp[epi_name]=remote[1]
-									tmp[epi_name]["zomando"]=remote[2]
-									tmp[epi_name]["pkg_list"]=remote[0]
-									self.cli_available_epis.append(tmp)
-									if not self.is_zmd_service(remote[2]):
-										tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
-										self.remote_available_epis.append(tmp)
-								
+									if not remote[3]:
+										self.cli_available_epis.append(tmp)
+										if not self.is_zmd_service(remote[2]):
+											tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
+											self.remote_available_epis.append(tmp)
+								self.all_available_epis.append(tmp)
 								self.available_epis.append(line)
 
 						except Exception as e:
 							pass	
 						
-	
 	#def list_available_epi	
 
 	def check_remote_epi(self,epi):
 
 		tmp=[]
 		epi=os.path.basename(epi)
-		for item in self.cli_available_epis:
+		for item in self.all_available_epis:
 			for element in item:
 				if epi==element:
 					for pkg in item[element]["pkg_list"]:
@@ -1445,30 +1450,36 @@ class EpiManager:
 		self.blocked_remove_pkgs_list=[]
 		tmp_blocked_remove_pkgs_list=[]
 
-		for pkg in self.packages_selected:
-			tmp_blocked_remove_pkgs_list=[]
-			cmd="apt-get remove --simulate %s"%pkg
-			psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			rawoutputsimulate=psimulate.stdout.readlines()
-			rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
+		if self.check_meta:
+			for pkg in self.packages_selected:
+				tmp_blocked_remove_pkgs_list=[]
+				cmd="apt-get remove --simulate %s"%pkg
+				psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				rawoutputsimulate=psimulate.stdout.readlines()
+				rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
 
-			r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
+				r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
 
-			if len(r)>0:
-				for item in r:
-					tmp=item.split(' ')[0]
-					tmp_blocked_remove_pkgs_list.append(tmp)
+				if len(r)>0:
+					for item in r:
+						tmp=item.split(' ')[0]
+						tmp_blocked_remove_pkgs_list.append(tmp)
 
-				for item in tmp_blocked_remove_pkgs_list:
-					if item in self.lliurex_meta_pkgs:
-						self.blocked_remove_pkgs_list.append(pkg) 
-						break	
+					for item in tmp_blocked_remove_pkgs_list:
+						if item in self.lliurex_meta_pkgs:
+							self.blocked_remove_pkgs_list.append(pkg) 
+							break	
 
-		if len(self.blocked_remove_pkgs_list)>0:
-			self.meta_removed_warning=True 
+			if len(self.blocked_remove_pkgs_list)>0:
+				self.meta_removed_warning=True
 
-		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
-		
+			self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
+
+		else:
+			self.meta_removed_warning=False
+			self._show_debug("check_remove_meta.Check if pkg uninstall remove lliurex-meta","Checking are disabled")
+ 
+
 		return self.meta_removed_warning
 
 

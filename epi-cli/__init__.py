@@ -120,7 +120,29 @@ class EPIC(object):
 		else:
 			print ('  [EPIC]: No available epi file app detected')
 
-	#def listEpi	
+	#def listEpi
+
+	def listAllEpi(self):
+
+		epi_list=sorted(self.epicore.all_available_epis, key=lambda d: list(d.keys()))
+		count_epi=len(epi_list)
+		tmp=""
+		count=1
+
+		if count_epi>0:				
+			for item in epi_list:
+				for element in item:
+					if count<count_epi:
+						tmp=tmp+element+", "
+					else:
+						tmp=tmp+element
+					count+=1
+			print ('  [EPIC]: List of all epi files availables in the system: '+tmp)
+		
+		else:
+			print ('  [EPIC]: No available epi file app detected')
+
+	#def listAllEpi	
 	
 	def showInfo(self,checked=None):
 		
@@ -163,7 +185,7 @@ class EPIC(object):
 					print ("     - Packages not availables for install via terminal in this flavour" )
 					return 0	
 				else:
-					print ("     - Packages availables: " + pkgs_available)
+					print ("     - Packages availables to install with EPIC: " + pkgs_available)
 					if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
 						if pkgs_default=="":
 							print ("     - Packages selected by defafult: None")

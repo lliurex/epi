@@ -16,7 +16,7 @@ def usage():
 			puts("showinfo PATH or NAME APP_EPI_FILE : Shows information about APP_EPI_FILE")
 			puts("install PATH or NAME APP_EPI_FILE <optional all> or <optional pkg1> <optional pkg2>...")
 			puts("uninstall PATH or NAME APP_EPÌ_FILE <optional all> or <optional pkg1> <optional pkg2>...")
-
+			puts("showall : Show alls epi files availabes in the system installable or not with EPIC")
 		puts("Flags")
 		with indent(4):
 			puts("-h --help : Show help")
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 		args.pop(index)
 	
 	action = args.pop(0)
-	if action!="showlist":
+	if action!="showlist" and action!="showall":
 		app_file=args.get(0)
 		args.pop(0)
 		if len(args.all)>0:
@@ -61,9 +61,12 @@ if __name__ == '__main__':
 			usage()
 
 	epic = EPIC(app_file,pkgsToInstall,debug)
+	
 	if action=="showlist":
 		sys.exit(epic.listEpi())
-	if action == "showinfo":
+	elif action=="showall":
+		sys.exit(epic.listAllEpi())
+	elif action == "showinfo":
 		sys.exit(epic.showInfo())
 	elif action=="install":
 		sys.exit(epic.install(mode,nocheck))	
