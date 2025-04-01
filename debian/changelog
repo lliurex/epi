@@ -1,3 +1,9 @@
+epi (0.15.11) jammy-testing; urgency=medium
+
+  * Add new method in EPIC to list all epis
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 01 Apr 2025 17:40:15 +0200
+
 epi (0.15.9.4) jammy-testing; urgency=medium
 
   * Fixed args detection
