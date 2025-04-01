@@ -1,4 +1,4 @@
-epi (0.15.11) jammy-testing; urgency=medium
+epi (0.15.11.1) jammy-testing; urgency=medium
 
   * Add new method in EPIC to list all epis
   
