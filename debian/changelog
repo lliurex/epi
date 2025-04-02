@@ -1,3 +1,9 @@
+epi (0.15.11.2) jammy-testing; urgency=medium
+
+  * Improved info about epi file in EPIC
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 02 Apr 2025 09:27:29 +0200
+
 epi (0.15.11.1) jammy-testing; urgency=medium
 
   * Add new method in EPIC to list all epis
