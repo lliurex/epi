@@ -9,7 +9,7 @@ _epic()
     #
     #  The basic options we'll complete.
     #
-    opts="showinfo showlist install uninstall help"
+    opts="showall showinfo showlist install uninstall help"
 
     case "${prev}" in 
         showinfo | install | uninstall)

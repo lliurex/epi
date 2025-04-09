@@ -1255,54 +1255,60 @@ class EpiManager:
 		selection_enabled={}
 		zomando=""
 		required_x=False
+		only_gui_available=[]
 
 		if self.epiFiles[0]["required_x"]:
 			required_x=True
 			#return [remote_available,selection_enabled]									
 
-		
 		path_custom_icons=self.epiFiles[0]["custom_icon_path"]
 		selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
 		zomando=self.epiFiles[0]["zomando"]
 		add_to_list=True
+
 		for item in self.epiFiles[0]["pkg_list"]:
 			try:
 				if item["required_x"]:
 					add_to_list=False
 			except:
-				add_to_list=True
+				if required_x:
+					add_to_list=False
+				else:
+					add_to_list=True
 
-			if add_to_list:
-				pkg={}
-				pkg["name"]=item["name"]
-				try:
-					pkg["custom_name"]=item["custom_name"]
-				except:
-					pkg["custom_name"]=item["name"]
-				try:
-					if path_custom_icons!="":
-						pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
-					else:
-						pkg["custom_icon"]=""
-				except:
+			pkg={}
+			pkg["name"]=item["name"]
+			try:
+				pkg["custom_name"]=item["custom_name"]
+			except:
+				pkg["custom_name"]=item["name"]
+			try:
+				if path_custom_icons!="":
+					pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
+				else:
 					pkg["custom_icon"]=""
-				try:
-					pkg["default_pkg"]=item["default_pkg"]
-				except:
-					pkg["default_pkg"]=False
+			except:
+				pkg["custom_icon"]=""
+			try:
+				pkg["default_pkg"]=item["default_pkg"]
+			except:
+				pkg["default_pkg"]=False
 					
-				try:
-					pkg["skip_flavours"]=item["skip_flavours"]
-				except:
-					pkg["skip_flavours"]=[]
-				try:
-					pkg["skip_groups"]=item["skip_groups"]
-				except:
-					pkg["skip_groups"]=[]
+			try:
+				pkg["skip_flavours"]=item["skip_flavours"]
+			except:
+				pkg["skip_flavours"]=[]
+			try:
+				pkg["skip_groups"]=item["skip_groups"]
+			except:
+				pkg["skip_groups"]=[]
 					
-				remote_available.append(pkg)			
+			if add_to_list:
+				remote_available.append(pkg)
+			else:
+				only_gui_available.append(pkg)			
 		
-		return [remote_available,selection_enabled,zomando,required_x]									
+		return [remote_available,selection_enabled,zomando,required_x,only_gui_available]									
 
 	#def cli_install	
 
@@ -1340,6 +1346,7 @@ class EpiManager:
 										if not self.is_zmd_service(remote[2]):
 											tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
 											self.remote_available_epis.append(tmp)
+								tmp[epi_name]["only_gui_available"]=remote[4]
 								self.all_available_epis.append(tmp)
 								self.available_epis.append(line)
 
@@ -1350,7 +1357,8 @@ class EpiManager:
 
 	def check_remote_epi(self,epi):
 
-		tmp=[]
+		tmp_cli=[]
+		tmp_gui=[]
 		epi=os.path.basename(epi)
 		for item in self.all_available_epis:
 			for element in item:
@@ -1358,11 +1366,15 @@ class EpiManager:
 					for pkg in item[element]["pkg_list"]:
 						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
 							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
-								tmp.append(pkg)
+								tmp_cli.append(pkg)
 					#return item[element]["pkg_list"]
+					for pkg in item[element]["only_gui_available"]:
+						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
+							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
+								tmp_gui.append(pkg)
 
-		return tmp	
-
+		return tmp_cli,tmp_gui
+	
 	#def check_remote_epi
 	 				
 	def _get_epi_path(self,epi):
