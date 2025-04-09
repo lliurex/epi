@@ -90,10 +90,9 @@ GridLayout{
             KonsolePanel{
                 id:konsolePanel
             }
- 
         }
 
-         Kirigami.InlineMessage {
+        Kirigami.InlineMessage {
             id: messageLabel
             visible:mainStackBridge.showStatusMessage[0]
             text:getFeedBackText(mainStackBridge.showStatusMessage[1])
@@ -101,7 +100,12 @@ GridLayout{
             Layout.minimumWidth:555
             Layout.fillWidth:true
             Layout.rightMargin:10
-            
+
+            onVisibleChanged:{
+                if (messageLabel.visible && mainStackBridge.runPkexec){
+                    background.color=getMsgColor(type)
+                }
+            }
         }
 
         RowLayout{
@@ -114,15 +118,15 @@ GridLayout{
             PC.Button {
                 id:uninstallBtn
                 visible:{
-                   if (packageStackBridge.currentPkgOption==0){
-                       if (mainStackBridge.showRemoveBtn){
-                           true
-                       }else{
-                           false
-                       }
-                   }else{
-                       true
-                   }
+                    if (packageStackBridge.currentPkgOption==0){
+                        if (mainStackBridge.showRemoveBtn){
+                            true
+                        }else{
+                            false
+                        }
+                    }else{
+                        true
+                    }
                 }
                 focus:true
                 display:AbstractButton.TextBesideIcon
@@ -182,6 +186,7 @@ GridLayout{
                     }
                 }
             }
+
             ColumnLayout{
                 id:feedbackColumn
                 spacing:10
@@ -207,9 +212,8 @@ GridLayout{
                     implicitHeight:mainStackBridge.runPkexec?7:25
                     Layout.alignment:Qt.AlignHCenter
                 }
-                
             }
-               
+
             PC.Button {
                 id:installBtn
                 visible:{
@@ -242,7 +246,7 @@ GridLayout{
                 enabled:{
                     if (mainStackBridge.enableApplyBtn){
                         true
-                  }else{
+                    }else{
                         false
                     }
                 }
@@ -261,12 +265,11 @@ GridLayout{
                         applyChanges()
                         packageStackBridge.acceptEula()
                     }
-     
                 }
             }
         }
     }
-   
+
     CustomDialog{
         id:uninstallDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
@@ -288,7 +291,6 @@ GridLayout{
             function onCancelDialogClicked(){
                 uninstallDialog.close()
             } 
-
         }        
     }
 
@@ -326,12 +328,11 @@ GridLayout{
         timer.triggered.connect(cb);
         timer.start()
     }
-   
+
     function applyChanges(){
         delay(100, function() {
             if (mainStackBridge.endProcess){
                 timer.stop()
-                
             }else{
                 if (mainStackBridge.endCurrentCommand){
                     mainStackBridge.getNewCommand()
@@ -339,14 +340,15 @@ GridLayout{
                     konsolePanel.runCommand(newCommand)
                 }
             }
-          })
-    } 
- 
+        })
+    }
+
     function getFeedBackText(code){
 
         var msg="";
         var errorHeaded=i18nd("epi-gtk","The selected applications cannot be uninstalled.\n")
         var warningHeaded=i18nd("epi-gtk","Some selected application successfully uninstalled.\nOthers not because ")
+
         switch (code){
             case -14:
                 msg=i18nd("epi-gtk","Internet connection not detected")
@@ -458,6 +460,20 @@ GridLayout{
                 return Kirigami.MessageType.Information;
             case "Warning":
                 return Kirigami.MessageType.Warning;
+        }
+    }
+
+    function getMsgColor(type){
+
+        switch(type){
+            case 0:
+                return "#00bfff"
+            case 1:
+                return "#3cb371"
+            case 2:
+                return "#ff8c00"
+            case 3:
+                return "#dc143c"
         }
     }
 
