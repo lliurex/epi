@@ -1,3 +1,10 @@
+epi (0.15.12) jammy; urgency=medium
+
+  * Improved info about epi files in EPIC
+  * Added new method to show all epis availables in the system
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 09 Apr 2025 08:22:57 +0200
+
 epi (0.15.11) jammy; urgency=medium
 
   * Fixed translation
