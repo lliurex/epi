@@ -44,8 +44,7 @@ class EPIC(object):
 
 				msg_log='APP epi file loaded by EPIC: ' + app
 				self.write_log(msg_log)	
-				self.remote_install=self.epicore.check_remote_epi(app)
-
+				self.remote_install,self.gui_install=self.epicore.check_remote_epi(app)
 
 	#def __init__
 
@@ -58,6 +57,7 @@ class EPIC(object):
 		pkgs_default=""
 		tmp_list=[]
 		pkgs_installed=""
+		pkgs_available_gui=""
 
 		for item in self.epicore.epiFiles:
 			order=order-1
@@ -96,7 +96,15 @@ class EPIC(object):
 							for item in self.remote_install:
 								self.epicore.packages_selected.append(item["name"])
 
-		return depends,pkgs_available,pkgs_default,pkgs_installed,pkgs_selected
+				if len (self.gui_install)>0:
+					for item in self.gui_install:
+						if  self.epicore.pkg_info[item["name"]]["status"]=="installed":
+							pkgs_installed=pkgs_installed+item["name"]+" "
+						pkgs_available_gui=pkgs_available_gui+item["name"]+" "
+						if item["default_pkg"]:
+							pkgs_default=pkgs_default+item["name"]+" "
+
+		return depends,pkgs_available,pkgs_default,pkgs_installed,pkgs_selected,pkgs_available_gui
 
 	#def get_info			
 
@@ -120,7 +128,29 @@ class EPIC(object):
 		else:
 			print ('  [EPIC]: No available epi file app detected')
 
-	#def listEpi	
+	#def listEpi
+
+	def listAllEpi(self):
+
+		epi_list=sorted(self.epicore.all_available_epis, key=lambda d: list(d.keys()))
+		count_epi=len(epi_list)
+		tmp=""
+		count=1
+
+		if count_epi>0:				
+			for item in epi_list:
+				for element in item:
+					if count<count_epi:
+						tmp=tmp+element+", "
+					else:
+						tmp=tmp+element
+					count+=1
+			print ('  [EPIC]: List of all epi files availables in the system: '+tmp)
+		
+		else:
+			print ('  [EPIC]: No available epi file app detected')
+
+	#def listAllEpi	
 	
 	def showInfo(self,checked=None):
 		
@@ -135,7 +165,7 @@ class EPIC(object):
 			self.epicore.get_pkg_info()
 
 		if checksystem:
-			depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs=self.get_info(show_all)
+			depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs,pkgs_available_gui=self.get_info(show_all)
 
 			epi_conf=self.epicore.epiFiles[0]
 			status=epi_conf["status"]
@@ -160,10 +190,14 @@ class EPIC(object):
 				self.sequentialProcess=True
 
 				if pkgs_available=="":
-					print ("     - Packages not availables for install via terminal in this flavour" )
+					print ("     - Packages not availables for install with EPIC in this flavour" )
+					if pkgs_available_gui!="":
+						print ("     - Packages availables to install ONLY with GUI (EPI): " + pkgs_available_gui)
 					return 0	
 				else:
-					print ("     - Packages availables: " + pkgs_available)
+					print ("     - Packages availables to install with EPIC: " + pkgs_available)
+					if pkgs_available_gui!="":
+						print ("     - Packages availables to install ONLY with GUI (EPI): " + pkgs_available_gui)
 					if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
 						if pkgs_default=="":
 							print ("     - Packages selected by defafult: None")
@@ -184,11 +218,11 @@ class EPIC(object):
 
 			else:
 				if pkgs_available=="":
-					print ("     - Application not availabled to install/uninstall via terminal in this flavour")
-					return 0
+					print ("     - Application (ONLY availabled to install/uninstall with GUI (EPI) in this flavour): "+pkgs_available_gui)
+					#return 0
 				else:
 					print ("     - Application: " + pkgs_available)
-
+				
 			print ("     - Status: " + status)
 			
 			print ("     - Uninstall process availabled: " + self.uninstall)
@@ -230,7 +264,7 @@ class EPIC(object):
 			self.write_log(msg_log)
 			check=False
 		if self.required_x:
-			msg_log="Can not " + action + " the application via terminal. Use epi-gtk for this"
+			msg_log="Can not " + action + " the application with EPIC. Use epi-gtk for this"
 			print ('  [EPIC]: '+ msg_log)
 			self.write_log(msg_log)
 			check=False
@@ -248,7 +282,7 @@ class EPIC(object):
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False		
 			elif self.check_pkgList["error"]=="cli":
-				msg_log="There are packages that can not " + action + " via terminal"	
+				msg_log="There are packages that can not " + action + " with EPIC"	
 				print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
 				check=False
 			self.write_log(msg_log)
