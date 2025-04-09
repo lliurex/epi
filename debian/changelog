@@ -1,3 +1,9 @@
+epi (0.25.22) noble; urgency=medium
+
+  * Minor fixed in background color of Kirigamin InLineMessage
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 09 Apr 2025 16:47:50 +0200
+
 epi (0.25.21) noble; urgency=medium
 
   * Added new method in EPIC to show all epi files available in the system
