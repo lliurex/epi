@@ -1,3 +1,9 @@
+epi (0.25.23) noble; urgency=medium
+
+  * Supported zmd commands with arguments
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 29 Apr 2025 11:59:26 +0200
+
 epi (0.25.22) noble; urgency=medium
 
   * Minor fixed in background color of Kirigamin InLineMessage
