@@ -1330,7 +1330,8 @@ class EpiManager:
 					if '.epi' in line:
 						line=line.split('epi-gtk')
 						try:
-							line=line[1].strip("\n").strip(" ")
+							line=line[1].strip(" ").split(" ")
+							line=line[0].strip("\n").strip(" ")
 							check=self.read_conf(line,False,True)["status"]
 							if check:
 								remote=self.cli_install()
