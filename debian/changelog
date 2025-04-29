@@ -1,3 +1,9 @@
+epi (0.15.13) jammy; urgency=medium
+
+  * Supported zmd commands with argument
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 29 Apr 2025 10:53:00 +0200
+
 epi (0.15.12) jammy; urgency=medium
 
   * Improved info about epi files in EPIC
