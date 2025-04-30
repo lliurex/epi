@@ -103,7 +103,7 @@ GridLayout{
 
             onVisibleChanged:{
                 if (messageLabel.visible && mainStackBridge.runPkexec){
-                    background.color=getMsgColor(type)
+                    background.color=getMsgColor()
                 }
             }
         }
@@ -463,17 +463,17 @@ GridLayout{
         }
     }
 
-    function getMsgColor(type){
+    function getMsgColor(){
 
-        switch(type){
-            case 0:
-                return "#00bfff"
-            case 1:
-                return "#3cb371"
-            case 2:
-                return "#ff8c00"
-            case 3:
-                return "#dc143c"
+        switch(mainStackBridge.showStatusMessage[2]){
+            case "Ok":
+                return "#3cb371";
+            case "Error":
+                return "#dc143c";
+            case "Info":
+                return "#00bfff";
+            case "Warning":
+                return "#ff8c00";
         }
     }
 
