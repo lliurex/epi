@@ -1,3 +1,9 @@
+epi (0.25.24) noble; urgency=medium
+
+  * Fixed background of Kirigami msg when run epi with pkexec
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 30 Apr 2025 10:24:12 +0200
+
 epi (0.25.23) noble; urgency=medium
 
   * Supported zmd commands with arguments
