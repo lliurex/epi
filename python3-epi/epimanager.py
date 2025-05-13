@@ -1022,7 +1022,8 @@ class EpiManager:
 					if self.epi_conf["selection_enabled"]["active"]:
 						pkgs=self.epi_conf["pkg_list"]
 						file_with_list=True
-			
+					else:
+						pkg_id=self.epi_conf["pkg_list"][0]["name"]
 
 			elif epi_type!="file":
 				pkgs=self.epi_conf["pkg_list"]
@@ -1040,6 +1041,8 @@ class EpiManager:
 							if item["name"] in self.packages_selected:
 								if item["name"] not in self.blocked_remove_skipped_pkgs_list:
 									pkgs_ref.append(item["name"])
+				else:
+					pkg_id=self.epiFiles[0]["pkg_list"][0]["name"]
 
 			elif epi_type !="file":
 				pkgs=self.epiFiles[0]["pkg_list"]
@@ -1055,26 +1058,29 @@ class EpiManager:
 		if epi_type=="file" and not file_with_list:
 			if os.path.exists(token):
 				file=open(token)
-				content=file.readline()
+				content=file.readline().strip()
 				if '0' not in content:
 					result=False
 
 				else:
-					script=self.check_getStatus_byScript(0)
-					status=self.check_pkg_status(pkg_id,epi_type,script)
-					print(status)
-					if status!="installed":
-						if action=="install":
-							result=False
-						else:
-							result=True
-					else:
-						if action=="install":
-							result=True
-						else:
-							result=False
+					result=True
+
 				file.close()
 				os.remove(token)
+			else:
+				script=self.check_getStatus_byScript(0)
+				status=self.check_pkg_status(pkg_id,epi_type,script)
+				if status!="installed":
+					if action=="install":
+						result=False
+					else:
+						result=True
+				else:
+					if action=="install":
+						result=True
+					else:
+						result=False
+				
 
 		elif epi_type !="file" or file_with_list:
 			if epi_type=="mix":
