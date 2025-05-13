@@ -1,3 +1,9 @@
+epi (0.25.25) noble; urgency=medium
+
+  * Fixed result detection when epi is type file
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 13 May 2025 12:23:28 +0200
+
 epi (0.25.24) noble; urgency=medium
 
   * Fixed background of Kirigami msg when run epi with pkexec
