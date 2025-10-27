@@ -16,7 +16,7 @@ Vcs-Browser: https://svn.lliurex.net/xenial/epi
 
 Package: python3-epi
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends},python3-dpkgunlocker,python3-n4d-client
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends},python3-dpkgunlocker,python3-n4d-client,lliurex-store-dbus (>=1.4.9)
 Description:Easy package installer (EPI). Core Library package
   Provides the core library required by the epi-cli and epi-gtk packages
 
