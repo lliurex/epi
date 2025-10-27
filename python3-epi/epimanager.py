@@ -38,8 +38,8 @@ class EpiManager:
 	
 		try:
 			storeBus=dbus.Bus()
-			storeProxy=storeBus.get_object('net.lliurex.rebost','/net/lliurex/rebost')
-			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='net.lliurex.rebost')
+			storeProxy=storeBus.get_object('net.lliurex.store','/')
+			self.dbusStore=dbus.Interface(storeProxy,dbus_interface='org.kde.krunner1')
 		except Exception as e:
 			self.dbusStore=None
 			self._show_debug("storeProxy",str(e))
