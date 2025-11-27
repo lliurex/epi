@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import org.kde.plasma.components as PC
 import org.kde.kirigami as Kirigami
 
@@ -273,7 +272,6 @@ GridLayout{
     CustomDialog{
         id:uninstallDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
-        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Uninstall process")
         dialogMsg:i18nd("epi-gtk","Do you want uninstall the application?")
         dialogWidth:350
         btnAcceptVisible:true
@@ -297,7 +295,6 @@ GridLayout{
     CustomDialog{
         id:closeDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
-        dialogTitle:"EPI"
         dialogMsg:i18nd("epi-gtk","It seems that the installation/uninstallation process has not finished yet?\nIf you close EPI the process will be closed.\nDo you want to close EPI?")
         dialogWidth:600
         dialogVisible:mainStackBridge.showCloseDialog

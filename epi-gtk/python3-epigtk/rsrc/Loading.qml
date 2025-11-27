@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Dialogs
 
 
 Rectangle{
@@ -47,7 +46,6 @@ Rectangle{
     CustomDialog{
         id:unlockDialog
         dialogIcon:"/usr/share/icons/breeze/status/64/dialog-warning.svg"
-        dialogTitle:"EPI"+" - "+i18nd("epi-gtk","Unlock process")
         dialogVisible:mainStackBridge.showDialog
         dialogMsg:i18nd("epi-gtk","Apt or Dpkg seems blocked by a failed previous execution\nClick on Unlock to try to solve the problem")
         dialogWidth:550
