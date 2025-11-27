@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-23 15:24+0200\n"
+"POT-Creation-Date: 2025-11-27 13:59+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,28 +18,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: epi-gtk/python3-epigtk/rsrc/Loading.qml:50
-msgid "Unlock process"
-msgstr ""
-
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:52
 msgid ""
 "Apt or Dpkg seems blocked by a failed previous execution\n"
 "Click on Unlock to try to solve the problem"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:55
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:53
 msgid "Unlock"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:73
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:71
 msgid "Loading information. Wait a moment..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:76
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:74
 msgid "Apt or Dpkg are being executed. Checking if they have finished"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:79
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:77
 msgid "Executing the unlocking process. Wait a moment..."
 msgstr ""
 
@@ -98,51 +94,47 @@ msgstr ""
 msgid "The unlocking process has failed"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:29
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:28
 msgid "Home"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:44
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:43
 msgid "View details"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:56
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:55
 msgid "Help"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:145
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:148
 msgid "Uninstall"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:148
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:151
 msgid "Reject Eula"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:151
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:154
 msgid "Back"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:228
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:232
 msgid "Reinstall"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:230
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:234
 msgid "Install"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:234
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:238
 msgid "Accept Eula"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:272
-msgid "Uninstall process"
-msgstr ""
-
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:273
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:275
 msgid "Do you want uninstall the application?"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:276
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:278
 #: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:302
 msgid "Cancel"
 msgstr ""
@@ -154,11 +146,11 @@ msgid ""
 "Do you want to close EPI?"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:347
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:346
 msgid "The selected applications cannot be uninstalled.\n"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:348
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:347
 msgid ""
 "Some selected application successfully uninstalled.\n"
 "Others not because "
@@ -293,7 +285,7 @@ msgstr ""
 msgid "you do not have permissions and meta-package protection"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/CustomDialog.qml:64
+#: epi-gtk/python3-epigtk/rsrc/CustomDialog.qml:58
 msgid "Accept"
 msgstr ""
 
@@ -305,15 +297,15 @@ msgstr ""
 msgid "Installation process details"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:82
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:77
 msgid "Previous actions: executing "
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:195
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:192
 msgid "Press to view application information"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:226
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:231
 msgid "Click to launch the application"
 msgstr ""
 
@@ -321,47 +313,46 @@ msgstr ""
 msgid "Applications availables"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:49
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:57
 msgid "Click to filter applications by status"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:73
 msgid "Show installed apps"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:86
 msgid "Show uninstalled apps"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:84
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:98
 msgid "Show apps with error"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:100
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:114
 msgid "Remove filter"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:122
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:137
 msgid "Search..."
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:193
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:209
 msgid "Applications not found"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:216
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:232
 msgid "Uncheck all packages"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:218
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:234
 msgid "Check all packages"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:233
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:249
 msgid "(D) Addicitional application required"
 msgstr ""
 
-#: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 #: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 msgid "Additional information"
 msgstr ""
