@@ -226,7 +226,7 @@ class EpiGuiManager:
 			self._writeLog("Unlock process ok")
 			return [True,""]
 		else:
-			self._writeLog("Unlock process failed: %s"%str(self.unlock_result))
+			self._writeLog("Unlock process failed: %s"%str(ret))
 			return [False,EpiGuiManager.ERROR_LOCK_PROCESS] 
 
 	#def execUnlockProcess
