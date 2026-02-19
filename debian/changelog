@@ -1,3 +1,9 @@
+epi (0.25.29) noble; urgency=medium
+
+  * Fixed bug in unlock process
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 19 Feb 2026 11:31:27 +0100
+
 epi (0.25.28) noble; urgency=medium
 
   * Fixed custom dialog template
