@@ -1588,10 +1588,13 @@ class EpiManager:
 			groups_gids = os.getgrouplist(user, gid)
 			self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
 		except:
-			user=os.environ["USER"]
-			gid = pwd.getpwnam(user).pw_gid
-			groups_gids = os.getgrouplist(user, gid)
-			self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+			try:
+				user=os.environ["USER"]
+				gid = pwd.getpwnam(user).pw_gid
+				groups_gids = os.getgrouplist(user, gid)
+				self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+			except:
+				pass	
 
 	#def _get_user_groups
 
