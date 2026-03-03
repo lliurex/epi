@@ -6,176 +6,265 @@ import magic
 import tempfile
 import json
 import subprocess
-import grp,pwd
+from multiprocessing import Process,Queue
 
 dbg=False
 retCode=0
 
-def _debug(msg):
-	if dbg:
-		print("Deb installer: %s"%msg)
-#def _debug
+class debInfo():
+	def __init__(self,deb):
+		self.dbg=True
+		self.pkg=deb
+		self.proc=[]
+	#def __init_
 
-def _generate_install_dir():
-	global retCode
-	installDir=''
-	try:
-		installDir=tempfile.mkdtemp()
-	except:
-		_debug("Couldn't create temp dir")
-		retCode=1
-	os.chown(installDir,pwd.getpwnam('_apt').pw_uid,grp.getgrnam('nogroup').gr_gid)
-	return (installDir)
-#def _generate_install_dir
+	def _debug(self,msg):
+		if self.dbg==True:
+			print("debInfo: {}".format(msg))
+	#def _debug
 
-def _get_deb_info(deb):
-	global retCode
-	debInfo={}
-	installDir=os.path.dirname(deb)
-	os.makedirs("%s/debDir"%installDir)
-	os.chdir("%s/debDir"%installDir)
-	_debug("Extract control")
-	subprocess.run(['ar','x',deb])
-	_debug("Uncompress control")
-	try:
-		if os.path.isfile("control.tar.xz"):
-			subprocess.run(['tar','Jxf',"control.tar.xz"])
-		elif os.path.isfile("control.tar.gz"):
-			subprocess.run(['tar','zxf',"control.tar.gz"])
-		elif os.path.isfile("control.tar.zst"):
-			subprocess.run(['tar','xvf',"control.tar.zst"])
-	except:
-		_debug("Failed to uncompress deb")
-		retCode=1
-	if not retCode:
-		#read control file
-		f_lines=[]
-		try:
-			f=open("control","r")
-			f_lines=f.readlines()
-			f.close()
-		except Exception as e:
-			_debug("%s"%e)
-			retCode=1
+	def isValid(self):
+		valid=False
+		mime=magic.Magic(mime=True)
+		if ((os.path.isfile(self.pkg)) and (mime.from_file(self.pkg)=='application/vnd.debian.binary-package')):
+			valid=True
+		return(valid)
+	#def isValid
 
-		for line in f_lines:
-			if line.startswith(" "):
-				if oldKey in debInfo.keys():
-					debInfo[oldKey]=("%s%s"%(debInfo[oldKey],line)).rstrip()
-			else:
-				key=line.split(":")[0]
-				data=" ".join(line.split(" ")[1:]).rstrip()
-				if key=='Description':
-					data=data+"||"
-				elif key=='Package':
-					data=data.lower()	
-				debInfo[key]=data
-				oldKey=key
-	return (debInfo)
-#def _get_deb_info
+	def _unpackDeb(self,pkgFile):
+		if os.path.isfile(pkgFile):
+			subprocess.run(["ar","x",pkgFile,"--output",os.path.dirname(pkgFile)])
+	#def _unpackDeb
 
-def _begin_install_package(deb):
-	global retCode
-	mime=magic.Magic(mime=True)
-	if ((os.path.isfile(deb)) and (mime.from_file(deb)=='application/vnd.debian.binary-package')):
-		_generate_epi_file(deb)
-	else:
-		_debug("%s is an invalid file"%deb)
-		retCode=1
+	def _readDesktopF(self,desktopF):
+		fcontent=""
+		pkgData={"name":"","icon":"","description":"","summary":""}
+		if os.path.isfile(desktopF):
+			with open(desktopF,"r") as f:
+				fcontent=f.read()
+		for l in fcontent.split("\n"):
+			if l.replace(" ","").lower().startswith("name="):
+				pkgData["name"]=l.split("=",1)[-1]
+			if l.replace(" ","").lower().startswith("comment="):
+				pkgData["description"]=l.split("=",1)[-1]
+			if l.replace(" ","").lower().startswith("genericname="):
+				pkgData["summary"]=l.split("=",1)[-1]
+		return(pkgData)
+	#def _readDesktopF
 
-#def _begin_install_package
+	def _getInfoFromDesktopF(self,dataF,qData):
+		desktopF=""
+		iconF=""
+		if os.path.isfile(dataF):
+			out=subprocess.check_output(["tar","Jtvf",dataF],universal_newlines=True,encoding="utf8")
+			for l in out.split("\n"):
+				if "applications" in l and l.endswith("desktop"):
+					desktopF="./{}".format(l.split("./",1)[-1])
+					if iconF!="":
+						break
+				if "icons" in l and l.endswith("png"):
+					iconF="./{}".format(l.split("./",1)[-1])
+					if desktopF!="":
+						break
+		if desktopF!="":
+			subprocess.run(["tar","Jxvf",dataF,"-C",os.path.dirname(dataF),desktopF],universal_newlines=True,encoding="utf8")
+			pkgData=self._readDesktopF(os.path.join(os.path.dirname(dataF),desktopF))
+		if iconF!="":
+			subprocess.run(["tar","Jxvf",dataF,"-C",os.path.dirname(dataF),iconF],universal_newlines=True,encoding="utf8")
+			pkgData["icon"]=os.path.join(os.path.dirname(dataF),iconF)
+		qData.put(pkgData)
+	#def _getInfoFromDesktopF
 
-def _generate_epi_json(debInfo,deb):
-	global retCode
-	tmpDir=os.path.dirname(deb)
-	debName=os.path.basename(deb)
-	epiJson=''
-	#retCode controls the return code of the previous operations 
-	if not retCode:
-		epiJson="%s/%s.epi"%(tmpDir,debInfo['Package'].replace(" ","_"))
-		epiFile={}
-		epiFile["type"]="localdeb"
-#		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':os.path.dirname(installFile),'version':{'all':debName}}]
-		epiFile["pkg_list"]=[{"name":debInfo['Package'],'url_download':tmpDir,'version':{'all':debName}}]
-		epiFile["script"]={"name":"%s/install_script.sh"%tmpDir,'remove':True}
-		epiFile["required_root"]=True
-		epiFile["required_dconf"]=True
+	def _readControlF(self,controlF):
+		fcontent=""
+		pkgData={"pkgname":"","description":"","version":""}
+		if os.path.isfile(controlF):
+			with open(controlF,"r") as f:
+				fcontent=f.read()
+		for l in fcontent.split("\n"):
+			if l.replace(" ","").lower().startswith("package:"):
+				pkgData["pkgname"]=l.split(":",1)[-1].strip()
+			if l.replace(" ","").lower().startswith("description:"):
+				pkgData["pkgdescription"]=l.split(":",1)[-1].strip()
+			if l.replace(" ","").lower().startswith("version:"):
+				pkgData["pkgversion"]=l.split(":",1)[-1].strip()
+		return(pkgData)
+	#def _readControlF
 
-		try:
-			with open(epiJson,'w') as f:
-				json.dump(epiFile,f,indent=4)
-		except Exception as e:
-			_debug("%s"%e)
-			retCode=1
-	return(epiJson)
-#def _generate_epi_json
+	def _getInfoFromControlF(self,dataF,qData):
+		controlF=""
+		if os.path.isfile(dataF):
+			out=subprocess.check_output(["tar","ztvf",dataF],universal_newlines=True,encoding="utf8")
+			for l in out.split("\n"):
+				if l.endswith("./control"):
+					controlF="./{}".format(l.split("./",1)[-1])
+					break
+		subprocess.run(["tar","zxvf",dataF,"-C",os.path.dirname(dataF),controlF],universal_newlines=True,encoding="utf8")
+		qData.put(self._readControlF(os.path.join(os.path.dirname(dataF),controlF)))
+	#def _getInfoFromControlF
 
-def _generate_epi_script(debInfo,deb):
-	global retCode
-	tmpDir=os.path.dirname(deb)
-	try:
-		with open("%s/install_script.sh"%tmpDir,'w') as f:
+	def getPkgData(self):
+		proc=[]
+		pkgInfo={}
+		wrkDir=tempfile.mkdtemp()
+		shutil.copy(self.pkg,wrkDir)
+		pkgFile=os.path.basename(self.pkg)
+		self._unpackDeb(os.path.join(wrkDir,pkgFile))
+		qData=Queue()
+		dataF=os.path.join(wrkDir,"data.tar.xz")
+		p=Process(target=self._getInfoFromDesktopF,args=(dataF,qData))
+		proc.append(p)
+		p.start()
+		controlF=os.path.join(wrkDir,"control.tar.gz")
+		p=Process(target=self._getInfoFromControlF,args=(controlF,qData))
+		proc.append(p)
+		p.start()
+		for p in proc:
+			p.join()
+			pkgInfo.update(qData.get())
+		pkgInfo["wrkDir"]=wrkDir
+		return(pkgInfo)
+	#def getPkgData
+#class debInfo
+
+class epiHelper():
+	def __init__(self,pkgData):
+		self._dbg=False
+		self.pkgData=pkgData
+		self.jepi=""
+		self.sepi=""
+	#def __init__
+
+	def _jsonForEpi(self):
+		pkgname=self.pkgData.get('pkgname',"").strip()
+		tmpDir=self.pkgData["wrkDir"]
+		epiJson="{}.epi".format(os.path.join(tmpDir,pkgname))
+		if not os.path.isfile(epiJson):
+			name=self.pkgData.get('name',"").strip()
+			if len(name)==0:
+				name=pkgname
+			desc=self.pkgData.get('description',"").strip()
+			pkgdesc=self.pkgData.get('pkgdescription',"").strip()
+			if len(desc)==0:
+				desc=pkgdesc
+			icon=self.pkgData.get('icon','')
+			version=self.pkgData.get("version","")
+			if len(version)==0:
+				version="all"
+			epiFile={}
+			epiFile["type"]="file"
+			epiFile["pkg_list"]=[{"name":pkgname,"custom_name":"{}: {}".format(name,desc),"key_store":pkgname,'url_download':'','custom_icon':os.path.basename(icon),'version':{version:name}}]
+			epiFile["script"]={"name":"{0}_script.sh".format(os.path.join(tmpDir,pkgname)),'download':True,'remove':True,'getStatus':True,'getInfo':True}
+			if icon!="":
+				epiFile["custom_icon_path"]=os.path.dirname(icon)
+			epiFile["required_root"]=True
+			epiFile["check_zomando_state"]=False
+			try:
+				with open(epiJson,'w') as f:
+					json.dump(epiFile,f,indent=4)
+			except Exception as e:
+				_debug("Helper {}".format(e))
+				retCode=1
+		return(epiJson)
+	#def _jsonForEpi
+
+	def _populateEpi(self,epiScript,commands):
+		with open(epiScript,'w') as f:
 			f.write("#!/bin/bash\n")
+			f.write("function getStatus()\n{")
+			f.write("\t\t{}\n".format(commands.get('statusTestLine')))
+			f.write("\t\tif [ \"$TEST\" == 'installed' ];then\n")
+			f.write("\t\t\tINSTALLED=0\n")
+			f.write("\t\telse\n")
+			f.write("\t\t\tINSTALLED=1\n")
+			f.write("\t\tfi\n")
+			f.write("}\n")
 			f.write("ACTION=\"$1\"\n")
+			f.write("ERR=0\n")
 			f.write("case $ACTION in\n")
 			f.write("\tremove)\n")
-			f.write("\t\tapt-get remove -y %s\n"%debInfo['Package'])
-			f.write("\t\tTEST=$( dpkg-query -s  %s 2> /dev/null| grep Status | cut -d \" \" -f 4 )\n"%debInfo['Package'])
-			f.write("\t\tif [ \"$TEST\" == 'installed' ];then\n")
-			f.write("\t\t\texit 1\n")
-			f.write("\t\tfi\n")
+			f.write("\t\t{}\n".format(commands.get('removeCmd')))
+			for command in commands.get('removeCmdLine',[]):
+				f.write("\t\t{}\n".format(command))
 			f.write("\t\t;;\n")
-			f.write("\ttestInstall)\n")
-			if not retCode:
-				f.write("\t\tapt-get update>/dev/null\"\"\n")
-				f.write("\t\tRES=$(apt-get --simulate install %s 2>/tmp/err | awk 'BEGIN {sw=\"\"}{ver=0;if ($0~\" : \") sw=1; if ($0~\"[(]\") ver=1;if (sw==1 && ver==1) { print $0 } else if (sw==1) { print $1\" \"$2\" ( ) \"$3\" \"$4\" \"$5} }' | sed 's/.*: \(.*)\) .*/\\1/g;s/( *)//')\n"%deb)
-                                
-				f.write("\t\t[ -s /tmp/err ] && RES=${RES//$'\\n'/||}\"||\"$(cat /tmp/err) || RES=\"\"\n")
-			else:
-				f.write("\t\tRES=1\"\"\n")
-			f.write("\t\techo \"${RES}\"\n")
+			f.write("\tinstallPackage)\n")
+			f.write("\t\t{}\n".format(commands.get('installCmd')))
+			for command in commands.get('installCmdLine',[]):
+				f.write("\t\t{}\n".format(command))
+			f.write("\t\t;;\n")
+			f.write("\ttestInstall)\n")	
+			f.write("\t\techo \"0\"\n")
 			f.write("\t\t;;\n")
 			f.write("\tgetInfo)\n")
-			f.write("\t\techo \"%s\"\n"%debInfo['Description'])
+			f.write("\t\techo \"{}\"\n".format(self.pkgData['description']))
+			f.write("\t\t;;\n")
+			f.write("\tgetStatus)\n")
+			f.write("\t\tgetStatus\n")
+			f.write("\t\techo $INSTALLED\n")
+			f.write("\t\t;;\n")
+			f.write("\tdownload)\n")
+			f.write("\t\techo \"Installing...\"\n")
 			f.write("\t\t;;\n")
 			f.write("esac\n")
-			f.write("exit 0\n")
-	except Exception as e:
-		_debug("%s"%e)
-		retCode=1
-	os.chmod("%s/install_script.sh"%tmpDir,0o755)
-#def _generate_epi_script
 
-def _generate_epi_file(deb):
-	global retCode
-	installDir=_generate_install_dir()
-	if installDir:
-		#copy deb to installDir
-		try:
-			debName=os.path.basename(deb)
-			shutil.copyfile(deb,"%s/%s"%(installDir,debName))
-			deb="%s/%s"%(installDir,debName)
-		except Exception as e:
-			_debug("%s couldn't be copied to %s: %s"%(deb,installDir,e))
-			retCode=1
-		
-		if not retCode:
-			debInfo=_get_deb_info(deb)
-			epiJson=_generate_epi_json(debInfo,deb)
-			_generate_epi_script(debInfo,deb)
-			if not retCode:
-				_debug("Launching %s"%epiJson)
-				subprocess.run(['epi-gtk',epiJson])
-			else:
-				subprocess.run(['epi-gtk',"--error"])
-		else:
-			subprocess.run(['epi-gtk',"--error"])
-		#Remove tmp dir
-		shutil.rmtree(installDir)
-	elif retCode:
-		subprocess.run(['epi-gtk',"--error"])
-#def generate_epi_file
-installFile=sys.argv[1]
-_begin_install_package(installFile)
+			f.write("exit $ERR\n")
+	#def _populateEpi
 
+	def _getCommandsForPackage(self,pkgname,localdeb):
+		commands={}
+		(installCmd,installCmdLine,removeCmd,removeCmdLine,statusTestLine)=("",[],"",[],"")
+		#pkcon has a bug detecting network if there's no network under NM (fails with systemd-networkd)
+		#Temporary use apt until bug fix
+		#FIX PKGNAME
+		installCmd="export DEBIAN_FRONTEND=noninteractive"
+		installCmdLine.append("export DEBIAN_PRIORITY=critical")
+		installCmdLine.append("apt-get -qy -o \"Dpkg::Options::=--force-confdef\" -o \"Dpkg::Options::=--force-confold\" install \"{}\" 2>&1;ERR=$?".format(localdeb))
+		removeCmd="apt remove -y {} 2>&1;ERR=$?".format(pkgname)
+		removeCmdLine.append("TEST=$(pkcon resolve --filter installed {0}| grep {0} > /dev/null && echo 'installed')".format(pkgname))
+		removeCmdLine.append("if [ \"$TEST\" == 'installed' ];then")
+		removeCmdLine.append("exit 1")
+		removeCmdLine.append("fi")
+		statusTestLine=("TEST=$(pkcon resolve --filter installed {0}| grep {0} > /dev/null && echo 'installed')".format(pkgname))
+		commands['installCmd']=installCmd
+		commands['installCmdLine']=installCmdLine
+		commands['removeCmd']=removeCmd
+		commands['removeCmdLine']=removeCmdLine
+		commands['statusTestLine']=statusTestLine
+		return(commands)
+	#def _getCommandsForPackage
+
+	def _shForEpi(self):
+		pkgname=self.pkgData.get('pkgname',"").strip()
+		tmpDir=self.pkgData["wrkDir"]
+		epiScript="{}_script.sh".format(os.path.join(tmpDir,pkgname))
+		if not (os.path.isfile(epiScript)):
+			commands=self._getCommandsForPackage(pkgname,self.pkgData["deb"])
+			self._populateEpi(epiScript,commands)
+			if os.path.isfile(epiScript):
+				os.chmod(epiScript,0o755)
+		return(epiScript)
+	#def _shForEpi
+
+	def generateEpi(self):
+		self.jepi=self._jsonForEpi()
+		self.sepi=self._shForEpi()
+	#def generateEpi
+#class epiHelper
+
+#### MAIN ####
+if len(sys.argv)>1:
+	localDeb=sys.argv[1]
+	deb=debInfo(localDeb)
+	if deb.isValid()==False:
+		print("{} is not a valid deb package.".format(localDeb))
+		sys.exit(1)
+	pkgData=deb.getPkgData()
+	pkgData["deb"]=localDeb
+	epi=epiHelper(pkgData)
+	epi.generateEpi()
+	if os.path.isfile(epi.jepi):
+		subprocess.run(['epi-gtk',epi.jepi])
+	if pkgData.get("wrkDir","")!="":
+		if os.path.isdir(pkgData["wrkDir"]):
+			shutil.rmtree(pkgData["wrkDir"])
 
