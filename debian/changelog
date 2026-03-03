@@ -1,3 +1,9 @@
+epi (0.15.17) jammy; urgency=medium
+
+  * deb-installer new release
+
+ -- Juanma1980 <juanma1980@gmail.com>  Tue, 03 Mar 2026 19:59:46 +0100
+
 epi (0.15.16) jammy; urgency=medium
 
   * Fixed bug in unlock process
