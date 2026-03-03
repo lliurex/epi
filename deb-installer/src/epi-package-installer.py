@@ -128,7 +128,7 @@ class debInfo():
 		p.start()
 		controlF=os.path.join(wrkDir,"control.tar.xz")
 		if os.path.isfile(controlF)==False:
-			dataF=os.path.join(wrkDir,"control.tar.gz")
+			controlF=os.path.join(wrkDir,"control.tar.gz")
 		p=Process(target=self._getInfoFromControlF,args=(controlF,qData))
 		proc.append(p)
 		p.start()
