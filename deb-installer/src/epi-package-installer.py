@@ -55,8 +55,12 @@ class debInfo():
 	def _getInfoFromDesktopF(self,dataF,qData):
 		desktopF=""
 		iconF=""
+		print("Load {}".format(dataF))
+		tarOptions="Jtvf"
+		if dataF.endswith(".gz"):
+			tarOptions="ztvf"
 		if os.path.isfile(dataF):
-			out=subprocess.check_output(["tar","Jtvf",dataF],universal_newlines=True,encoding="utf8")
+			out=subprocess.check_output(["tar",tarOptions,dataF],universal_newlines=True,encoding="utf8")
 			for l in out.split("\n"):
 				if "applications" in l and l.endswith("desktop"):
 					desktopF="./{}".format(l.split("./",1)[-1])
@@ -67,10 +71,10 @@ class debInfo():
 					if desktopF!="":
 						break
 		if desktopF!="":
-			subprocess.run(["tar","Jxvf",dataF,"-C",os.path.dirname(dataF),desktopF],universal_newlines=True,encoding="utf8")
+			subprocess.run(["tar",tarOptions,dataF,"-C",os.path.dirname(dataF),desktopF],universal_newlines=True,encoding="utf8")
 			pkgData=self._readDesktopF(os.path.join(os.path.dirname(dataF),desktopF))
 		if iconF!="":
-			subprocess.run(["tar","Jxvf",dataF,"-C",os.path.dirname(dataF),iconF],universal_newlines=True,encoding="utf8")
+			subprocess.run(["tar",tarOptions,dataF,"-C",os.path.dirname(dataF),iconF],universal_newlines=True,encoding="utf8")
 			pkgData["icon"]=os.path.join(os.path.dirname(dataF),iconF)
 		qData.put(pkgData)
 	#def _getInfoFromDesktopF
@@ -112,6 +116,8 @@ class debInfo():
 		self._unpackDeb(os.path.join(wrkDir,pkgFile))
 		qData=Queue()
 		dataF=os.path.join(wrkDir,"data.tar.xz")
+		if os.path.isfile(dataF)==False:
+			dataF=os.path.join(wrkDir,"data.tar.gz")
 		p=Process(target=self._getInfoFromDesktopF,args=(dataF,qData))
 		proc.append(p)
 		p.start()
