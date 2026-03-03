@@ -116,7 +116,7 @@ class debInfo():
 		self._unpackDeb(os.path.join(wrkDir,pkgFile))
 		qData=Queue()
 		dataF=os.path.join(wrkDir,"data.tar.xz")
-		if os.path.isFile(dataF)==False:
+		if os.path.isfile(dataF)==False:
 			dataF=os.path.join(wrkDir,"data.tar.gz")
 		p=Process(target=self._getInfoFromDesktopF,args=(dataF,qData))
 		proc.append(p)
