@@ -1,3 +1,9 @@
+epi (0.25.30) noble; urgency=medium
+
+  * deb-installer new release
+
+ -- Juanma1980 <juanma1980@gmail.com>  Tue, 03 Mar 2026 19:55:47 +0100
+
 epi (0.25.29) noble; urgency=medium
 
   * Fixed bug in unlock process
