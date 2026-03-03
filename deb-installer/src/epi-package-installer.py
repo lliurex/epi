@@ -70,6 +70,7 @@ class debInfo():
 					iconF="./{}".format(l.split("./",1)[-1])
 					if desktopF!="":
 						break
+		tarOptions=tarOptions.replace("t","x")
 		if desktopF!="":
 			subprocess.run(["tar",tarOptions,dataF,"-C",os.path.dirname(dataF),desktopF],universal_newlines=True,encoding="utf8")
 			pkgData=self._readDesktopF(os.path.join(os.path.dirname(dataF),desktopF))
