@@ -1,2 +1,2 @@
 deb-installer/src/*	/usr/bin
-deb-installer/services/* /usr/share/kservices5/ServiceMenus/
+deb-installer/services/* /usr/share/kio/servicemenus/
