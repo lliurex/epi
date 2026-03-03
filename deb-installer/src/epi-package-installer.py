@@ -98,13 +98,17 @@ class debInfo():
 
 	def _getInfoFromControlF(self,dataF,qData):
 		controlF=""
+		tarOptions="Jtvf"
+		if dataF.endswith(".gz"):
+			tarOptions="ztvf"
 		if os.path.isfile(dataF):
-			out=subprocess.check_output(["tar","ztvf",dataF],universal_newlines=True,encoding="utf8")
+			out=subprocess.check_output(["tar",tarOptions,dataF],universal_newlines=True,encoding="utf8")
 			for l in out.split("\n"):
 				if l.endswith("./control"):
 					controlF="./{}".format(l.split("./",1)[-1])
 					break
-		subprocess.run(["tar","zxvf",dataF,"-C",os.path.dirname(dataF),controlF],universal_newlines=True,encoding="utf8")
+		tarOptions=tarOptions.replace("t","x")
+		subprocess.run(["tar",tarOptions,dataF,"-C",os.path.dirname(dataF),controlF],universal_newlines=True,encoding="utf8")
 		qData.put(self._readControlF(os.path.join(os.path.dirname(dataF),controlF)))
 	#def _getInfoFromControlF
 
@@ -122,7 +126,9 @@ class debInfo():
 		p=Process(target=self._getInfoFromDesktopF,args=(dataF,qData))
 		proc.append(p)
 		p.start()
-		controlF=os.path.join(wrkDir,"control.tar.gz")
+		controlF=os.path.join(wrkDir,"control.tar.xz")
+		if os.path.isfile(controlF)==False:
+			dataF=os.path.join(wrkDir,"control.tar.gz")
 		p=Process(target=self._getInfoFromControlF,args=(controlF,qData))
 		proc.append(p)
 		p.start()
