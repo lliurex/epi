@@ -98,6 +98,7 @@ class EpiManager:
 		self.meta_removed_warning=False
 		self.download_path="/var/cache/epi-downloads"
 		self.check_meta=True
+		self.valid_epi_files=["apt","deb","file","localdeb","mix","snap","flatpak"]
 		
 
 	#def __init__	
@@ -204,10 +205,8 @@ class EpiManager:
 			pkg_list=tmp_list[item]["pkg_list"]
 			if 'type' in tmp_list[item]:
 				type_epi=tmp_list[item]["type"]
-				tmp_epi_types=self.types_with_download+self.types_without_download
-				tmp_epi_types.append("mix")
-				if type_epi not in tmp_epi_types:
-					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' has a not valid value: %s"%type_epi)
+				if type_epi not in self.valid_epi_files:
+					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' has a not valid value: %s"%tmp_list[item]["type"])
 					break
 			else:
 				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' not defined epi file")
@@ -245,13 +244,13 @@ class EpiManager:
 							self.partial_installed=True
 					self.epiFiles[item]["status"]="availabled"
 					self.pkg_info.update(info)
+			
+				self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
+				self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
 			else:
 				self.pkg_info={}
 				break
 					
-		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
-		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
-	
 	#def get_pkg_info
 
 	def get_basic_info(self,pkg_list,order,type_epi,script):			
@@ -277,47 +276,51 @@ class EpiManager:
 				pkg_type=type_epi
 
 			if pkg_type!="":
-				if pkg_type!="localdeb":
-					pkg=item.get("name","")
-					download_byScript=self.check_download_byScript(order)
-					if pkg_type=="file":
-						if script=="":
-							self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
-							break
-					if pkg_type in self.types_with_download:
-						if not download_byScript:
-							abort=False
-							if "version" not in item:
-								self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list")
-								abort=True
-							if 'url_download' not in item:
-								self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list")
-								abort=True
-							if abort:
-								self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value")
+				if pkg_type in self.valid_epi_files:
+					if pkg_type!="localdeb":
+						pkg=item.get("name","")
+						download_byScript=self._check_download_byScript(order)
+						if pkg_type=="file":
+							if script=="":
+								self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
 								break
-					status=self.check_pkg_status(app,pkg_type,script)
+						if pkg_type in self.types_with_download:
+							if not download_byScript:
+								abort=False
+								if "version" not in item:
+									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg %s"%pkg)
+									abort=True
+								if 'url_download' not in item:
+									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg %s"%pkg)
+									abort=True
+								if abort:
+									self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value")
+									break
+						status=self.check_pkg_status(app,pkg_type,script)
+					else:
+						data=self.get_localdeb_info(app,order)	
+						summary=data[0]
+						description=data[1]
+						status=data[2]
+						name=item["name"]
+						debian_name=item["version"]["all"]	
+						search=True	
+					
+					pkg_info[app]={}
+					pkg_info[app]["debian_name"]=debian_name
+					pkg_info[app]["component"]=component
+					pkg_info[app]["status"]=status
+					pkg_info[app]["description"]=description
+					pkg_info[app]["icon"]=icon
+					pkg_info[app]["name"]=name
+					pkg_info[app]["summary"]=summary
+					pkg_info[app]["type"]=pkg_type
+					pkg_info[app]["search"]=search
 				else:
-					data=self.get_localdeb_info(app,order)	
-					summary=data[0]
-					description=data[1]
-					status=data[2]
-					name=item["name"]
-					debian_name=item["version"]["all"]	
-					search=True	
-				
-				pkg_info[app]={}
-				pkg_info[app]["debian_name"]=debian_name
-				pkg_info[app]["component"]=component
-				pkg_info[app]["status"]=status
-				pkg_info[app]["description"]=description
-				pkg_info[app]["icon"]=icon
-				pkg_info[app]["name"]=name
-				pkg_info[app]["summary"]=summary
-				pkg_info[app]["type"]=pkg_type
-				pkg_info[app]["search"]=search
+					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' for pkg %s has incorrect value: %s"%(item["name"], pkg_type))
+					break
 			else:
-				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list'")
+				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg %s"%(item["name"],pkg_type))
 				break
 
 		return pkg_info
@@ -1581,7 +1584,7 @@ class EpiManager:
 
 	#def check_getStatus_byScript
 
-	def check_download_byScript(self,order):
+	def _check_download_byScript(self,order):
 
 		download_byScript=False
 
@@ -1596,7 +1599,7 @@ class EpiManager:
 
 		return download_byScript
 
-	#def check_download_byScript
+	#def _check_download_byScript
 
 	def empty_cache_folder(self):
 
