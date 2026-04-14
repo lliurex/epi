@@ -1581,6 +1581,23 @@ class EpiManager:
 
 	#def check_getStatus_byScript
 
+	def check_download_byScript(self,order):
+
+		download_byScript=False
+
+		if order!="":
+			try:
+				tmp_script=self.epiFiles[order]["script"]["name"]
+				if os.path.exists(tmp_script):
+					if self.epiFiles[order]["script"]["download"]:
+						download_byScript=True
+			except Exception as e:
+				pass
+
+		return download_byScript
+
+	#def check_download_byScript
+
 	def empty_cache_folder(self):
 
 		if os.path.exists(self.download_path):
