@@ -90,6 +90,9 @@ Rectangle{
             case -13:
                 msg=i18nd("epi-gtk","The unlocking process has failed")
                 break;
+            case -24:
+                msg=i18nd("epi-gtk","Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information")
+                break;
         }
         return msg
     }

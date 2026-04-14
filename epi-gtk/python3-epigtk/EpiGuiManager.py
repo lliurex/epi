@@ -40,6 +40,7 @@ class EpiGuiManager:
 	ERROR_INSTALL_INSTALL=-19
 	ERROR_INSTALL_ENDING=-20
 	ERROR_PARTIAL_INSTALL=-23
+	ERROR_PKG_TYPE_UNDEFINED=-24
 	
 	MSG_LOADING_INFO=0
 	MSG_LOADING_WAIT=1
@@ -145,23 +146,27 @@ class EpiGuiManager:
 
 		if self.order>0:
 			self.epiManager.get_pkg_info()
-			self._launchLoadThreads()
-			checkRoot=self.epiManager.check_root()
-			requiredRoot=self.epiManager.required_root()
-			self.requiredEula=self.epiManager.required_eula()
-			
-			if len(self.requiredEula)>0:
-				self.eulaAccepted=False
-			if checkRoot:
-				if not self.noCheck:
-					self.checkLockInfo()
-				self._writeLog("Locks info: "+ str(self.lockInfo))
+			if self.epiManager.pkg_info:
+				self._launchLoadThreads()
+				checkRoot=self.epiManager.check_root()
+				requiredRoot=self.epiManager.required_root()
+				self.requiredEula=self.epiManager.required_eula()
+				
+				if len(self.requiredEula)>0:
+					self.eulaAccepted=False
+				if checkRoot:
+					if not self.noCheck:
+						self.checkLockInfo()
+					self._writeLog("Locks info: "+ str(self.lockInfo))
+				else:
+					self._writeLog("Locks info: Not checked. User is not root")
+						
+				testInstall=self.epiManager.test_install()
+				self.loadEpiConf=self.epiManager.epiFiles
+				self.order=len(self.loadEpiConf)
 			else:
-				self._writeLog("Locks info: Not checked. User is not root")
-					
-			testInstall=self.epiManager.test_install()
-			self.loadEpiConf=self.epiManager.epiFiles
-			self.order=len(self.loadEpiConf)
+				ret=[False,EpiGuiManager.ERROR_PKG_TYPE_UNDEFINED,'End',""]
+				return ret
 	
 		while not self._endGetEpiContent and not self._endGetInitialStatus:
 			time.sleep(0.1)
