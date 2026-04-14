@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-23 15:24+0200\n"
-"PO-Revision-Date: 2025-03-14 12:02+0100\n"
+"POT-Creation-Date: 2026-04-14 16:00+0200\n"
+"PO-Revision-Date: 2026-04-14 16:02+0200\n"
 "Last-Translator: empar <montoro_mde@gva.es>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.2\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: epi-gtk/python3-epigtk/rsrc/Loading.qml:50
 msgid "Unlock process"
@@ -331,14 +331,17 @@ msgid "Installation process details"
 msgstr "Detalls del procés d'instal·lació"
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:82
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:77
 msgid "Previous actions: executing "
 msgstr "Accions prèvies: executant "
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:195
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:189
 msgid "Press to view application information"
 msgstr "Premeu per a veure la informació de l'aplicació"
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:226
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:220
 msgid "Click to launch the application"
 msgstr "Premeu per a llançar l'aplicació"
 
@@ -347,45 +350,64 @@ msgid "Applications availables"
 msgstr "Aplicacions disponibles"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:49
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:55
 msgid "Click to filter applications by status"
 msgstr "Premeu per a filtrar les aplicacions per estat"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:65
 msgid "Show installed apps"
 msgstr "Mostra aplicacions instal·lades"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:78
 msgid "Show uninstalled apps"
 msgstr "Mostra aplicacions no instal·lades"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:84
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:90
 msgid "Show apps with error"
 msgstr "Mostra aplicacions amb error"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:100
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:106
 msgid "Remove filter"
 msgstr "Elimina el filtre"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:122
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:129
 msgid "Search..."
 msgstr "Busca..."
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:193
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:201
 msgid "Applications not found"
 msgstr "No s'han trobat aplicacions"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:216
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:224
 msgid "Uncheck all packages"
 msgstr "Desmarca tots els paquets"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:218
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:226
 msgid "Check all packages"
 msgstr "Marca tots els paquets"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:233
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:241
 msgid "(D) Addicitional application required"
 msgstr "(D) Aplicació addicional requerida"
 
 #: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 msgid "Additional information"
 msgstr "Informació adicional"
+
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:94
+msgid ""
+"Application epi file it is not a valid json. Missing some keys or keys with "
+"incorrect value in json definition. Run in debug mode for more information"
+msgstr ""
+"El fitxer .epi de l'aplicació no és un json vàlid. Falten claus o hi ha "
+"claus amb valors incorrectes. Executeu el mode de depuració per a més "
+"informació"

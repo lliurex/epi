@@ -202,37 +202,52 @@ class EpiManager:
 		for item in tmp_list:
 			pkg_list=[]
 			pkg_list=tmp_list[item]["pkg_list"]
-			type_epi=tmp_list[item]["type"]
+			if 'type' in tmp_list[item]:
+				type_epi=tmp_list[item]["type"]
+				tmp_epi_types=self.types_with_download+self.types_without_download
+				tmp_epi_types.append("mix")
+				if type_epi not in tmp_epi_types:
+					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' has a not valid value: %s"%type_epi)
+					break
+			else:
+				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' not defined epi file")
+				break
+			
 			script=self.check_getStatus_byScript(item)
 			info=self.get_basic_info(pkg_list,item,type_epi,script)
-			cont=0
-			if item==0:
-				self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
-				self.check_meta=tmp_list[item]["check_meta"]
-			for element in pkg_list:
-				name=element["name"]
-				if info[name]["status"]=="installed":
-					cont=cont+1
 
-			if cont==len(pkg_list):
-				if item>0:
-					zmd_status=self.get_zmd_status(item)
-					if zmd_status==1:
-						self.epiFiles.pop(item)
-						self.zomando_name.pop(item)
+			if info:
+				cont=0
+				if item==0:
+					self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
+					self.check_meta=tmp_list[item]["check_meta"]
+				for element in pkg_list:
+					name=element["name"]
+					if info[name]["status"]=="installed":
+						cont=cont+1
+
+				if cont==len(pkg_list):
+					if item>0:
+						zmd_status=self.get_zmd_status(item)
+						if zmd_status==1:
+							self.epiFiles.pop(item)
+							self.zomando_name.pop(item)
+						else:
+							self.epiFiles[item]["status"]="availabled"
+							self.pkg_info.update(info)
+
 					else:
-						self.epiFiles[item]["status"]="availabled"
+						self.epiFiles[item]["status"]="installed"
 						self.pkg_info.update(info)
-
 				else:
-					self.epiFiles[item]["status"]="installed"
+					if item==0:
+						if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
+							self.partial_installed=True
+					self.epiFiles[item]["status"]="availabled"
 					self.pkg_info.update(info)
 			else:
-				if item==0:
-					if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
-						self.partial_installed=True
-				self.epiFiles[item]["status"]="availabled"
-				self.pkg_info.update(info)
+				self.pkg_info={}
+				break
 					
 		self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
 		self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
@@ -253,34 +268,57 @@ class EpiManager:
 			debian_name=""
 			component=""
 			search=False
+			pkg_type=""
 
 			if type_epi=="mix":
-				pkg_type=item["type"]
+				if "type" in item:
+					pkg_type=item["type"]
 			else:
 				pkg_type=type_epi
 
-			if type_epi!="localdeb":
-				pkg=item.get("name","")
-				status=self.check_pkg_status(app,pkg_type,script)
+			if pkg_type!="":
+				if pkg_type!="localdeb":
+					pkg=item.get("name","")
+					download_byScript=self.check_download_byScript(order)
+					if pkg_type=="file":
+						if script=="":
+							self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
+							break
+					if pkg_type in self.types_with_download:
+						if not download_byScript:
+							abort=False
+							if "version" not in item:
+								self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list")
+								abort=True
+							if 'url_download' not in item:
+								self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list")
+								abort=True
+							if abort:
+								self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value")
+								break
+					status=self.check_pkg_status(app,pkg_type,script)
+				else:
+					data=self.get_localdeb_info(app,order)	
+					summary=data[0]
+					description=data[1]
+					status=data[2]
+					name=item["name"]
+					debian_name=item["version"]["all"]	
+					search=True	
+				
+				pkg_info[app]={}
+				pkg_info[app]["debian_name"]=debian_name
+				pkg_info[app]["component"]=component
+				pkg_info[app]["status"]=status
+				pkg_info[app]["description"]=description
+				pkg_info[app]["icon"]=icon
+				pkg_info[app]["name"]=name
+				pkg_info[app]["summary"]=summary
+				pkg_info[app]["type"]=pkg_type
+				pkg_info[app]["search"]=search
 			else:
-				data=self.get_localdeb_info(app,order)	
-				summary=data[0]
-				description=data[1]
-				status=data[2]
-				name=item["name"]
-				debian_name=item["version"]["all"]	
-				search=True	
-			
-			pkg_info[app]={}
-			pkg_info[app]["debian_name"]=debian_name
-			pkg_info[app]["component"]=component
-			pkg_info[app]["status"]=status
-			pkg_info[app]["description"]=description
-			pkg_info[app]["icon"]=icon
-			pkg_info[app]["name"]=name
-			pkg_info[app]["summary"]=summary
-			pkg_info[app]["type"]=pkg_type
-			pkg_info[app]["search"]=search
+				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list'")
+				break
 
 		return pkg_info
 
@@ -563,11 +601,8 @@ class EpiManager:
 							if len(tmp)>1:
 								if tmp[2].split(":")[1]=="":
 									update_repo=True
-									
 							else:
 								update_repo=True
-								
-
 						else:
 							update_repo=True
 
@@ -653,17 +688,21 @@ class EpiManager:
 		self.force32=self.epi_conf["force32"]
 		version=""
 
-		if self.force32:
-			version=item["version"]["32b"]
-			
-		else:
-			try:
-				version=item["version"]["all"]
-			except Exception as e:
-				if platform.architecture()[0]=='64bit':	
-					version=item["version"]["64b"]
-				else:
+		if "version" in item:
+			if self.force32:
+				if "32b" in item["version"]:
 					version=item["version"]["32b"]
+			else:
+				if 'all' in item["version"]:
+					version=item["version"]["all"]
+				else:
+					try:
+						if platform.architecture()[0]=='64bit':	
+							version=item["version"]["64b"]
+						else:
+							version=item["version"]["32b"]
+					except:
+						pass
 			
 		self._show_debug("get_app_version","Version to install: %s"%(version))
 

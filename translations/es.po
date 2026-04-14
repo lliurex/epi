@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-23 15:24+0200\n"
-"PO-Revision-Date: 2024-04-23 15:25+0200\n"
+"POT-Creation-Date: 2026-04-14 16:00+0200\n"
+"PO-Revision-Date: 2026-04-14 16:04+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_ES\n"
@@ -325,14 +325,17 @@ msgid "Installation process details"
 msgstr "Detalles del proceso de instalación"
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:82
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:77
 msgid "Previous actions: executing "
 msgstr "Acciones previas: ejecutando "
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:195
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:189
 msgid "Press to view application information"
 msgstr "Haga clic para ver información sobre la aplicación"
 
 #: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:226
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:220
 msgid "Click to launch the application"
 msgstr "Haga clic para lanzar la aplicación"
 
@@ -341,45 +344,64 @@ msgid "Applications availables"
 msgstr "Aplicaciones disponibles"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:49
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:55
 msgid "Click to filter applications by status"
 msgstr "Haga clic para filtrar las aplicaciones por estado"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:65
 msgid "Show installed apps"
 msgstr "Mostrar aplicaciones instaladas"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:78
 msgid "Show uninstalled apps"
 msgstr "Mostrar aplicaciones no instaladas"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:84
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:90
 msgid "Show apps with error"
 msgstr "Mostrar aplicaciones con error"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:100
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:106
 msgid "Remove filter"
 msgstr "Eliminar filtro"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:122
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:129
 msgid "Search..."
 msgstr "Buscar..."
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:193
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:201
 msgid "Applications not found"
 msgstr "No se han encontrado aplicaciones"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:216
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:224
 msgid "Uncheck all packages"
 msgstr "Deseleccionar todos los paquetes"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:218
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:226
 msgid "Check all packages"
 msgstr "Seleccionar todos los paquetes"
 
 #: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:233
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:241
 msgid "(D) Addicitional application required"
 msgstr "(D) Aplicación adicional requerida"
 
 #: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 msgid "Additional information"
 msgstr "Información adicional"
+
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:94
+msgid ""
+"Application epi file it is not a valid json. Missing some keys or keys with "
+"incorrect value in json definition. Run in debug mode for more information"
+msgstr ""
+"El fichero .epi de la aplicación no es un json válido. Faltan claves o hay "
+"claves con valores incorrectos. Ejecute el modo de depuración para más "
+"información"
