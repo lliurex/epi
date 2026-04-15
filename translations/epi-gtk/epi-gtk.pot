@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-27 13:59+0100\n"
+"POT-Creation-Date: 2026-04-14 17:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -354,5 +354,12 @@ msgid "(D) Addicitional application required"
 msgstr ""
 
 #: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
+#: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
 msgid "Additional information"
+msgstr ""
+
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:94
+msgid ""
+"Application epi file it is not a valid json. Missing some keys or keys with "
+"incorrect value in json definition. Run in debug mode for more information"
 msgstr ""
