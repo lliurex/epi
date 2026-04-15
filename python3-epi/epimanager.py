@@ -279,7 +279,7 @@ class EpiManager:
 				if pkg_type in self.valid_epi_files:
 					if pkg_type!="localdeb":
 						pkg=item.get("name","")
-						download_byScript=self.check_download_byScript(order)
+						download_byScript=self._check_download_byScript(order)
 						if pkg_type=="file":
 							if script=="":
 								self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
@@ -288,13 +288,13 @@ class EpiManager:
 							if not download_byScript:
 								abort=False
 								if "version" not in item:
-									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg %s"%pkg)
+									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg %s. This key is required if script's 'download' key is not defined or has a value of 'False'"%pkg)
 									abort=True
 								if 'url_download' not in item:
-									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg %s"%pkg)
+									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg %s. This key is required if script's 'download' key is not defined or has a value of 'False'"%pkg)
 									abort=True
 								if abort:
-									self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value")
+									self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value. This key is required if pkg_list's 'version' and 'url_download' keys are not defined")
 									break
 						status=self.check_pkg_status(app,pkg_type,script)
 					else:
@@ -320,7 +320,7 @@ class EpiManager:
 					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' for pkg %s has incorrect value: %s"%(item["name"], pkg_type))
 					break
 			else:
-				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg %s"%(item["name"],pkg_type))
+				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg %s"%item["name"])
 				break
 
 		return pkg_info
@@ -1584,7 +1584,7 @@ class EpiManager:
 
 	#def check_getStatus_byScript
 
-	def check_download_byScript(self,order):
+	def _check_download_byScript(self,order):
 
 		download_byScript=False
 
@@ -1599,7 +1599,7 @@ class EpiManager:
 
 		return download_byScript
 
-	#def check_download_byScript
+	#def _check_download_byScript
 
 	def empty_cache_folder(self):
 
