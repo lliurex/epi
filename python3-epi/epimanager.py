@@ -106,7 +106,7 @@ class EpiManager:
 	def _show_debug(self,function,msg):
 
 		if self.debug==1:
-			print("[EPI-DEBUG]: Function: %s - Message: %s"%(function,msg))
+			print(f"[EPI-DEBUG]: Function: {function} - Message: {msg}")
 
 	#def _show_debug
 
@@ -121,8 +121,8 @@ class EpiManager:
 			result.append(False)
 			result.append(str(e))
 		
-		self._show_debug("check_connection","Result: %s"%(result))
-			
+		self._show_debug("check_connection",f"Result: {result}")
+
 		return result	
 
 	#def check_connection	
@@ -132,42 +132,41 @@ class EpiManager:
 		if standalone:
 			self.epiFiles={}
 			self.order=0
-		else:
-			if cli:
-				path=self._get_epi_path(epi_file)
-				if path!="":
-					epi_file=path
+		elif cli:
+			path=self._get_epi_path(epi_file)
+			if path!="":
+				epi_file=path
 
-		if os.path.exists(epi_file) and os.path.isfile(epi_file):
-			f=open(epi_file)
+		if not os.path.isfile(epi_file):
+			self._show_debug("read_conf", f"Epi file does not exist or path is invalid: {epi_file}")
+			return {"status": False, "error": "path"}
+
+		try:
+			with open(epi_file, 'r') as f:
+				epi_load = json.load(f)
+		except Exception as e:
+			self._show_debug("read_conf", f"Epi file is not a valid JSON. Error: {e}")
+			return {"status": False, "error": "json"}
+
+		if not epi_load:
+			self._show_debug("read_conf", f"Epi file is empty: {epi_file}")
+			return {"status": False, "error": "empty"}
+
+		epi_conf = self.epi_base.copy()
+		epi_conf.update(epi_load)
+
+		self.epiFiles[self.order] = epi_conf
+		self.zomando_name[self.order] = epi_conf.get("zomando", "")
+
+		depends = epi_conf.get("depends", "")
+		if depends:
+			self.order += 1
 			try:
-				epi_load=json.load(f)
-				epi_conf=self.epi_base.copy()
-				f.close()
-				if len(epi_load)>0:
-					epi_conf.update(epi_load)
-					self.epiFiles[self.order]=epi_conf
-					self.zomando_name[self.order]=epi_conf["zomando"]
-					try:
-						if epi_conf["depends"]!="":
-							self.order=self.order+1
-							self.read_conf(epi_conf["depends"])
-					except :
-						pass
-				else:
-					self._show_debug("read_conf","Epi files is empty: %s"%(epi_file))
-					return {"status":False,"error":"empty"}
-		
+				self.read_conf(depends)
+			except Exception:
+				pass
 
-			except Exception as e:
-				self._show_debug("read_conf","Epi file is not a valid json. Error: %s"%(str(e)))
-				return {"status":False,"error":"json"}
-
-		else:
-			self._show_debug("read_conf","Epi files not exists or path is not valid: %s"%(epi_file))
-			return {"status":False,"error":"path"}
-
-		return {"status":True,"error":""}		
+		return {"status": True, "error": ""}	
 
 	#def read_conf		
 
@@ -180,7 +179,7 @@ class EpiManager:
 				if not os.access(script["name"],os.X_OK):
 					return {"status":False,"error":"permissions"}
 			else:
-				self._show_debug("check_scrip_file","Script file not exits or path is not valid: %s"%(script["name"]))
+				self._show_debug("check_scrip_file",f"Script file not exits or path is not valid:{script["name"]}")
 				return {"status":False,"error":"path"}
 
 		return {"status":True,"error":""}
@@ -206,7 +205,7 @@ class EpiManager:
 			if 'type' in tmp_list[item]:
 				type_epi=tmp_list[item]["type"]
 				if type_epi not in self.valid_epi_files:
-					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' has a not valid value: %s"%tmp_list[item]["type"])
+					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'type' has a not valid value: {tmp_list[item]["type"]}")
 					break
 			else:
 				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' not defined epi file")
@@ -223,7 +222,7 @@ class EpiManager:
 				for element in pkg_list:
 					name=element["name"]
 					if info[name]["status"]=="installed":
-						cont=cont+1
+						cont+=1
 
 				if cont==len(pkg_list):
 					if item>0:
@@ -245,8 +244,8 @@ class EpiManager:
 					self.epiFiles[item]["status"]="availabled"
 					self.pkg_info.update(info)
 			
-				self._show_debug("get_pkg_info","Content of epi file: %s"%(self.epiFiles))
-				self._show_debug("get_pkg_info","Packages info: %s"%(self.pkg_info))
+				self._show_debug("get_pkg_info",f"Content of epi file: {self.epiFiles}")
+				self._show_debug("get_pkg_info",f"Packages info: {self.pkg_info}")
 			else:
 				self.pkg_info={}
 				break
@@ -270,12 +269,11 @@ class EpiManager:
 			pkg_type=""
 
 			if type_epi=="mix":
-				if "type" in item:
-					pkg_type=item["type"]
+				pkg_type=item.get("type","")
 			else:
 				pkg_type=type_epi
 
-			if pkg_type!="":
+			if pkg_type:
 				if pkg_type in self.valid_epi_files:
 					if pkg_type!="localdeb":
 						pkg=item.get("name","")
@@ -288,10 +286,10 @@ class EpiManager:
 							if not download_byScript:
 								abort=False
 								if "version" not in item:
-									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg %s. This key is required if script's 'download' key is not defined or has a value of 'False'"%pkg)
+									self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
 									abort=True
 								if 'url_download' not in item:
-									self._show_debug('get_pkg_info',"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg %s. This key is required if script's 'download' key is not defined or has a value of 'False'"%pkg)
+									self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
 									abort=True
 								if abort:
 									self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value. This key is required if pkg_list's 'version' and 'url_download' keys are not defined")
@@ -317,10 +315,10 @@ class EpiManager:
 					pkg_info[app]["type"]=pkg_type
 					pkg_info[app]["search"]=search
 				else:
-					self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' for pkg %s has incorrect value: %s"%(item["name"], pkg_type))
+					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' for pkg {item["name"]} has incorrect value: {pkg_type}")
 					break
 			else:
-				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg %s"%item["name"])
+				self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg {item["name"]}")
 				break
 
 		return pkg_info
@@ -347,32 +345,36 @@ class EpiManager:
 					self.pkg_info[pkg]["debian_name"]=data.get("package",data.get("pkgname",''))
 					self.pkg_info[pkg]["component"]=data.get("component",'')
 			except:
-				self._show_debug("_get_store_info","pkg: %s; error parsing json"%(pkg))
+				self._show_debug("_get_store_info",f"pkg: {pkg}; error parsing json")
 		
 
 	#def get_store_info			
 
 	def check_pkg_status(self,pkg,pkg_type,script):
-	
-		if pkg_type=="file":
-			if script!="":
-				try:
-					cmd="%s getStatus %s;"%(script,pkg)
-					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-					poutput=p.communicate()
-					self._show_debug("check_pkg_status","pkg: %s; status result by script:poutput: %s"%(pkg,poutput))
 
-					if poutput[0].decode("utf-8").split("\n")[0]=='0':
-						return "installed"
-					elif poutput[0].decode("utf-8").split("\n")[0]=='Not found':
-						return self._get_pkg_status(pkg,pkg_type)
-					
-					return "available"		
-				except Exception as e:
-					return "available"
+		if pkg_type != "file" or not script:
+			return self._get_pkg_status(pkg, pkg_type)
+
+		try:
+			cmd = [script, "getStatus", pkg]
+			process = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+
+			stdout, _ = process.communicate()
+
+			self._show_debug("check_pkg_status",f"pkg: {pkg}; status result by script: {stdout}")
+
+			first_line = (stdout or "").splitlines()[0] if stdout else ""
+			if first_line == "0":
+				return "installed"
+
+			if first_line == "Not found":
+				return self._get_pkg_status(pkg, pkg_type)
+
+			return "available"
+
+		except Exception:
+			return "available"
 						
-		return self._get_pkg_status(pkg,pkg_type)
-
 	#def check_pkg_status	
 
 	def _get_pkg_status(self,pkg,pkg_type):
@@ -380,27 +382,27 @@ class EpiManager:
 		cmd=""
 		status_by_code=True
 		if pkg_type in ["apt","deb","localdeb"]:
-			cmd='dpkg -l %s | grep "^i[i]"'%pkg
+			cmd=f'dpkg -l {pkg} | grep "^i[i]"'
 		elif pkg_type=="snap":
-			cmd='snap list | grep %s | cut -d " " -f 1'%pkg
+			cmd=f'snap list | grep {pkg} | cut -d " " -f 1'
 			status_by_code=False
 		elif pkg_type=="flatpak":
-			cmd='flatpak list | grep %s | cut -d " " -f 1'%pkg
+			cmd=f'flatpak list | grep {pkg} | cut -d " " -f 1'
 			status_by_code=False
 
 		p=subprocess.run(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 		code=p.returncode
 		pout=p.stdout.decode()
-		self._show_debug("_get_pkg_status","pkg: %s; result by command: %s"%(pkg,p))
+		self._show_debug("_get_pkg_status",f"pkg: {pkg}; result by command:{p}")
 		
-		if code==0:
-			if not status_by_code:
-				if pout!="":
-					return "installed"
-				else:
-					return "available"
-			else: 
-				return "installed"
+		if code!=0:
+			return "availale"
+
+		if status_by_code:
+			return 'installed'
+
+		if pout:
+			return "installed"
 		else:
 			return "available"
 
@@ -415,14 +417,13 @@ class EpiManager:
 		try:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
-				cmd="%s getInfo %s;"%(script,pkg)
+				cmd=f"{script} getInfo {pkg};"
 				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 				poutput=p.communicate()
 				if len(poutput)>0:
 					summary=poutput[0].decode("utf-8").split("\n")[0].split("||")[0]
 					if len(poutput)>1:
 						description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
-
 		except:
 			pass
 
@@ -441,36 +442,30 @@ class EpiManager:
 		1:Detect wrong lock. Can be unlock
 		'''
 
-		locks_detect={}
-		locks_info=self.dpkgUnlocker.checkingLocks()
-		cont_unlock=0
-		cont_wait=0
+		locks_info = self.dpkgUnlocker.checkingLocks()
+		locks_detect = {}
 
-		if locks_info["Lliurex-Up"]==1:
-			locks_detect["Lliurex-Up"]=True
+		unlock_count = 0
+		wait_count = 0
 
-		if locks_info["Dpkg"]!=0:
-			if locks_info["Dpkg"]==2:
-				cont_unlock+=1
-				locks_detect["Dpkg"]=1
+		if locks_info.get("Lliurex-Up") == 1:
+			locks_detect["Lliurex-Up"] = True
+
+		for lock_name in ("Dpkg", "Apt"):
+			lock_status = locks_info.get(lock_name, 0)
+
+			if lock_status == 0:
+				continue
+
+			if lock_status == 2:
+				locks_detect[lock_name] = 1
+				unlock_count += 1
 			else:
-				locks_detect["Dpkg"]=0
-				cont_wait+=1	
+				locks_detect[lock_name] = 0
+				wait_count += 1
 
-		if locks_info["Apt"]!=0:
-			if locks_info["Apt"]==2:
-				locks_detect["Apt"]=1
-				cont_unlock+=1
-			else:
-				locks_detect["Apt"]=0
-				cont_wait+=1
-
-		if len(locks_detect)>0:
-			if cont_wait>0:
-				locks_detect["wait"]=True
-			else:
-				locks_detect["wait"]=False
-								
+		if locks_detect:
+			locks_detect["wait"] = wait_count > 0
 
 		return locks_detect
 
@@ -489,8 +484,8 @@ class EpiManager:
 		self.root=False
 
 		try:
-			f=open("/etc/epi.token","w")
-			f.close()
+			with open("/etc/epi.token","w"):
+				pass
 			os.remove("/etc/epi.token")
 			self.root=True
 		except:
@@ -519,107 +514,122 @@ class EpiManager:
 
 	def required_eula(self):
 
-		eulas=[]
+		eulas = []
 
-		for item in self.epiFiles:
-			cont=0
-			for pkg in self.epiFiles[item]["pkg_list"]:
-				try:
-					if pkg["eula"]!="":
-						tmp={}
-						tmp["order"]=item
-						tmp["pkg_name"]=pkg["name"]
-						tmp["eula"]=pkg["eula"]
-						eulas.append(tmp)
-				except:
-					pass		
-		
-		self._show_debug("required_eula","Packages with eula: %s"%(eulas))
+		for order, data in self.epiFiles.items():
+			for pkg in data.get("pkg_list", []):
+				eula = pkg.get("eula", "")
+
+				if not eula:
+					continue
+
+				eulas.append(
+					{
+						"order": order,
+						"pkg_name": pkg.get("name", ""),
+						"eula": eula,
+					}
+				)
+
+		self._show_debug("required_eula",f"Packages with eula: {eulas}",)
+
 		return eulas
 
 	#def required_eula	
 	
 	def test_install(self):
 
-		result_test=[]
-		test=""
-		pkg_list=""
+		result_test = ["", ""]
+		pkg_list = ""
 
-		if self.epiFiles[0]["type"]=="localdeb":
-			try:
-				script=self.epiFiles[0]["script"]["name"]
-				if os.path.exists(script):
-					cmd="%s testInstall;"%script
-					p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-					poutput=p.communicate()
-					if len(poutput)>0:
-						test=poutput[0].decode("utf-8").split("\n")[0]
-						if test!="1":
-							parse_test=test.split("||")
-							if len(parse_test)>1:
-								test=parse_test.pop()
-								for item in parse_test:
-									if item!="":
-										pkg_list="%s- %s\n"%(pkg_list,item)
-			except:
-				pass
+		try:
+			first_file = self.epiFiles[0]
+			if first_file.get("type") != "localdeb":
+				return result_test
+
+			script = first_file.get("script", {}).get("name")
+			if not script or not os.path.exists(script):
+				return result_test
+
+			cmd = [script, "testInstall"]
+			process = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+			stdout, _ = process.communicate()
+
+			if not stdout:
+				return result_test
+
+			test = stdout.splitlines()[0]
+			if test != "1":
+				parts = test.split("||")
+				if len(parts) > 1:
+					test = parts.pop()
+
+					for item in parts:
+						if item:
+							pkg_list += f" - {item}\n"
+
+			result_test[0] = test
+			result_test[1] = pkg_list
+
+			return result_test
 		
-		result_test.append(test)
-		result_test.append(pkg_list)	
+		except Exception:
+			return result_test
 
-		return result_test	
-
-	#def test_install	
+    #def test_install
 
 	def check_update_repos(self):
 		
 		#Only update repos if needed
 		
-		
-		current_date=datetime.date.today().strftime('%y%m%d')
-		filename='/var/cache/apt/pkgcache.bin'
-		if os.path.exists(filename):
-			lastmod=os.path.getmtime(filename)
-			lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
-		else:
-			self.update=True
-			lastupdate=current_date
-		
 		cmd=""
 		update_repo=False
 
 		if self.type in ["apt","mix"]:
+			current_date=datetime.date.today().strftime('%y%m%d')
+			filename='/var/cache/apt/pkgcache.bin'
+
+			if os.path.exists(filename):
+				lastmod=os.path.getmtime(filename)
+				lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+			else:
+				self.update=True
+				lastupdate=current_date
+		
 			if current_date !=lastupdate or self.update:
 				cmd="LANG=C LANGUAGE=en apt-get update; "
 			else:
-				for item in self.epi_conf["pkg_list"]:
-					if item["name"] in self.packages_selected:
+				for item in self.epi_conf.get("pkg_list",[]):
+					app=item.get("name","")
+					if app in self.packages_selected:
 						update_repo=False
 						app=item["name"]
-						command="LANG=C LANGUAGE=en apt-cache policy %s"%app
+						command=f"LANG=C LANGUAGE=en apt-cache policy {app}"
 						p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
-						output=p.communicate()
-						if str(output[0]) != '':
-							tmp=str(output[0]).split("\\n")
-							if len(tmp)>1:
-								if tmp[2].split(":")[1]=="":
-									update_repo=True
-							else:
+						output,_=p.communicate()
+						if output:
+							lines = output.decode(errors="ignore").splitlines()
+							if len(lines)<=2:
 								update_repo=True
+							else:
+								try:
+									update_repo=lines[2].split(":")[1].strip() == ""
+								except:
+									update_repo=True
 						else:
 							update_repo=True
 
 						if update_repo:
 							cmd="LANG=C LANGUAGE=en apt-get update; "
-							self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
+							self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
 							return cmd		
 
 		
-		self._show_debug("check_update_repos","Required update: %s - Command to update: %s"%(update_repo,cmd))
+		self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
 
 		return cmd
 		
-	#def check_update_repos	
+	#def check_update_repos		
 
 	def check_arquitecture(self):
 
@@ -634,7 +644,7 @@ class EpiManager:
 								
 		self.arquitecture=True
 		
-		self._show_debug("check_arquitecture","Required i386: %s - Command to add i386:%s"%(self.force32,cmd))
+		self._show_debug("check_arquitecture",f"Required i386: {self.force32} - Command to add i386:{cmd}")
 		
 		return cmd		
 
@@ -646,41 +656,41 @@ class EpiManager:
 		self.epi_order=order
 		self.type=self.epi_conf["type"]
 		cmd=""
+		cmd_parts=[]
 		self.add_key=False
 
-		if self.type in ["apt","mix"]:
+		if self.type not in ["apt","mix"]:
+			self._show_debug("add_repository_keys",f"Command to add keys: {cmd}")
+			return cmd
+			
+		repos_list=self.epi_conf.get("repository",[])
 
-			repos_list=self.epi_conf["repository"]
-
-			if len(repos_list)>0:
-				f = open(self.epi_sources,'w')
+		if repos_list:
+			with open(self.epi_sources,'w') as f:
 				for item in repos_list:
-					if item["url"]!="":
-						lines=item["url"].split(";")
-						for line in lines:
+					url=item.get("url","")
+					if url:
+						for line in url.split(";"):
 							f.write(line+'\n')
-					try:
-						key_cmd=item["key_cmd"]
-						if key_cmd !="":
-							cmd="%s%s;"%(cmd,key_cmd)
-							self.add_key=True	
-					except Exception as e:
-						if len(self.epi_conf["script"])>0:
-							try:
-								if self.epi_conf["script"]["addRepoKeys"]:
-									script=self.epi_conf["script"]["name"]
-									if os.path.exists(script):
-										command='%s addRepoKeys;'%script
-										cmd=cmd+command
-										self.add_key=True
-							except Exception as e:
-								pass
+					
+					key_cmd=item.get("key_cmd","")
+					if key_cmd:
+						cmd_parts.append(f"{key_cmd};")
+						self.add_key=True
+						continue	
+					
+					script_conf=self.epi_conf.get("script",{})
+					if script_conf.get("addRepoKeys"):
+						script_path=script_conf.get("name","")
+						if script_path and os.path.exists(script_path):
+							cmd_parts.append(f'{script_path} addRepoKeys;')
+							self.add_key=True
 
-				f.close()
-				if not self.add_key:
-					cmd='%s apt-get update;'%cmd
+		if not self.add_key:
+			cmd_parts,append("apt-get update;")
 
-		self._show_debug("add_repository_keys","Command to add keys:%s"%(cmd))
+		cmd="".join(cmd_parts)
+		self._show_debug("add_repository_keys",f"Command to add keys: {cmd}")
 		return cmd		
 
 	#def add_repository_keys	
@@ -688,126 +698,102 @@ class EpiManager:
 
 	def get_app_version(self,item=None):
 
-		self.force32=self.epi_conf["force32"]
-		version=""
+		item=item or {}
+		self.force32=self.epi_conf.get("force32",False)
+		version=item.get("version",{})
 
-		if "version" in item:
-			if self.force32:
-				if "32b" in item["version"]:
-					version=item["version"]["32b"]
+		if self.force32:
+			version=version.get("32b","")
+		elif 'all' in version:
+			version=version.get("all","")
+		else:
+			if platform.architecture()[0]=='64bit':	
+				version=version.get("64b","")
 			else:
-				if 'all' in item["version"]:
-					version=item["version"]["all"]
-				else:
-					try:
-						if platform.architecture()[0]=='64bit':	
-							version=item["version"]["64b"]
-						else:
-							version=item["version"]["32b"]
-					except:
-						pass
+				version=version.get("32b","")
 			
-		self._show_debug("get_app_version","Version to install: %s"%(version))
+		self._show_debug("get_app_version",f"Version to install: {version}")
 
 		return version
 
-	#def get_app_version	
-						
-	def download_app(self,pkg_id):
+	def download_app(self, pkg_id):
 
-		self.manage_download=True
-		self.download_folder=[]
-		cmd=""
+		self.manage_download = True
+		self.download_folder = []
+		self.type = self.epi_conf.get("type")
+
+		cmd = ""
 		cmd_file=""
+		external_script=""
 
-		self.type=self.epi_conf["type"]
+		if self.type in self.types_without_download:
+			self._show_debug("download_app", f"Command to download: {cmd}")
+			return cmd
 
-		if self.type not in self.types_without_download:
-			if len(self.epi_conf["script"])>0:
-				try:
-					if self.epi_conf["script"]["download"]:
-						script=self.epi_conf["script"]["name"]
-						if os.path.exists(script):
-							self.manage_download=False
-							cmd_file="%s download "%script
-				except:
-					pass
+		script_conf = self.epi_conf.get("script", {})
+		if script_conf.get("download"):
+			script_path = script_conf.get("name", "")
+			if os.path.exists(script_path):
+				self.manage_download = False
+				external_script = f"{script_path} download "
 
-			self.token_result_download=tempfile.mkstemp("_result_download")
-			
-			if self.type in self.types_with_download:	
+		selected_items = [
+			item for item in self.epi_conf.get("pkg_list", [])
+			if item["name"] in self.packages_selected and (pkg_id == "all" or item["name"] == pkg_id)
+		]
 
-				if self.type=="file":
-					if not self.manage_download:
-						cmd=cmd_file
-						for item in self.epi_conf["pkg_list"]:
-							if item["name"] in self.packages_selected:
-								if pkg_id!="all" and item["name"]!=pkg_id:
-									pass
-								else:
-									cmd+="%s "%item["name"]
+		if self.type in self.types_with_download:
+			if self.type == "file" and not self.manage_download:
+				pkg_names = " ".join(item["name"] for item in selected_items)
+				cmd = f"{external_script}{pkg_names}"
+			else:
+				for item in selected_items:
+					cmd = self._get_download_cmd(self.type, item, cmd)
 
-						cmd='%s; echo $? > %s;'%(cmd,self.token_result_download[1])
-				if self.manage_download:
-					for item in self.epi_conf["pkg_list"]:
-						if item["name"] in self.packages_selected:
-							if pkg_id!="all" and item["name"]!=pkg_id:
-								pass
-							else:
-								cmd=self._get_download_cmd(self.type,item,cmd)
-					
-					cmd='%s echo $? > %s;'%(cmd,self.token_result_download[1])	
+		elif self.type == "mix":
+			for item in selected_items:
+				i_type = item.get("type")
+				if i_type in self.types_with_download:
+					if not self.manage_download and i_type == "file":
+						cmd_file += f"{item['name']} "
+					else:
+						cmd = self._get_download_cmd(i_type, item, cmd)
 
-			elif self.type=="mix":
-				
-				for item in self.epi_conf["pkg_list"]:
-					if item["name"] in self.packages_selected:
-						if item["type"] in self.types_with_download:
-							if pkg_id!="all" and item["name"]!=pkg_id:
-								pass
-							else:
-								if self.manage_download:
-									cmd=self._get_download_cmd(item["type"],item,cmd)
-								else:
-									if item["type"]=="file":
-										cmd_file+="%s "%item["name"]	
-									else:
-										cmd=self._get_download_cmd(item["type"],item,cmd)
-						
-				if cmd_file!="":
-					cmd_file+=";"
+			if cmd_file: 
+				 cmd = f"{cmd} {external_script}{cmd_file}".strip()
 
-				cmd='%s %s echo $? > %s;'%(cmd,cmd_file,self.token_result_download[1])	
+		if cmd.strip():
+			self.token_result_download = tempfile.mkstemp("_result_download")
+			cmd = f"{cmd.strip()}; echo $? > {self.token_result_download[1]};"
+
+		self._show_debug("download_app", f"Command to download: {cmd}")
+
+		return cmd
 		
-		self._show_debug("download_app","Command to download: %s"%(cmd))
-		
-		return cmd			
-					
-	#def download_app		
+	#def download_app
 
 	def _get_download_cmd(self,item_type,item,cmd):
 
 		self.download_folder=[]
 		tmp_file=""
 		version=self.get_app_version(item)
+		url=item.get("url_download","")
 
 		if item_type=="deb": 
-			name=item["name"]+".deb"
-			tmp_file=os.path.join(self.download_path,name)
+			file_name=f"{item["name"]}.deb"
 		elif item_type=="file":
-			try:
-				tmp_file=os.path.join(self.download_path,item["alias_download"])
-			except Exception as e:	
-				tmp_file=os.path.join(self.download_path,version)
-		
+			file_name=item.get("alias_download", version)
+		else:
+			file_name=version	
 
-		url=item["url_download"]
-		if os.path.exists(tmp_file):
-			cmd='%s rm -f %s;'%(cmd,tmp_file)
-		
+		tmp_file = os.path.join(self.download_path, file_name)
 		self.download_folder.append(tmp_file)
-		cmd='%s wget %s%s --progress=bar:force --no-check-certificate -O %s; '%(cmd,url,version,tmp_file)
-
+		
+		if os.path.exists(tmp_file):
+			cmd = f"{cmd.strip()}; rm -f {tmp_file};".strip()
+		
+		cmd=f'{cmd.strip()} wget {url}{version} --progress=bar:force --no-check-certificate -O {tmp_file}'
+		
 		return cmd
 
 	#def _get_download_cmd
@@ -847,7 +833,7 @@ class EpiManager:
 						if count>0:		
 							result=True
 
-		self._show_debug("check_download","Downlodad status: Result: %s - Token Content: %s"%(result,content))
+		self._show_debug("check_download",f"Downlodad status: Result: {result} - Token Content: {content}")
 		return result
 
 	#def check_download		
@@ -870,7 +856,7 @@ class EpiManager:
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_preinstall[1])
 
-		self._show_debug("preinstall_app","Preinstall Command: %s"%(cmd))
+		self._show_debug("preinstall_app",f"Preinstall Command: {cmd}")
 		return cmd		
 
 	#def preinstall_app	
@@ -892,7 +878,7 @@ class EpiManager:
 		except:			
 			pass
 
-		self._show_debug("check_preinstall","Presintall result: Result: %s - Token content: %s"%(result,content))
+		self._show_debug("check_preinstall",f"Presintall result: Result: {result} - Token content: {content}")
 	
 		return result
 
@@ -953,7 +939,7 @@ class EpiManager:
 		if cmd==";":
 			cmd=""
 	
-		self._show_debug("install_app","Install Command: %s"%(cmd))
+		self._show_debug("install_app",f"Install Command: {cmd}")
 
 		return cmd	
 
@@ -1046,140 +1032,101 @@ class EpiManager:
 
 	def check_install_remove(self,action,pkg_id):
 
-		dpkg_status={}
-		count=0
-		pkgs_installed=0
-		token=""
-		pkgs_ref=[]
-		result=False
-		content=""
-		pkgs={}
-		file_with_list=False	
+		dpkg_status = {}
+		count_not_installed = 0
+		pkgs_installed_count = 0
+		pkgs_ref = []
+		result = False
+		content = ""
 
-		if action=="install":
-			epi_type=self.type
-			if epi_type == "file":
-				if self.token_result_install!="":
-					token=self.token_result_install[1]
-					if self.epi_conf["selection_enabled"]["active"]:
-						pkgs=self.epi_conf["pkg_list"]
-						file_with_list=True
-					else:
-						pkg_id=self.epi_conf["pkg_list"][0]["name"]
-
-			elif epi_type!="file":
-				pkgs=self.epi_conf["pkg_list"]
+		if action == "install":
+			epi_type = self.type
+			config = self.epi_conf
+			if hasattr(self, 'token_result_install') and self.token_result_install:
+				token = self.token_result_install[1] 
+			else:
+				token=""
 		else:
-			epi_type=self.epiFiles[0]["type"]
-			if epi_type=="file":
-				token=self.token_result_remove[1]
-				if self.epiFiles[0]["selection_enabled"]["active"]:
-					pkgs=self.epiFiles[0]["pkg_list"]
-					file_with_list=True
-					for item in pkgs:
-						if pkg_id!="all" and item["name"]!=pkg_id:
-							pass
-						else:
-							if item["name"] in self.packages_selected:
-								if item["name"] not in self.blocked_remove_skipped_pkgs_list:
-									pkgs_ref.append(item["name"])
-				else:
-					pkg_id=self.epiFiles[0]["pkg_list"][0]["name"]
+			config = self.epiFiles[0]
+			epi_type = config.get("type")
+			if hasattr(self, 'token_result_remove') and self.token_result_remove: 
+				token = self.token_result_remove[1]
+			else:
+				token=""
 
-			elif epi_type !="file":
-				pkgs=self.epiFiles[0]["pkg_list"]
-				for item in pkgs:
-					if pkg_id!="all" and item["name"]!=pkg_id:
-							pass
+		selection_enabled = config.get("selection_enabled", {}).get("active", False)
+		pkgs_list = config.get("pkg_list", [])
+		file_with_list = (epi_type == "file" and selection_enabled)
+
+		if not file_with_list and epi_type == "file":
+			if pkgs_list:
+				target_pkg_id = pkgs_list[0]["name"]
+			else:
+				target_pkg_id=pkg_id
+		else:
+			for item in pkgs_list:
+				name = item["name"]
+				if pkg_id != "all" and name != pkg_id:
+					continue
+
+				if name in self.packages_selected:
+					if action == "remove":
+						is_blocked = (name in self.blocked_remove_skipped_pkgs_list or (epi_type != "file" and name in self.blocked_remove_pkgs_list))
+						if not is_blocked:
+							pkgs_ref.append(name)
 					else:
-						if item["name"] in self.packages_selected:
-							if item["name"] not in self.blocked_remove_pkgs_list:
-								if item["name"] not in self.blocked_remove_skipped_pkgs_list:
-									pkgs_ref.append(item["name"])
+						pkgs_ref.append(name)
 
-		if epi_type=="file" and not file_with_list:
-			if os.path.exists(token):
-				file=open(token)
-				content=file.readline().strip()
-				if '0' not in content:
-					result=False
-
-				else:
-					result=True
-
-				file.close()
+		if epi_type == "file" and not file_with_list:
+			if token and os.path.exists(token):
+				with open(token, 'r') as f:
+					content = f.readline().strip()
+				result = ('0' in content)
 				os.remove(token)
 			else:
-				script=self.check_getStatus_byScript(0)
-				status=self.check_pkg_status(pkg_id,epi_type,script)
-				if status!="installed":
-					if action=="install":
-						result=False
-					else:
-						result=True
+				status = self.check_pkg_status(target_pkg_id, epi_type, self.check_getStatus_byScript(0))
+				is_installed = (status == "installed")
+				if action == "install": 
+					result = is_installed
 				else:
-					if action=="install":
-						result=True
-					else:
-						result=False
-				
+					result= not is_installed
 
-		elif epi_type !="file" or file_with_list:
-			if epi_type=="mix":
-				if action=="install":
-					order=self.epi_order
-				else:
-					order=0
+		else:
+			if epi_type == "mix" and action == "install":
+				order = self.epi_order
+			elif epi_type in ["mix", "file"]:
+				order = 0
 			else:
-				if epi_type=="file":
-					order=0
-				else:
-					order=""
-			
-			script=self.check_getStatus_byScript(order)
+				order = ""
+			script = self.check_getStatus_byScript(order)
+			for item in pkgs_list:
+				name = item["name"]
+				if pkg_id != "all" and name != pkg_id:
+					continue
 
-			for item in pkgs:
-				if pkg_id!="all" and item["name"]!=pkg_id:
-					pass
-				else:
-					if item["name"] in self.packages_selected:
-						if epi_type=="mix":
-							status=self.check_pkg_status(item["name"],item["type"],script)
-						else:
-							status=self.check_pkg_status(item["name"],epi_type,script)
-
-						dpkg_status[item["name"]]=status
-						if status!="installed":
-							count+=1
+				if name in self.packages_selected:
+					if epi_type == "mix":
+						p_type = item["type"] 
 					else:
-						if self.pkg_info[item["name"]]["status"]=="installed":
-							pkgs_installed+=1
-								
+						p_type=epi_type
 
-			if action=="install":
-				if count==0:
-					result=True
-			
+					status = self.check_pkg_status(name, p_type, script)
+					dpkg_status[name] = status
+					if status != "installed":
+						count_not_installed += 1
 				else:
-					result=False
+					if self.pkg_info.get(name, {}).get("status") == "installed":
+						pkgs_installed_count += 1
+
+			if action == "install":
+				result = (count_not_installed == 0)
 			else:
-				if count>0:
-					if count==len(pkgs_ref):
-						result=True
-					else:
-						result=False
-				else:
-					resul=False
-				
+				result = (count_not_installed > 0 and count_not_installed == len(pkgs_ref))
+				self.partial_installed = (pkgs_installed_count > 0)
 
-				if pkgs_installed>0:
-					self.partial_installed=True
-				else:
-					self.partial_installed=False			
+		self._show_debug("check_install_remove", f"Action: {action} - Result: {result} - Dpkg Status: {dpkg_status} - Token: {content}")
 		
-		self._show_debug("check_install_remove","Action: %s - Result: %s - Dpkg Status: %s - Token content: %s"%(action,result,dpkg_status,content))
-
-		return dpkg_status,result			
+		return dpkg_status, result
 
 	#def check_install_remove	
 
@@ -1201,7 +1148,7 @@ class EpiManager:
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_postinstall[1])
 
-		self._show_debug("postinstall_app","Postinstall Command:%s"%(cmd))
+		self._show_debug("postinstall_app",f"Postinstall Command:{cmd}")
 
 		return cmd	
 
@@ -1222,7 +1169,7 @@ class EpiManager:
 		except:
 			pass			
 
-		self._show_debug("check_postinstall","Postinstall result: Result: %s - Token content: %s"%(result,content))
+		self._show_debug("check_postinstall",f"Postinstall result: Result: {result} - Token content: {content}")
 		
 		return result
 
@@ -1262,7 +1209,7 @@ class EpiManager:
 
 				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
 		
-		self._show_debug("uninstall_app","Uninstall Command:%s"%(cmd))
+		self._show_debug("uninstall_app",f"Uninstall Command: {cmd}")
 
 		return cmd
 
@@ -1487,7 +1434,7 @@ class EpiManager:
 				try:
 					zmds_info=self.n4dClient.get_variable("ZEROCENTER")
 				except Exception as e:
-					self._show_debug("get_zmd_status.Get ZEROCENTER variable","Error:%s"%(str(e)))
+					self._show_debug("get_zmd_status.Get ZEROCENTER variable",f"Error: {e}")
 					return 1
 
 				if len(zmds_info):
@@ -1495,7 +1442,7 @@ class EpiManager:
 						status=zmds_info[self.zomando_name[order]].get('state')
 						zmd_status=status
 					except Exception as e:
-						self._show_debug("get_zmd_status. Get zmd status","Error:%s"%(str(e)))
+						self._show_debug("get_zmd_status. Get zmd status",f"Error: {e}")
 						pass 
 			else:
 				zmd_status=1
@@ -1534,7 +1481,7 @@ class EpiManager:
 			if len(self.blocked_remove_pkgs_list)>0:
 				self.meta_removed_warning=True
 
-			self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta","List:%s"%(str(self.blocked_remove_pkgs_list)))
+			self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta",f"List: {self.blocked_remove_pkgs_list}")
 
 		else:
 			self.meta_removed_warning=False
@@ -1705,7 +1652,7 @@ class EpiManager:
 					self.blocked_remove_skipped_pkgs_list.append(item)
 				break
 
-		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list","List:%s"%(str(self.blocked_remove_skipped_pkgs_list)))
+		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list",f"List: {self.blocked_remove_skipped_pkgs_list}")
 
 		return self.skipped_pkg_warning
 
