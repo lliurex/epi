@@ -633,7 +633,6 @@ class EpiManager:
 
 	def check_arquitecture(self):
 
-
 		self.force32=self.epi_conf['force32']
 		cmd=""
 		
@@ -695,7 +694,6 @@ class EpiManager:
 
 	#def add_repository_keys	
 
-
 	def get_app_version(self,item=None):
 
 		item=item or {}
@@ -742,6 +740,8 @@ class EpiManager:
 			if item["name"] in self.packages_selected and (pkg_id == "all" or item["name"] == pkg_id)
 		]
 
+		self.token_result_download = tempfile.mkstemp("_result_download")
+
 		if self.type in self.types_with_download:
 			if self.type == "file" and not self.manage_download:
 				pkg_names = " ".join(item["name"] for item in selected_items)
@@ -759,11 +759,9 @@ class EpiManager:
 					else:
 						cmd = self._get_download_cmd(i_type, item, cmd)
 
-			if cmd_file: 
-				 cmd = f"{cmd} {external_script}{cmd_file}".strip()
+			cmd = f"{cmd} {external_script}{cmd_file}".strip()
 
 		if cmd.strip():
-			self.token_result_download = tempfile.mkstemp("_result_download")
 			cmd = f"{cmd.strip()}; echo $? > {self.token_result_download[1]};"
 
 		self._show_debug("download_app", f"Command to download: {cmd}")
@@ -802,61 +800,65 @@ class EpiManager:
 
 		result=True
 		content=""
+
+		if self.type in self.types_without_download:
+			self._show_debug("check_download",f"Downlodad status: Result: {result} - Token Content: {content}")
+			return result
 		
-		if self.type not in self.types_without_download:
-			count=0
-			pkgs_todownload=len(self.download_folder)
+		pkgs_todownload=len(self.download_folder)
 
-			if len(self.download_folder)>0:
-				for item in self.download_folder:
-					if os.path.exists(item):
-						if pkg_id!="all" and pkg_id not in item:
-							pass
-						else:
-							count=count+1
+		count = sum( 1 for item in self.download_folder if os.path.exists(item) and (pkg_id == "all" or pkg_id in item))
+		
+		token_path=self.token_result_download[1]
+		
+		if os.path.exists(token_path):
+			with open(token_path,'r') as fd:
+				content=fd.readline()
+				
+			if '0' not in content:
+				result=False
+				
+			os.remove(self.token_result_download[1])
 			
-			if os.path.exists(self.token_result_download[1]):
-				file=open(self.token_result_download[1])
-				content=file.readline()
-				if '0' not in content:
-					result=False
-				file.close()
-				os.remove(self.token_result_download[1])
-
-				if result:	
-					if self.manage_download:
-						if count != pkgs_todownload:
-							if not self.epi_conf["selection_enabled"]["active"]:
-								result=False
-				else:
-					if self.epi_conf["selection_enabled"]["active"]:
-						if count>0:		
-							result=True
+			selection_active = self.epi_conf.get("selection_enabled", {}).get("active", False)
+			
+			if result:
+				if self.manage_download and count != pkgs_todownload:
+					if not selection_active:
+						print("3")
+						result=False
+			else:
+				if selection_active:
+					if count>0:
+						result=True
 
 		self._show_debug("check_download",f"Downlodad status: Result: {result} - Token Content: {content}")
+		
 		return result
 
 	#def check_download		
-
+	
 	def preinstall_app(self,pkg_id):
 	
 		cmd=""
 
-		if len(self.epi_conf["script"])>0:
-			self.token_result_preinstall=tempfile.mkstemp("_result_preinstall")
-			script=self.epi_conf["script"]["name"]
-			if os.path.exists(script):
-				cmd="%s preInstall "%script
-				for item in self.epi_conf["pkg_list"]:
-					if item["name"] in self.packages_selected:
-						if pkg_id!="all" and item["name"]!=pkg_id:
-							pass
-						else:
-							cmd+="%s "%item["name"]
+		script_conf=self.epi_conf.get("script",{})
 
-				cmd='%s; echo $? > %s;'%(cmd,self.token_result_preinstall[1])
+		if script_conf and "name" in script_conf:
+			script_path=script_conf["name"]
+
+			if os.path.exists(script_path):
+				self.token_result_preinstall=tempfile.mkstemp("_result_preinstall")
+				selected_pkgs = [
+					pkg["name"] for pkg in self.epi_conf.get("pkg_list", [])
+						if pkg["name"] in self.packages_selected and (pkg_id == "all" or pkg["name"] == pkg_id)
+				]
+				if selected_pkgs:
+					pkg_string = " ".join(selected_pkgs)
+					cmd = f"{script_path} preInstall {pkg_string}; echo $? > {self.token_result_preinstall[1]};"
 
 		self._show_debug("preinstall_app",f"Preinstall Command: {cmd}")
+		
 		return cmd		
 
 	#def preinstall_app	
@@ -868,11 +870,11 @@ class EpiManager:
 
 		try:
 			if os.path.exists(self.token_result_preinstall[1]):
-				file=open(self.token_result_preinstall[1])
-				content=file.readline()
+				with open(self.token_result_preinstall[1],'r') as fd:
+					content=fd.readline()
+				
 				if '0' not in content:
 					result=False
-				file.close()
 				os.remove(self.token_result_preinstall[1])
 
 		except:			
@@ -895,7 +897,7 @@ class EpiManager:
 
 		if self.type=="apt" or info_to_install[0]=="apt":
 			cmd=self._get_install_cmd_base(calledfrom,"apt")	
-			cmd="%s%s"%(cmd,info_to_install[1])
+			cmd=f"{cmd}{info_to_install[1]}"
 				
 		elif self.type=="deb" or info_to_install[0]=="deb":
 			pkg=""
@@ -917,24 +919,24 @@ class EpiManager:
 				if pkg_id!="all" and item["name"]!=pkg_id:
 					pass
 				else:
-					cmd="%s%s"%(cmd,pkg)
+					cmd=f"{cmd}{pkg}"
 
 		elif self.type=="file" or info_to_install[0]=="file":
 			cmd=self._get_install_file_cmd_base()
 			if cmd !="":
-				cmd="%s %s"%(cmd,info_to_install[1])
-				cmd_file_token='; echo $? > %s'%self.token_result_install[1]
-				cmd='%s%s'%(cmd,cmd_file_token)
+				cmd=f"{cmd} {info_to_install[1]}"
+				cmd_file_token=f'; echo $? > {self.token_result_install[1]}'
+				cmd=f'{cmd}{cmd_file_token}'
 		
 		elif self.type=="snap" or info_to_install[0]=="snap":
 			cmd=self._get_install_snap_cmd_base()
-			cmd="%s%s"%(cmd,info_to_install[1])
+			cmd=f"{cmd}{info_to_install[1]}"
 			
 		elif self.type=="flatpak" or info_to_install[0]=="flatpak":
 			cmd=self._get_install_flatpak_cmd_base()
-			cmd="%s%s"%(cmd,info_to_install[1])
+			cmd=f"{cmd}{info_to_install[1]}"
 		
-		cmd="%s;"%cmd
+		cmd=f"{cmd};"
 		cmd=cmd.strip()
 		if cmd==";":
 			cmd=""
@@ -947,19 +949,19 @@ class EpiManager:
 
 	def _get_app_to_install(self,pkg_id):
 
-		app_to_install=""
+		apps=[]
 		app_type=""
 
-		for item in self.epi_conf["pkg_list"]:
-			if item["name"] in self.packages_selected:
-				app=item["name"]
-				if pkg_id!="all" and pkg_id!=app:
-					pass
-				else:
-					app_to_install="%s %s"%(app_to_install,app)
+		for item in self.epi_conf.get("pkg_list",[]):
+			name=item.get("name","")
+			if name in self.packages_selected:
+				if pkg_id=="all" or pkg_id==name:
+					apps.append(name)
 					if self.type=="mix":
-						app_type=item["type"]
+						app_type=item.get("type","")
 						break
+		
+		app_to_install=" ".join(apps)
 
 		return [app_type,app_to_install]
 
