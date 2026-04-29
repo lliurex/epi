@@ -686,7 +686,7 @@ class EpiManager:
 							self.add_key=True
 
 		if not self.add_key:
-			cmd_parts,append("apt-get update;")
+			cmd_parts.append("apt-get update;")
 
 		cmd="".join(cmd_parts)
 		self._show_debug("add_repository_keys",f"Command to add keys: {cmd}")
@@ -825,7 +825,6 @@ class EpiManager:
 			if result:
 				if self.manage_download and count != pkgs_todownload:
 					if not selection_active:
-						print("3")
 						result=False
 			else:
 				if selection_active:
@@ -888,56 +887,43 @@ class EpiManager:
 
 	def install_app(self,calledfrom,pkg_id):
 	
-		self.token_result_install=""
-		pkgs_apt=0
-		add_i386=""
+		self.token_result_install=[]
 		cmd=""
-
 		info_to_install=self._get_app_to_install(pkg_id)
+		install_type = info_to_install[0] if info_to_install[0] else self.type
+		payload = info_to_install[1]
 
-		if self.type=="apt" or info_to_install[0]=="apt":
-			cmd=self._get_install_cmd_base(calledfrom,"apt")	
-			cmd=f"{cmd}{info_to_install[1]}"
-				
-		elif self.type=="deb" or info_to_install[0]=="deb":
-			pkg=""
-			cmd=self._get_install_cmd_base(calledfrom,"deb")
-			for item in self.download_folder:
-				if os.path.exists(item):
-					for app in info_to_install[1]:
-						if app in item:
-							pkg="%s %s"%(pkg,item)
-							break
-						
-			cmd=cmd+pkg	
-
-		elif self.type=="localdeb":
-			cmd=self._get_install_cmd_base(calledfrom,"apt")
-			for item in self.epi_conf["pkg_list"]:
-				name=item["version"]["all"]
-				pkg=os.path.join(item["url_download"],name)
-				if pkg_id!="all" and item["name"]!=pkg_id:
-					pass
-				else:
-					cmd=f"{cmd}{pkg}"
-
-		elif self.type=="file" or info_to_install[0]=="file":
-			cmd=self._get_install_file_cmd_base()
-			if cmd !="":
-				cmd=f"{cmd} {info_to_install[1]}"
-				cmd_file_token=f'; echo $? > {self.token_result_install[1]}'
-				cmd=f'{cmd}{cmd_file_token}'
+		simple_handlers = {
+			"apt": lambda: f"{self._get_install_cmd_base(calledfrom, 'apt')}{payload}",
+			"snap": lambda: f"{self._get_install_snap_cmd_base()}{payload}",
+			"flatpak": lambda: f"{self._get_install_flatpak_cmd_base()}{payload}"
+		}
 		
-		elif self.type=="snap" or info_to_install[0]=="snap":
-			cmd=self._get_install_snap_cmd_base()
-			cmd=f"{cmd}{info_to_install[1]}"
+		if install_type in simple_handlers:
+			cmd = simple_handlers[install_type]()
 			
-		elif self.type=="flatpak" or info_to_install[0]=="flatpak":
-			cmd=self._get_install_flatpak_cmd_base()
-			cmd=f"{cmd}{info_to_install[1]}"
-		
-		cmd=f"{cmd};"
-		cmd=cmd.strip()
+		elif install_type =="deb":
+			pkgs = [item for item in self.download_folder 
+				if os.path.exists(item) and any(app in item for app in payload)]
+			cmd = f"{self._get_install_cmd_base(calledfrom, 'deb')}{' '.join(pkgs)}"
+			
+		elif install_type =="localdeb":
+			pkgs = []
+			for item in self.epi_conf.get("pkg_list", []):
+				if pkg_id == "all" or item["name"] == pkg_id:
+					pkgs.append(os.path.join(item["url_download"], item["version"]["all"]))
+			cmd = f"{self._get_install_cmd_base(calledfrom, 'apt')}{' '.join(pkgs)}"
+			
+		elif install_type == "file":
+			base_cmd = self._get_install_file_cmd_base()
+			if base_cmd:
+				token_suffix = f'; echo $? > {self.token_result_install[1]}' if self.token_result_install else ""
+				cmd = f"{base_cmd} {payload}{token_suffix}"
+				
+		cmd = cmd.strip()
+		if cmd and not cmd.endswith(";"):
+			cmd += ";"
+			
 		if cmd==";":
 			cmd=""
 	
@@ -969,37 +955,33 @@ class EpiManager:
 
 	def _get_install_cmd_base(self,calledfrom,pkg_type):
 
-		cmd_headed=""
-		apt_headed="apt-get install --reinstall --allow-downgrades --yes "
-		dpkg_headed="dpkg -i "
-
-		if self.epi_conf["required_dconf"]:
-			if calledfrom =="gui":
-				cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=kde "
-			else:
-				cmd_headed="LANG=C LANGUAGE=en "
+		if self.epi_conf.get("required_dconf"):
+			frontend = "kde" if calledfrom == "gui" else ""
+			env_prefix = f"LANG=C LANGUAGE=en DEBIAN_FRONTEND={frontend}".strip()
 		else:
-			cmd_headed="LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive "
+			env_prefix = "LANG=C LANGUAGE=en DEBIAN_FRONTEND=noninteractive"
 
-		if pkg_type in ["apt","localdeb"]:
-			cmd_headed=cmd_headed+apt_headed
-		elif pkg_type =="deb":
-			cmd_headed=cmd_headed+dpkg_headed
+		pkg_commands = {
+			"apt": "apt-get install --reinstall --allow-downgrades --yes ",
+			"localdeb": "apt-get install --reinstall --allow-downgrades --yes ",
+			"deb": "dpkg -i "
+		}
 
-		return cmd_headed		
+		base_cmd = pkg_commands.get(pkg_type, "")
 
-	# def _check_debconf_required
+		return f"{env_prefix} {base_cmd}"
+
+	# def _get_install_cmd_base
 
 	def _get_install_file_cmd_base(self):
 
-		cmd_tmp=""
 		self.token_result_install=tempfile.mkstemp("_result")
-		script=self.epi_conf["script"]["name"]
+		script=self.epi_conf.get("script",{}).get("name","")
 		
 		if os.path.exists(script):
-			cmd_tmp="%s installPackage "%script	
+			return f"{script} installPackage "	
 		
-		return cmd_tmp 
+		return "" 
 
 	#def _get_install_file_cmd_base	
 
@@ -1131,28 +1113,26 @@ class EpiManager:
 		return dpkg_status, result
 
 	#def check_install_remove	
+	
+	def postinstall_app(self, pkg_id):
 
-	def postinstall_app(self,pkg_id):
-		
-		cmd=""
-		
-		if len(self.epi_conf["script"])>0:
-			self.token_result_postinstall=tempfile.mkstemp("_result_postinstall")
-			script=self.epi_conf["script"]["name"]
-			if os.path.exists(script):
-				cmd="%s postInstall "%script
-				for item in self.epi_conf["pkg_list"]:
-					if item["name"] in self.packages_selected:
-						if pkg_id!="all" and item["name"]!=pkg_id:
-							pass
-						else:
-							cmd+="%s "%item["name"]
+		cmd = ""
+		script_conf = self.epi_conf.get("script", {})
+		script_path = script_conf.get("name", "")
 
-				cmd='%s; echo $? > %s;'%(cmd,self.token_result_postinstall[1])
-
-		self._show_debug("postinstall_app",f"Postinstall Command:{cmd}")
-
-		return cmd	
+		if script_conf and os.path.exists(script_path):
+			self.token_result_postinstall= tempfile.mkstemp("_result_postinstall")
+			
+			pkgs_to_add = [
+				item["name"] for item in self.epi_conf.get("pkg_list", [])
+				if item["name"] in self.packages_selected and (pkg_id == "all" or item["name"] == pkg_id)
+			]
+			
+			args = " ".join(pkgs_to_add)
+			cmd = f"{script_path} postInstall {args}; echo $? > {self.token_result_postinstall[1]};"
+			self._show_debug("postinstall_app", f"Postinstall Command: {cmd}")
+			
+		return cmd
 
 	#def postinstall_app	
 	
@@ -1162,11 +1142,11 @@ class EpiManager:
 		content=""
 		try:
 			if os.path.exists(self.token_result_postinstall[1]):
-				file=open(self.token_result_postinstall[1])
-				content=file.readline()
+				with open(self.token_result_postinstall[1],'r') as fd:
+					content=fd.readline()
+				
 				if '0' not in content:
 					result=False
-				file.close()
 				os.remove(self.token_result_postinstall[1])
 		except:
 			pass			
@@ -1190,191 +1170,208 @@ class EpiManager:
 			os.remove(dest_path)	
 
 	#def remove_repo_keys	
-
+	
 	def uninstall_app(self,order,pkg_id):
 
-		cmd=""
+		cmd = ""
+		epi_file = self.epiFiles.get(order, {})
+		script_conf = epi_file.get("script", {})
+		script_path = script_conf.get("name", "")
 
-		if self.epiFiles[order]["script"]["remove"]:
-			self.token_result_remove=tempfile.mkstemp("_result_remove")
-			script=self.epiFiles[order]["script"]["name"]
-			if os.path.exists(script):
-				cmd="%s remove "%script
-				for item in self.epiFiles[order]["pkg_list"]:
-					if item["name"] in self.packages_selected:
-						if item["name"] not in self.blocked_remove_pkgs_list:
-							if item["name"] not in self.blocked_remove_skipped_pkgs_list:
-								if pkg_id!="all" and item["name"]!=pkg_id:
-									pass
-								else:
-									cmd+="%s "%item["name"]
+		if script_conf.get("remove") and os.path.exists(script_path):
+			self.token_result_remove = tempfile.mkstemp("_result_remove")
 
-				cmd='%s; echo $? > %s;'%(cmd,self.token_result_remove[1])
-		
-		self._show_debug("uninstall_app",f"Uninstall Command: {cmd}")
+			pkgs_to_remove = [
+				item["name"] for item in epi_file.get("pkg_list", [])
+				if (item["name"] in self.packages_selected and
+					item["name"] not in self.blocked_remove_pkgs_list and
+					item["name"] not in self.blocked_remove_skipped_pkgs_list and
+					(pkg_id == "all" or item["name"] == pkg_id))
+			]
+
+			if pkgs_to_remove:
+				args = " ".join(pkgs_to_remove)
+				cmd = f"{script_path} remove {args}; echo $? > {self.token_result_remove[1]};"
+			'''
+			else:
+				cmd = f"{script_path} remove; echo $? > {self.token_result_remove[1]};"
+			'''
+		self._show_debug("uninstall_app", f"Uninstall Command: {cmd}")
 
 		return cmd
 
-	#def uninstall_app	
-
+	#def uninstall_app
+	
 	def zerocenter_feedback(self,order,action,result=None):
 
-		zomando_name=self.zomando_name[order]
-		cmd=""
+		zomando_name = self.zomando_name.get(order, "")
+		if not zomando_name:
+			return
 
-		if zomando_name!="":
-			if action=="init":
-				cmd="zero-center add-pulsating-color " +zomando_name
+		remove_pulse = f"zero-center remove-pulsating-color {zomando_name}"
+		set_non_cfg = f"zero-center set-non-configured {zomando_name}"
+		set_cfg = f"zero-center set-configured {zomando_name}"
+		set_failed = f"zero-center set-failed {zomando_name}"
+
+		cmd = ""
+
+		if action == "init":
+			cmd = f"zero-center add-pulsating-color {zomando_name}"
+
+		elif self.epiFiles[order]["selection_enabled"]["active"]:
+			if self.get_zmd_status(order) != 0:
+				cmd = f"{remove_pulse} ;{set_non_cfg}"
 			else:
-				if self.epiFiles[order]["selection_enabled"]["active"]:
-					if self.get_zmd_status(order)!=0:
-						cmd="zero-center remove-pulsating-color %s ;zero-center set-non-configured %s"%(zomando_name,zomando_name)
-					else:
-						cmd="zero-center remove-pulsating-color %s"%zomando_name
-				elif action=="install":
-					if result:
-						cmd="zero-center remove-pulsating-color %s ;zero-center set-configured %s"%(zomando_name,zomando_name)
-					else:
-						cmd="zero-center remove-pulsating-color %s ;zero-center set-failed %s"%(zomando_name,zomando_name)
-				elif action=="uninstall":
-					if result:
-						cmd="zero-center remove-pulsating-color %s ;zero-center set-non-configured %s"%(zomando_name,zomando_name)
-					else:
-						cmd="zero-center remove-pulsating-color %s ;zero-center set-failed %s"%(zomando_name,zomando_name)
+				cmd = remove_pulse
+		elif action in ["install", "uninstall"]:
+			if result:
+				status_cmd = set_cfg if action == "install" else set_non_cfg
+				cmd = f"{remove_pulse} ;{status_cmd}"
+			else:
+				cmd = f"{remove_pulse} ;{set_failed}"
 
-			os.system(cmd)		
-
-	#def zero-center_feedback	
+		if cmd:
+			subprocess.run(cmd,shell=True)
+	
+	#def zerocenter_feedback
 	
 	def cli_install(self):
 
-		remote_available=[]
-		selection_enabled={}
-		zomando=""
-		required_x=False
-		only_gui_available=[]
+		epi_zero = self.epiFiles[0]
+		required_x = epi_zero.get("required_x", False)
+		path_custom_icons = epi_zero.get("custom_icon_path", "")
+		zomando = epi_zero.get("zomando", "")
 
-		if self.epiFiles[0]["required_x"]:
-			required_x=True
-			#return [remote_available,selection_enabled]									
+		selection_enabled = {"selection_enabled": epi_zero.get("selection_enabled", {})}
 
-		path_custom_icons=self.epiFiles[0]["custom_icon_path"]
-		selection_enabled["selection_enabled"]=self.epiFiles[0]["selection_enabled"]
-		zomando=self.epiFiles[0]["zomando"]
-		add_to_list=True
+		remote_available = []
+		only_gui_available = []
 
-		for item in self.epiFiles[0]["pkg_list"]:
-			try:
-				if item["required_x"]:
-					add_to_list=False
-			except:
-				if required_x:
-					add_to_list=False
-				else:
-					add_to_list=True
+		for item in epi_zero.get("pkg_list", []):
+			item_requires_x = item.get("required_x", required_x)
 
-			pkg={}
-			pkg["name"]=item["name"]
-			try:
-				pkg["custom_name"]=item["custom_name"]
-			except:
-				pkg["custom_name"]=item["name"]
-			try:
-				if path_custom_icons!="":
-					pkg["custom_icon"]=os.path.join(path_custom_icons,item["custom_icon"])
-				else:
-					pkg["custom_icon"]=""
-			except:
-				pkg["custom_icon"]=""
-			try:
-				pkg["default_pkg"]=item["default_pkg"]
-			except:
-				pkg["default_pkg"]=False
-					
-			try:
-				pkg["skip_flavours"]=item["skip_flavours"]
-			except:
-				pkg["skip_flavours"]=[]
-			try:
-				pkg["skip_groups"]=item["skip_groups"]
-			except:
-				pkg["skip_groups"]=[]
-					
-			if add_to_list:
-				remote_available.append(pkg)
+			pkg = {
+				"name": item["name"],
+				"custom_name": item.get("custom_name", item["name"]),
+				"default_pkg": item.get("default_pkg", False),
+				"skip_flavours": item.get("skip_flavours", []),
+				"skip_groups": item.get("skip_groups", []),
+				"custom_icon": ""
+			}
+
+			custom_icon_file = item.get("custom_icon")
+			if path_custom_icons and custom_icon_file:
+				pkg["custom_icon"] = os.path.join(path_custom_icons, custom_icon_file)
+
+			if item_requires_x:
+				only_gui_available.append(pkg)
 			else:
-				only_gui_available.append(pkg)			
-		
-		return [remote_available,selection_enabled,zomando,required_x,only_gui_available]									
+				remote_available.append(pkg)
 
-	#def cli_install	
+		return {
+			"remote_available": remote_available,
+			"only_gui_available": only_gui_available,
+			"selection_enabled": epi_zero.get("selection_enabled", {}),
+			"zomando": epi_zero.get("zomando", ""),
+			"required_x": required_x
+		}
 
+	#def cli_install
+	
 	def list_available_epi(self):
 
-		self.remote_available_epis=[]
-		self.available_epis=[]
-		self.all_available_epis=[]
-		self.cli_available_epis=[]
-		self.skipped_pkgs_groups=[]
-		self.skipped_pkgs_flavours=[]
+		self.remote_available_epis = []
+		self.available_epis = []
+		self.all_available_epis = []
+		self.cli_available_epis = []
+		self.skipped_pkgs_groups = []
+		self.skipped_pkgs_flavours = []
 
-		for item in listdir(self.zmd_paths):
-			t=join(self.zmd_paths,item)
-			if isfile(t):
-				f=open(t,'r')
-				content=f.readlines()
+		if not os.path.exists(self.zmd_paths):
+			return
+
+		for item in os.listdir(self.zmd_paths):
+			path_item = os.path.join(self.zmd_paths, item)
+
+			if not os.path.isfile(path_item):
+				continue
+
+			try:
+				with open(path_item, 'r') as f:
+					content = f.readlines()
+
 				for line in content:
-					if '.epi' in line:
-						line=line.split('epi-gtk')
-						try:
-							line=line[1].strip(" ").split(" ")
-							line=line[0].strip("\n").strip(" ")
-							check=self.read_conf(line,False,True)["status"]
-							if check:
-								remote=self.cli_install()
-								tmp={}
-								epi_name=os.path.basename(line)
-								tmp[epi_name]={}
-								tmp[epi_name]=remote[1]
-								tmp[epi_name]["zomando"]=remote[2]
-								tmp[epi_name]["pkg_list"]=remote[0]
-								if len(remote[0])>0:
-									if not remote[3]:
-										self.cli_available_epis.append(tmp)
-										if not self.is_zmd_service(remote[2]):
-											tmp[epi_name]["pkg_list"]=self._clean_pkg_skipped_for_client(remote[0])
-											self.remote_available_epis.append(tmp)
-								tmp[epi_name]["only_gui_available"]=remote[4]
-								self.all_available_epis.append(tmp)
-								self.available_epis.append(line)
+					if '.epi' not in line or 'epi-gtk' not in line:
+						continue
 
-						except Exception as e:
-							pass	
-						
-	#def list_available_epi	
+					parts = line.split('epi-gtk')
+					if len(parts) < 2:
+						continue
 
-	def check_remote_epi(self,epi):
+					epi_path = parts[1].strip().split(" ")[0].strip()
+					conf = self.read_conf(epi_path, False, True)
 
-		tmp_cli=[]
-		tmp_gui=[]
-		epi=os.path.basename(epi)
+					if not conf.get("status"):
+						continue
+
+					remote = self.cli_install()
+					epi_name = os.path.basename(epi_path)
+
+					epi_data = {
+						"selection_enabled": remote["selection_enabled"],
+						"zomando": remote["zomando"],
+						"pkg_list": remote["remote_available"],
+						"only_gui_available": remote["only_gui_available"]
+					}
+
+					tmp = {epi_name: epi_data}
+
+					if len(remote["remote_available"]) > 0:
+						if not remote["required_x"]:
+							self.cli_available_epis.append(tmp)
+
+							if not self.is_zmd_service(remote["zomando"]):
+								clean_pkg_list = self._clean_pkg_skipped_for_client(remote["remote_available"])
+								remote_tmp = {epi_name: {**epi_data, "pkg_list": clean_pkg_list}}
+								self.remote_available_epis.append(remote_tmp)
+
+					self.all_available_epis.append(tmp)
+					self.available_epis.append(epi_path)
+
+			except Exception as e:
+				self._show_debug("list_available_epi", f"Error processing {item}: {e}")
+
+	def check_remote_epi(self, epi):
+
+		tmp_cli, tmp_gui = [], []
+		target_epi = os.path.basename(epi)
+
 		for item in self.all_available_epis:
-			for element in item:
-				if epi==element:
-					for pkg in item[element]["pkg_list"]:
-						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
-							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
-								tmp_cli.append(pkg)
-					#return item[element]["pkg_list"]
-					for pkg in item[element]["only_gui_available"]:
-						if not self.is_pkg_skipped_for_flavour(pkg["name"],pkg["skip_flavours"]):
-							if self.is_pkg_skipped_for_group(pkg["name"],pkg["skip_groups"]) in [0,2]:
-								tmp_gui.append(pkg)
+			if target_epi not in item:
+				continue
 
-		return tmp_cli,tmp_gui
-	
+			epi_data = item[target_epi]
+
+			to_process = [
+				(epi_data.get("pkg_list", []), tmp_cli),
+				(epi_data.get("only_gui_available", []), tmp_gui)
+			]
+
+			for source_list, target_list in to_process:
+				for pkg in source_list:
+					name = pkg["name"]
+					skip_f = not self.is_pkg_skipped_for_flavour(name, pkg.get("skip_flavours", []))
+					skip_g = self.is_pkg_skipped_for_group(name, pkg.get("skip_groups", [])) in [0, 2]
+
+					if skip_f and skip_g:
+						target_list.append(pkg)
+
+			break 
+
+		return tmp_cli, tmp_gui
+
 	#def check_remote_epi
-	 				
+
 	def _get_epi_path(self,epi):
 
 		epi_path=""
@@ -1395,7 +1392,7 @@ class EpiManager:
 		epi_deb=""
 		if epi!=None:	
 			epi_path=self._get_epi_path(epi)
-			cmd="dpkg -S %s"%epi_path
+			cmd=f"dpkg -S {epi_path}"
 			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			poutput,perror=p.communicate()
 
@@ -1420,40 +1417,34 @@ class EpiManager:
 
 	#def init_n4d_client
 
-	def get_zmd_status(self,order):
+	def get_zmd_status(self, order):
 
-		'''
-			zmd status code:
-				 0: not-configured
-				 1: configured
-				-1: failed
-		'''
-
-		zmd_status=0
+		"""
+		zmd status code:
+			0: not-configured
+			1: configured
+			1: failed
+		"""
 		
-		if self.epiFiles[order]["check_zomando_state"]:
-			if self.n4dClient!=None:
-				try:
-					zmds_info=self.n4dClient.get_variable("ZEROCENTER")
-				except Exception as e:
-					self._show_debug("get_zmd_status.Get ZEROCENTER variable",f"Error: {e}")
-					return 1
+		if not self.epiFiles[order].get("check_zomando_state") or self.n4dClient is None:
+			return 1
+			
+		try:
+			zmds_info = self.n4dClient.get_variable("ZEROCENTER")
+			if not zmds_info:
+				return  0
+		except Exception as e:
+			self._show_debug("get_zmd_status.Get ZEROCENTER variable", f"Error: {e}")
+			return 1
+			
+		try:
+			zomando = self.zomando_name[order]
+			return zmds_info.get(zomando, {}).get('state', 0)
+		except Exception as e:
+			self._show_debug("get_zmd_status. Get zmd status", f"Error: {e}")
+			return 0
 
-				if len(zmds_info):
-					try:
-						status=zmds_info[self.zomando_name[order]].get('state')
-						zmd_status=status
-					except Exception as e:
-						self._show_debug("get_zmd_status. Get zmd status",f"Error: {e}")
-						pass 
-			else:
-				zmd_status=1
-		else:
-			zmd_status=1
-
-		return zmd_status
-	
-	#def get_zmd_status
+   	#def get_zmd_status
 
 	def check_remove_meta(self):
 
