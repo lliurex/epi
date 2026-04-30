@@ -660,7 +660,7 @@ class EpiGuiManager:
 		self._writeLog("Packages selected to uninstall: %s"%self.epiManager.packages_selected)
 		self.stopUninstall=[False,""]
 		self.metaRemovedWarning=self.epiManager.check_remove_meta()
-		self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.blocked_remove_pkgs_list)
+		self._writeLog("Check remove meta-package. Packages blocked because remove metapackage: %s"%self.epiManager.blocked_remove_pkgs_list)
 
 		if self.metaRemovedWarning:
 			if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_pkgs_list):
@@ -669,7 +669,7 @@ class EpiGuiManager:
 		
 		if not self.stopUninstall[0]:
 			self.skippedRemovedWarning=self.epiManager.check_remove_skip_pkg()
-			self._writeLog("Check remove meta-package. Packages blocked because remove metapackage.: %s"%self.epiManager.skipped_pkgs_groups)
+			self._writeLog("Check remove meta-package. Packages blocked due to remove skipped: %s"%self.epiManager.skipped_pkgs_groups)
 
 			if self.skippedRemovedWarning:
 				if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_skipped_pkgs_list):
@@ -930,7 +930,8 @@ class EpiGuiManager:
 
 		if length>0:
 			command=self._createProcessToken(command,"uninstall")
-
+		else:
+			self.removePkgDone=True
 		return command
 
 	#def getUninstallCommand

@@ -837,7 +837,7 @@ class EPIC(object):
 						else:
 							msg_log="Some selected application successfully uninstalled.Others not because they are part of the system's meta-package (%s)"%self.blocked_pkgs_meta
 							if self.skipped_remove_warning:
-								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s)"%self.blocked_pkgs_skipped
+								msg_log="Some selected application successfully uninstalled.Others not because user do not have permission to uninstall them (%s) and are parte of the system mate-package (%s)"%(self.blocked_pkgs_skipped,self.blocked_pkgs_meta)
 												
 						print('  [EPIC]: '+msg_log)
 						self.write_log(msg_log)

@@ -163,7 +163,8 @@ class EpiManager:
 			self.order += 1
 			try:
 				self.read_conf(depends)
-			except Exception:
+			except Exception as e:
+				self._show_debug("read_conf", f"Error: {e}")
 				pass
 
 		return {"status": True, "error": ""}	
@@ -344,8 +345,8 @@ class EpiManager:
 					self.pkg_info[pkg]["summary"]=data.get("summary","")
 					self.pkg_info[pkg]["debian_name"]=data.get("package",data.get("pkgname",''))
 					self.pkg_info[pkg]["component"]=data.get("component",'')
-			except:
-				self._show_debug("_get_store_info",f"pkg: {pkg}; error parsing json")
+			except Exception as e:
+				self._show_debug("_get_store_info",f"pkg: {pkg}; error parsing json: {e}")
 		
 
 	#def get_store_info			
@@ -372,7 +373,8 @@ class EpiManager:
 
 			return "available"
 
-		except Exception:
+		except Exception as e:
+			self._show_debug("check_pkg_status",f"pkg: {pkg}; Error: {e}")
 			return "available"
 						
 	#def check_pkg_status	
@@ -424,7 +426,8 @@ class EpiManager:
 					summary=poutput[0].decode("utf-8").split("\n")[0].split("||")[0]
 					if len(poutput)>1:
 						description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
-		except:
+		except Exception as e:
+			self._show_debug("get_localdeb_info",f"pkg: {pkg}; Error: {e}")
 			pass
 
 		status=self._get_pkg_status(pkg,"localdeb")
@@ -573,7 +576,8 @@ class EpiManager:
 
 			return result_test
 		
-		except Exception:
+		except Exception as e:
+			self._show_debug("test_install",f"Error: {e}",)
 			return result_test
 
     #def test_install
@@ -876,7 +880,7 @@ class EpiManager:
 					result=False
 				os.remove(self.token_result_preinstall[1])
 
-		except:			
+		except Exception:			
 			pass
 
 		self._show_debug("check_preinstall",f"Presintall result: Result: {result} - Token content: {content}")
@@ -1148,7 +1152,7 @@ class EpiManager:
 				if '0' not in content:
 					result=False
 				os.remove(self.token_result_postinstall[1])
-		except:
+		except Exception:
 			pass			
 
 		self._show_debug("check_postinstall",f"Postinstall result: Result: {result} - Token content: {content}")
@@ -1448,156 +1452,173 @@ class EpiManager:
 
 	def check_remove_meta(self):
 
-		self.blocked_remove_pkgs_list=[]
-		tmp_blocked_remove_pkgs_list=[]
+		self.blocked_remove_pkgs_list = []
+		self.meta_removed_warning = False
 
-		if self.check_meta:
-			for pkg in self.packages_selected:
-				tmp_blocked_remove_pkgs_list=[]
-				cmd="apt-get remove --simulate %s"%pkg
-				psimulate=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-				rawoutputsimulate=psimulate.stdout.readlines()
-				rawpkgstoremove=[aux.decode().strip() for aux in rawoutputsimulate if aux.decode().startswith('Remv')]
+		if not self.check_meta:
+			self._show_debug("check_remove_meta", "Checking is disabled")
+			return False
 
-				r=[aux.replace('Remv ','') for aux in rawpkgstoremove]
+		meta_pkgs_set = set(self.lliurex_meta_pkgs)
 
-				if len(r)>0:
-					for item in r:
-						tmp=item.split(' ')[0]
-						tmp_blocked_remove_pkgs_list.append(tmp)
+		for pkg in self.packages_selected:
+			try:
+				cmd = ["apt-get", "remove", "--simulate", pkg]
+				process = subprocess.run(
+					cmd, 
+					stdout=subprocess.PIPE,
+					stderr=subprocess.DEVNULL,
+					text=True,
+					check=True
+				)
 
-					for item in tmp_blocked_remove_pkgs_list:
-						if item in self.lliurex_meta_pkgs:
-							self.blocked_remove_pkgs_list.append(pkg) 
-							break	
+				pkgs_to_remove = [line.split()[1]
+					for line in process.stdout.splitlines() 
+					if line.startswith("Remv ")
+				]
 
-			if len(self.blocked_remove_pkgs_list)>0:
-				self.meta_removed_warning=True
+				if any(p in meta_pkgs_set for p in pkgs_to_remove):
+					self.blocked_remove_pkgs_list.append(pkg)
+			
+			except subprocess.CalledProcessError:
+				self._show_debug("check_remove_meta", f"Error simulating removal of {pkg}")
 
-			self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta",f"List: {self.blocked_remove_pkgs_list}")
-
-		else:
-			self.meta_removed_warning=False
-			self._show_debug("check_remove_meta.Check if pkg uninstall remove lliurex-meta","Checking are disabled")
- 
+		self.meta_removed_warning = len(self.blocked_remove_pkgs_list) > 0
+		self._show_debug("check_remove_meta. Check if pkg uninstall remove lliurex-meta", 
+			f"List: {self.blocked_remove_pkgs_list}")
 
 		return self.meta_removed_warning
 
+    #def check_remove_meta
 
-	#def check_remove_meta
+	def is_zmd_service(self, zomando):
 
-	def is_zmd_service(self,zomando):
+		app_path = os.path.join(self.app_folder, f"{zomando}.app")
 
-		app_file=zomando+".app"
-		app_path=os.path.join(self.app_folder,app_file)
-		if os.path.exists(app_path):
-			with open(app_path,'r',encoding='utf-8') as fd:
-				content=fd.readlines()
-				fd.close()
-			
-			for line in content:
-				key,value=line.split("=")
-				if key=="Category":
-					tmp_categ=value.strip("\n")
-					if tmp_categ=="Services":
-						return True 
-					else:
-						return False 
-		else:
+		if not os.path.exists(app_path):
 			return True
 
-	#def is_zmd_service
-
-	def check_getStatus_byScript(self,order):
-
-		script=""
-		if order!="":
-			try:
-				tmp_script=self.epiFiles[order]["script"]["name"]
-				if os.path.exists(tmp_script):
-					if self.epiFiles[order]["script"]["getStatus"]:
-						script=tmp_script
-			except Exception as e:
-				pass
-
-		return script
-
-	#def check_getStatus_byScript
-
-	def _check_download_byScript(self,order):
-
-		download_byScript=False
-
-		if order!="":
-			try:
-				tmp_script=self.epiFiles[order]["script"]["name"]
-				if os.path.exists(tmp_script):
-					if self.epiFiles[order]["script"]["download"]:
-						download_byScript=True
-			except Exception as e:
-				pass
-
-		return download_byScript
-
-	#def _check_download_byScript
-
-	def empty_cache_folder(self):
-
-		if os.path.exists(self.download_path):
-			for filename in os.listdir(self.download_path):
-				file_path=os.path.join(self.download_path,filename)
-				try:
-					if os.path.isfile(file_path):
-						os.remove(file_path)
-				except:
-					pass
-
-	#def empty_cache_folder
-
-	def _get_flavours(self):
-
-		self._flavours=[]
-		cmd='lliurex-version -v'
-		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-		result=p.communicate()[0]
-		if type(result) is bytes:
-			result=result.decode()
-			self._flavours = [ x.strip() for x in result.split(',') ]	
-	
-	#def _getFlavours
-
-	def is_pkg_skipped_for_flavour(self,pkg_id,skipped_flavours):
-
-		for flavour in self._flavours:
-			for element in skipped_flavours:
-				if element in flavour:
-					if pkg_id not in self.skipped_pkgs_flavours:
-						self.skipped_pkgs_flavours.append(pkg_id)
-					return True
+		try:
+			with open(app_path, 'r', encoding='utf-8') as fd:
+				for line in fd:
+					if "=" in line:
+						key, value = line.split("=", 1) 
+						if key.strip() == "Category":
+							return value.strip() == "Services"
+		except Exception as e:
+			self._show_debug("is_zmd_service", f"Error: {e}") 
+			pass
 
 		return False
 
-	#def is_pkg_skipped_for_flavour
+	#def is_zmd_service
+	
+	def check_getStatus_byScript(self, order):
 
-	def _get_user_groups(self):
+		if  order is None or order =="":
+			return ""
+
+		order_data = self.epiFiles.get(order, {})
+		script_info = order_data.get("script", {})
+		script_path = script_info.get("name", "")
+		get_status = script_info.get("getStatus", False)
+
+		if script_path and get_status and os.path.exists(script_path):
+			return script_path
+
+		return ""
+
+	#def check_getStatus_byScript
+	
+	def _check_download_byScript(self, order):
+
+		if  order is None or order =="":
+			return False
+
+		order_data = self.epiFiles.get(order, {})
+		script_info = order_data.get("script", {})
+		script_path = script_info.get("name", "")
+		download = script_info.get("download", False)
+
+		if script_path and download and os.path.exists(script_path):
+			return True
+
+		return False
+
+	#def check_getStatus_byScript
+
+	def empty_cache_folder(self):
+
+		if not os.path.isdir(self.download_path):
+			return
+
+		for filename in os.listdir(self.download_path):
+			file_path = os.path.join(self.download_path, filename)
+			try:
+				if os.path.isfile(file_path):
+					os.remove(file_path)
+			except Exception as e:
+				pass
+
+	#de empty_cache_folder
+	
+	def _get_flavours(self):
+
+		self._flavours = []
+		cmd = ['lliurex-version', '-v']
 
 		try:
-			user=pwd.getpwuid(int(os.environ["PKEXEC_UID"])).pw_name
-			gid = pwd.getpwnam(user).pw_gid
-			groups_gids = os.getgrouplist(user, gid)
-			self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
-		except:
+			result = subprocess.check_output(cmd, text=True, stderr=subprocess.DEVNULL)
+			if result:
+				self._flavours = [x.strip() for x in result.split(',') if x.strip()]
+		except (subprocess.CalledProcessError, FileNotFoundError):
+			self._show_debug("_get_flavours", "Error executing lliurex-version")
+
+	#def _get_flavours
+
+	def is_pkg_skipped_for_flavour(self, pkg_id, skipped_flavours):
+
+		is_skipped = any(
+			element in flavour 
+			for flavour in self._flavours 
+			for element in skipped_flavours
+		)
+
+		if is_skipped:
+			if pkg_id not in self.skipped_pkgs_flavours:
+				self.skipped_pkgs_flavours.append(pkg_id)
+				return True
+		return False
+
+	#def is_pkg_skipped_for_flavour
+	
+	def _get_user_groups(self):
+
+		self._user_groups = []
+
+		user = os.environ.get("PKEXEC_UID")
+
+		if user:
 			try:
-				user=os.environ["USER"]
-				gid = pwd.getpwnam(user).pw_gid
-				groups_gids = os.getgrouplist(user, gid)
-				self._user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
-			except:
-				pass	
+				user = pwd.getpwuid(int(user)).pw_name
+			except (ValueError, KeyError):
+				user = os.environ.get("USER")
+		else:
+			user = os.environ.get("USER")
 
-	#def _get_user_groups
+		if not user:
+			return
 
-	def is_pkg_skipped_for_group(self,pkg_id,skipped_groups):
+		try:
+			user_info = pwd.getpwnam(user)
+			groups_gids = os.getgrouplist(user, user_info.pw_gid)
+			self._user_groups = [grp.getgrgid(gid).gr_name for gid in groups_gids]
+		except Exception as e:
+			self._show_debug("_get_user_groups", f"Error retrieving groups for {user}: {e}")
+
+	#def def _get_user_groups
+	
+	def is_pkg_skipped_for_group(self, pkg_id, skipped_groups):
 
 		'''
 			Values for pkg_skipped:
@@ -1605,69 +1626,55 @@ class EpiManager:
 			- 1: pkg skipped for all actions
 			- 2: pkg skipped for remove action
 		'''
-		pkg_skipped=0
-		if 'admins' not in self._user_groups:
-			for item in skipped_groups:
-				if item["group"] in self._user_groups:
-					if item["action"]=="all":
-						pkg_skipped=1
-					elif item["action"]=="remove":
-						pkg_skipped=2
-						if pkg_id not in self.skipped_pkgs_groups:
-							self.skipped_pkgs_groups.append(pkg_id)
-					break
+		if 'admins' in self._user_groups:
+			return 0
 
-		return pkg_skipped
+		for item in skipped_groups:
+			if item["group"] not in self._user_groups:
+				continue
+
+			action = item.get("action")
+
+			if action == "all":
+				return 1
+			if action == "remove":
+				if pkg_id not in self.skipped_pkgs_groups:
+					self.skipped_pkgs_groups.append(pkg_id)
+				return 2
+		return 0
 
 	#def is_pkg_skipped_for_group
+	
+	def _is_remove_lock_for_group(self, skipped_groups):
 
-	def _is_remove_lock_for_group(self,skipped_groups):
+		if 'admins' in self._user_groups:
+			return False
 
-		if 'admins' not in self._user_groups:
-			if len(skipped_groups)>0:
-				for group in skipped_groups:
-					if group in self._user_groups:
-						return True
-
-		return False
-
-	#def _is_remove_lock_for_group
+		return not set(skipped_groups).isdisjoint(self._user_groups)
 
 	def check_remove_skip_pkg(self):
 
-		self.skipped_pkg_warning=False
-		self.blocked_remove_skipped_pkgs_list=[]
+		blocked_items = set(self.packages_selected) & set(self.skipped_pkgs_groups)
 
-		for item in self.packages_selected:
-			if item in self.skipped_pkgs_groups:
-				self.skipped_pkg_warning=True
-				if item not in self.blocked_remove_skipped_pkgs_list:
-					self.blocked_remove_skipped_pkgs_list.append(item)
-				break
+		self.blocked_remove_skipped_pkgs_list = list(blocked_items)
+		self.skipped_pkg_warning = len(self.blocked_remove_skipped_pkgs_list) > 0
 
-		self._show_debug("check_remove_skip_pkg. Check if pkg uninstall is in skipped list",f"List: {self.blocked_remove_skipped_pkgs_list}")
+		self._show_debug(
+			"check_remove_skip_pkg. Check if pkg uninstall is in skipped list",
+			f"List: {self.blocked_remove_skipped_pkgs_list}"
+		)
 
 		return self.skipped_pkg_warning
 
 	#def check_remove_skip_pkg
+	
+	def _clean_pkg_skipped_for_client(self, pkg_list):
 
-	def _clean_pkg_skipped_for_client(self,pkg_list):
+		return [ pkg for pkg in pkg_list 
+			if not any('client' in flavour for flavour in pkg.get("skip_flavours", []))
+    	]
 
-		tmp_list=[]
-
-		for pkg in pkg_list:
-			match=False
-			if len(pkg["skip_flavours"])>0:
-				for item in pkg["skip_flavours"]:
-					if 'client' in item:
-						match=True
-						break
-			if not match:
-				tmp_list.append(pkg)
-
-		return tmp_list
-
-	#def _clean_pkg_skipped_for_client
+    #def _clean_pkg_skipped_for_client
 
 #class EpiManager
 
