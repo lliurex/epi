@@ -82,10 +82,19 @@ class EpiGuiManager:
 		self.totalWarningSkipPkg=0
 		self.totalWarningSkipMeta=0
 		self.appFromStore=""
+		self.runPkexec=True
+		self._isRunPkexec()
 		self._getSessionLang()
 		self.clearCache()
 
 	#def __init__
+
+	def _isRunPkexec(self):
+
+		if 'PKEXEC_UID' not in os.environ:
+			self.runPkexec=False
+
+	#def _isRunPkexec
 
 	def _getSessionLang(self):
 
