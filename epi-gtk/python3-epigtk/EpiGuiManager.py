@@ -82,9 +82,33 @@ class EpiGuiManager:
 		self.totalWarningSkipPkg=0
 		self.totalWarningSkipMeta=0
 		self.appFromStore=""
+		self._getSessionLang()
 		self.clearCache()
 
+
 	#def __init__
+
+	def _getSessionLang(self):
+
+		tmpLang=os.environ["LANGUAGE"]
+
+		if tmpLang!="":
+			tmpLang=tmpLang.split(":")
+
+		currentLang=""
+		if len(tmpLang)>0:
+			currentLang=tmpLang[0]
+		else:
+			currentLang=os.environ["LANG"]
+		
+		if 'ca' in currentLang:
+			self.sessionLang="ca@valencia"
+		elif 'es' in currentLang:
+			self.sessionLang="es"
+		else:
+			self.sessionLang="en"
+
+	#def _getSessionLang
 
 	def initProcess(self,epiFile,noCheck,debug,app):
 
@@ -344,7 +368,11 @@ class EpiGuiManager:
 								tmp["metaInfo"]=tmp["customName"]
 							else:
 								try:
-									tmp["customName"]=element["custom_name"]
+									custonName=element.get("custom_name","")
+									if isinstance(custonName,dict):
+										tmp["customName"] = custonName.get(self.sessionLang, custonName.get("en", element.get("name")))
+									else:
+										tmp["customName"]=custonName
 									tmp["metaInfo"]="%s-%s"%(tmp["pkgId"],tmp["customName"])
 								except:
 									tmp["customName"]=element["name"]
