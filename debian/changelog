@@ -1,3 +1,9 @@
+epi (0.25.33) noble; urgency=medium
+
+  * Restored missing function
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 12 May 2026 17:54:23 +0200
+
 epi (0.25.32) noble; urgency=medium
 
   * Added support to display translated custom_name
