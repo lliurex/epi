@@ -1,3 +1,9 @@
+epi (0.15.19) jammy; urgency=medium
+
+  * Added support to display the translated custom_name .
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 12 May 2026 15:37:17 +0200
+
 epi (0.15.18) jammy; urgency=medium
 
   * Improved check of .epi file to detect errors and improve debug information
