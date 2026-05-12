@@ -1,3 +1,9 @@
+epi (0.25.32) noble; urgency=medium
+
+  * Added support to display translated custom_name
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 12 May 2026 16:02:14 +0200
+
 epi (0.25.31) noble; urgency=medium
 
   * Improved validation of .epi to detect errors and improved debug information
