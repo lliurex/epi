@@ -176,11 +176,12 @@ class EpiManager:
 		script=self.epiFiles[0]["script"]
 
 		if len(script)>0:
-			if os.path.exists(script["name"]) and os.path.isfile(script["name"]):
-				if not os.access(script["name"],os.X_OK):
+			script_path=script.get("name","")
+			if os.path.exists(script_path) and os.path.isfile(script_path):
+				if not os.access(script_path,os.X_OK):
 					return {"status":False,"error":"permissions"}
 			else:
-				self._show_debug("check_scrip_file",f"Script file not exits or path is not valid:{script["name"]}")
+				self._show_debug("check_script_file",f"Script file not exits or path is not valid:{script_path}")
 				return {"status":False,"error":"path"}
 
 		return {"status":True,"error":""}
@@ -191,22 +192,22 @@ class EpiManager:
 
 		pkg_list=[]
 		self.pkg_info={}
+
 		if not self.get_available_list:
 			self.skipped_pkgs_groups=[]
 			self.skipped_pkgs_flavours=[]
 
-		tmp_list=self.epiFiles.copy()
-		
 		if self.dbusStore:
 			self.showMethod=self.dbusStore.get_dbus_method('show')                            
 				
-		for item in tmp_list:
-			pkg_list=[]
-			pkg_list=tmp_list[item]["pkg_list"]
-			if 'type' in tmp_list[item]:
-				type_epi=tmp_list[item]["type"]
+		items_to_pop=[]
+
+		for item,epi_file in self.epiFiles.items():
+			pkg_list=epi_file.get("pkg_list",[])
+			type_epi=epi_file.get("type","")
+			if type_epi:
 				if type_epi not in self.valid_epi_files:
-					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'type' has a not valid value: {tmp_list[item]["type"]}")
+					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'type' has a not valid value: {type_epi}")
 					break
 			else:
 				self._show_debug("get_pkg_info","Unable to get pkg info. Key 'type' not defined epi file")
@@ -216,41 +217,42 @@ class EpiManager:
 			info=self.get_basic_info(pkg_list,item,type_epi,script)
 
 			if info:
-				cont=0
 				if item==0:
-					self.lock_remove_for_group=self._is_remove_lock_for_group(tmp_list[item]["lock_remove_groups"])	
-					self.check_meta=tmp_list[item]["check_meta"]
-				for element in pkg_list:
-					name=element["name"]
-					if info[name]["status"]=="installed":
-						cont+=1
+					self.lock_remove_for_group=self._is_remove_lock_for_group(epi_file["lock_remove_groups"])	
+					self.check_meta=epi_file["check_meta"]
 
-				if cont==len(pkg_list):
+				all_installed = all(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
+				any_installed = any(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
+
+				if all_installed:
 					if item>0:
-						zmd_status=self.get_zmd_status(item)
-						if zmd_status==1:
-							self.epiFiles.pop(item)
-							self.zomando_name.pop(item)
+						if self.get_zmd_status(item)==1:
+							items_to_pop.append(item)
 						else:
-							self.epiFiles[item]["status"]="availabled"
+							epi_file["status"]="availabled"
 							self.pkg_info.update(info)
 
 					else:
-						self.epiFiles[item]["status"]="installed"
+						epi_file["status"]="installed"
 						self.pkg_info.update(info)
 				else:
-					if item==0:
-						if cont>0 and tmp_list[item]["selection_enabled"]["active"]:
-							self.partial_installed=True
-					self.epiFiles[item]["status"]="availabled"
+					if item == 0 and any_installed and epi_file.get("selection_enabled", {}).get("active"):
+						self.partial_installed=True
+					
+					epi_file["status"]="availabled"
 					self.pkg_info.update(info)
 			
-				self._show_debug("get_pkg_info",f"Content of epi file: {self.epiFiles}")
-				self._show_debug("get_pkg_info",f"Packages info: {self.pkg_info}")
 			else:
 				self.pkg_info={}
 				break
-					
+
+		for item in items_to_pop:
+			self.epiFiles.pop(item)
+			self.zomando_name.pop(item)
+
+		self._show_debug("get_pkg_info",f"Content of epi file: {self.epiFiles}")
+		self._show_debug("get_pkg_info",f"Packages info: {self.pkg_info}")
+						
 	#def get_pkg_info
 
 	def get_basic_info(self,pkg_list,order,type_epi,script):			
@@ -316,10 +318,10 @@ class EpiManager:
 					pkg_info[app]["type"]=pkg_type
 					pkg_info[app]["search"]=search
 				else:
-					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' for pkg {item["name"]} has incorrect value: {pkg_type}")
+					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' for pkg {item['name']} has incorrect value: {pkg_type}")
 					break
 			else:
-				self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg {item["name"]}")
+				self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg {item['name']}")
 				break
 
 		return pkg_info
@@ -360,11 +362,12 @@ class EpiManager:
 			cmd = [script, "getStatus", pkg]
 			process = subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
 
-			stdout, _ = process.communicate()
+			stdout, _ = process.communicate(timeout=30)
 
 			self._show_debug("check_pkg_status",f"pkg: {pkg}; status result by script: {stdout}")
 
-			first_line = (stdout or "").splitlines()[0] if stdout else ""
+			lines=(stdout or "").splitlines()
+			first_line =lines[0].strip() if lines else ""
 			if first_line == "0":
 				return "installed"
 
@@ -420,12 +423,17 @@ class EpiManager:
 			script=self.epiFiles[order]["script"]["name"]
 			if os.path.exists(script):
 				cmd=f"{script} getInfo {pkg};"
-				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-				poutput=p.communicate()
-				if len(poutput)>0:
-					summary=poutput[0].decode("utf-8").split("\n")[0].split("||")[0]
-					if len(poutput)>1:
-						description=poutput[0].decode("utf-8").split("\n")[0].split("||")[1]
+				p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL)
+				poutput=p.communicate(timeout=30)
+
+				output_str = poutput.decode("utf-8", errors="replace").strip()
+
+				if output_str:
+					first_line = output_str.splitlines()[0]
+					parts = first_line.split("||", 1)
+					summary = parts[0]
+					if len(parts) > 1:
+						description = parts[1]
 		except Exception as e:
 			self._show_debug("get_localdeb_info",f"pkg: {pkg}; Error: {e}")
 			pass
@@ -436,7 +444,6 @@ class EpiManager:
 		return data					
 	
 	#def get_localdeb_info 	
-
 
 	def check_locks(self):
 

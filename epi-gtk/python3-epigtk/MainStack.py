@@ -13,6 +13,8 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class GatherInfo(QThread):
 
+	infoGathered=Signal(dict)
+
 	def __init__(self,*args):
 
 		QThread.__init__(self)
@@ -25,13 +27,16 @@ class GatherInfo(QThread):
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
-
+		ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
+		self.infoGathered.emit(ret)
+	
 	#def run
 
 #class GatherInfo
 
 class UnlockProcess(QThread):
+
+	processUnlocked=Signal(dict)
 
 	def __init__(self,*args):
 
@@ -41,7 +46,8 @@ class UnlockProcess(QThread):
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.execUnlockProcess()
+		ret=Bridge.epiGuiManager.execUnlockProcess()
+		self.processUnlocked.emit(ret)
 
 	#def run
 
@@ -118,28 +124,29 @@ class Bridge(QObject):
 			if epiFile!="error":
 				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug,app)
 				self.gatherInfoT.start()
-				self.gatherInfoT.finished.connect(self._gatherInfoRet)
+				self.gatherInfoT.infoGathered.connect(self._gatherInfoRet)
+				self.gatherInfoT.finished.connect(self.gatherInfoT.deleteLater)
 
 	#def initBridge
 
-	def _gatherInfoRet(self):
+	def _gatherInfoRet(self,ret):
 
-		if 	self.gatherInfoT.ret[0]:
+		if 	ret.get("status"):
 			self._showInfo()
 		else:
-			if self.gatherInfoT.ret[2]=="End":
-				self.loadErrorCode=self.gatherInfoT.ret[1]
+			if ret.get("type")=="End":
+				self.loadErrorCode=ret.get("code")
 				self.currentStack=1
-			elif self.gatherInfoT.ret[2]=="LocalDeb":
-				self.loadErrorCode=self.gatherInfoT.ret[1]
-				self.localDebError=self.gatherInfoT.ret[3]
+			elif ret.get("type")=="LocalDeb":
+				self.loadErrorCode=ret.get("code")
+				self.localDebError=ret.get("data")
 				self.currentStack=1
-			elif self.gatherInfoT.ret[2]=="Wait":
+			elif ret.get("type")=="Wait":
 				self.loadMsgCode=Bridge.epiGuiManager.MSG_LOADING_WAIT
 				self.waitUnlockTimer=QTimer()
 				self.waitUnlockTimer.timeout.connect(self._waitUnlockTimerRet)
 				self.waitUnlockTimer.start(5000)
-			elif self.gatherInfoT.ret[2]=="Lock":
+			elif ret.get("type")=="Lock":
 				self.showDialog=True
 
 	#def _gatherInfoRet
@@ -152,8 +159,8 @@ class Bridge(QObject):
 		if len(Bridge.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableApplyBtn=True
 		
-		if Bridge.epiGuiManager.initialStatusCode[0]!="":
-			self.showStatusMessage=[True,Bridge.epiGuiManager.initialStatusCode[0],Bridge.epiGuiManager.initialStatusCode[1]]
+		if Bridge.epiGuiManager.initialStatusCode.get("code","")!="":
+			self.showStatusMessage=[True,Bridge.epiGuiManager.initialStatusCode.get("code"),Bridge.epiGuiManager.initialStatusCode.get("type","Info")]
 		
 		self.currentStack=2
 
@@ -165,17 +172,17 @@ class Bridge(QObject):
 		ret=Bridge.epiGuiManager.getLockInfo()
 
 		if self.waitRetryCount<self.waitMaxRetry:
-			if not ret[0]:
+			if not ret.get("status"):
 				self.waitRetryCount+=1
 			else:
 				self.waitUnlockTimer.stop()
 				self._showInfo()
 		else:
 			self.waitUnlockTimer.stop()
-			if ret[0]:
+			if ret.get("status"):
 				self._showInfo()
 			else:
-				self.loadErrorCode=ret[1]
+				self.loadErrorCode=ret.get("code")
 				self.currentStack=1
 
 	#def _waitUnlockTimerRet
@@ -480,16 +487,17 @@ class Bridge(QObject):
 		self.loadMsgCode=Bridge.epiGuiManager.MSG_LOADING_UNLOCK
 		self.unlockProcessT=UnlockProcess()
 		self.unlockProcessT.start()
-		self.unlockProcessT.finished.connect(self._unlockProcessRet)
+		self.unlockProcessT.processUnlocked.connect(self._unlockProcessRet)
+		self.unlockProcessT.finished.connect(self.unlockProcessT.deleteLater)
 
 	#def launchUnlockProcess
 
-	def _unlockProcessRet(self):
+	def _unlockProcessRet(self,ret):
 
-		if self.unlockProcessT.ret[0]:
+		if ret.get("status"):
 			self._showInfo()
 		else:
-			self.loadErrorCode=self.unlockProcessT.ret[1]
+			self.loadErrorCode=ret.get("code")
 			self.currentStack=1
 
 	#def _unlockProcessT	
