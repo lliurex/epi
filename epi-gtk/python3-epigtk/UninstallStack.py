@@ -47,13 +47,13 @@ class UninstallStack(QObject):
 
 	def _checkMetaProtectionRet(self):
 
-		if UninstallStack.epiGuiManager.stopUninstall[0]:
+		if UninstallStack.epiGuiManager.stopUninstall.get("stop"):
 			self.core.mainStack.isProgressBarVisible=False
 			self.core.mainStack.enableApplyBtn=True
 			self.core.mainStack.endProcess=True
 			self.core.packageStack.enablePkgList=True
 			self.core.mainStack.feedbackCode=""
-			self.core.mainStack.showStatusMessage=[True,UninstallStack.epiGuiManager.stopUninstall[1],"Error"]
+			self.core.mainStack.showStatusMessage=[True,UninstallStack.epiGuiManager.stopUninstall.get("code"),"Error"]
 		else:
 			self.core.mainStack.enableKonsole=True
 			self.core.mainStack.feedbackCode=UninstallStack.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
@@ -85,6 +85,7 @@ class UninstallStack(QObject):
 				if self.pkgToSelect<self.countLimit:
 					try:
 						self.pkgToProcess=UninstallStack.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+						print(self.pkgToProcess)
 					except:
 						self.pkgToProcess="all"
 
@@ -126,7 +127,7 @@ class UninstallStack(QObject):
 				UninstallStack.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",True)
 			
 			getUninstallGlobalResult=UninstallStack.epiGuiManager.getUninstallGlobalResult()
-			self.core.mainStack.showStatusMessage=[True,getUninstallGlobalResult[0],getUninstallGlobalResult[1]]
+			self.core.mainStack.showStatusMessage=[True,getUninstallGlobalResult.get("msgCode"),getUninstallGlobalResult.get("type")]
 			UninstallStack.epiGuiManager.epiManager.remove_repo_keys()
 		
 		if UninstallStack.epiGuiManager.removePkgLaunched:

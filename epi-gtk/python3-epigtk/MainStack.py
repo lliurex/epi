@@ -135,10 +135,10 @@ class Bridge(QObject):
 			self._showInfo()
 		else:
 			if ret.get("type")=="End":
-				self.loadErrorCode=ret.get("code")
+				self.loadErrorCode=ret.get("msgCode")
 				self.currentStack=1
 			elif ret.get("type")=="LocalDeb":
-				self.loadErrorCode=ret.get("code")
+				self.loadErrorCode=ret.get("msgCode")
 				self.localDebError=ret.get("data")
 				self.currentStack=1
 			elif ret.get("type")=="Wait":
@@ -160,7 +160,7 @@ class Bridge(QObject):
 			self.enableApplyBtn=True
 		
 		if Bridge.epiGuiManager.initialStatusCode.get("code","")!="":
-			self.showStatusMessage=[True,Bridge.epiGuiManager.initialStatusCode.get("code"),Bridge.epiGuiManager.initialStatusCode.get("type","Info")]
+			self.showStatusMessage=[True,Bridge.epiGuiManager.initialStatusCode.get("msgCode"),Bridge.epiGuiManager.initialStatusCode.get("type","Info")]
 		
 		self.currentStack=2
 
@@ -182,7 +182,7 @@ class Bridge(QObject):
 			if ret.get("status"):
 				self._showInfo()
 			else:
-				self.loadErrorCode=ret.get("code")
+				self.loadErrorCode=ret.get("msgCode")
 				self.currentStack=1
 
 	#def _waitUnlockTimerRet
@@ -497,7 +497,7 @@ class Bridge(QObject):
 		if ret.get("status"):
 			self._showInfo()
 		else:
-			self.loadErrorCode=ret.get("code")
+			self.loadErrorCode=ret.get("msgCode")
 			self.currentStack=1
 
 	#def _unlockProcessT	

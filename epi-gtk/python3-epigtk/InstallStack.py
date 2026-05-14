@@ -152,7 +152,7 @@ class InstallStack(QObject):
 									InstallStack.epiGuiManager.checkDownload(self.pkgToProcess)
 
 								if InstallStack.epiGuiManager.checkDownloadDone:
-									if InstallStack.epiGuiManager.feedBackCheck[0]:
+									if InstallStack.epiGuiManager.feedBackCheck.get("status"):
 										if not InstallStack.epiGuiManager.preInstallAppLaunched:
 											self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_PREINSTALL
 											InstallStack.epiGuiManager.preInstallAppLaunched=True
@@ -165,7 +165,7 @@ class InstallStack(QObject):
 												InstallStack.epiGuiManager.checkPreInstall(self.pkgToProcess)
 
 											if InstallStack.epiGuiManager.checkPreInstallDone:
-												if InstallStack.epiGuiManager.feedBackCheck[0]:
+												if InstallStack.epiGuiManager.feedBackCheck.get("status"):
 													if not InstallStack.epiGuiManager.installAppLaunched:
 														self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_INSTALL
 														InstallStack.epiGuiManager.installAppLaunched=True
@@ -178,7 +178,7 @@ class InstallStack(QObject):
 															InstallStack.epiGuiManager.checkInstall(self.pkgToProcess)
 
 														if InstallStack.epiGuiManager.checkInstallDone:
-															if InstallStack.epiGuiManager.feedBackCheck[0]:
+															if InstallStack.epiGuiManager.feedBackCheck.get("status"):
 																if not InstallStack.epiGuiManager.postInstallAppLaunched:
 																	self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_ENDING
 																	InstallStack.epiGuiManager.postInstallAppLaunched=True
@@ -191,7 +191,7 @@ class InstallStack(QObject):
 																	if InstallStack.epiGuiManager.checkPostInstallDone:
 																		self.core.packageStack.updateResultPackagesModel('end',"install")
 
-																		if InstallStack.epiGuiManager.feedBackCheck[0]:
+																		if InstallStack.epiGuiManager.feedBackCheck.get("status"):
 																			self.core.packageStack.showDependEpi=False
 																			if InstallStack.epiGuiManager.order>0:
 																				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",True)
@@ -244,7 +244,7 @@ class InstallStack(QObject):
 			if self.showError:
 				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",False)
 				if self.countLimit==1:
-					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
+					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck.get("msgCode"),InstallStack.epiGuiManager.feedBackCheck.get("type")]
 				else:
 					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.ERROR_PARTIAL_INSTALL,"Error"]
 				InstallStack.epiGuiManager.clearEnvironment()
@@ -253,7 +253,7 @@ class InstallStack(QObject):
 				self.core.mainStack.manageRemoveBtn(True)
 				self.core.mainStack.enableApplyBtn=True
 				self.core.packageStack.enablePkgList=True
-				self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
+				self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck.get("msgCode"),InstallStack.epiGuiManager.feedBackCheck.get("type")]
 				InstallStack.epiGuiManager.clearEnvironment()
 
 		if InstallStack.epiGuiManager.addRepositoryKeysLaunched:

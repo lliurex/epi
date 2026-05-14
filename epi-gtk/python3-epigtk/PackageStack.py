@@ -317,7 +317,7 @@ class Bridge(QObject):
 
 		if not Bridge.epiGuiManager.eulaAccepted:
 			Bridge.epiGuiManager.getEulasToCheck()
-			if len(Bridge.epiGuiManager.eulasToShow)>0:
+			if len(Bridge.epiGuiManager.eulasToCheck)>0:
 				self._manageEulas()
 			else:
 				self.core.installStack.installProcess()
