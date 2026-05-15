@@ -37,7 +37,7 @@ Rectangle{
                 enabled:{
                     if (packageStackBridge.totalErrorInProcess==0){
                         if (packageStackBridge.enablePkgList){
-                            if (packageStackBridge.isAllInstalled[0] || packageStackBridge.isAllInstalled[1]){
+                            if (packageStackBridge.isAllInstalled.allInstalled || packageStackBridge.isAllInstalled.allAvailable){
                                 false
                             }else{
                                 true

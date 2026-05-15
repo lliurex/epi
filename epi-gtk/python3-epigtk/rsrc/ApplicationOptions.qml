@@ -93,8 +93,8 @@ GridLayout{
 
         Kirigami.InlineMessage {
             id: messageLabel
-            visible:mainStackBridge.showStatusMessage[0]
-            text:getFeedBackText(mainStackBridge.showStatusMessage[1])
+            visible:mainStackBridge.showStatusMessage.show
+            text:getFeedBackText(mainStackBridge.showStatusMessage.msgCode)
             type:getMsgType()
             Layout.minimumWidth:555
             Layout.fillWidth:true
@@ -448,30 +448,32 @@ GridLayout{
 
     function getMsgType(){
 
-        switch(mainStackBridge.showStatusMessage[2]){
-            case "Ok":
+        switch(mainStackBridge.showStatusMessage.type){
+            case 0:
                 return Kirigami.MessageType.Positive;
-            case "Error":
+            case 1:
                 return Kirigami.MessageType.Error;
-            case "Info":
-                return Kirigami.MessageType.Information;
-            case "Warning":
+            case 2:
                 return Kirigami.MessageType.Warning;
+            case 3:
+            default:
+                return Kirigami.MessageType.Information;
         }
     }
 
     function getMsgColor(){
 
-        switch(mainStackBridge.showStatusMessage[2]){
-            case "Ok":
+        switch(mainStackBridge.showStatusMessage.type){
+            case 0:
                 return "#3cb371";
-            case "Error":
+            case 1:
                 return "#dc143c";
-            case "Info":
-                return "#00bfff";
-            case "Warning":
+           case 2:
                 return "#ff8c00";
-        }
+            case 3:
+            default:
+                return "#00bfff";
+         }
     }
 
 }

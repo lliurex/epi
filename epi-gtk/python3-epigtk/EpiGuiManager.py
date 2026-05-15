@@ -68,11 +68,17 @@ class EpiGuiManager:
 	MSG_FEEDBACK_STORE_INFO=20
 	MSG_FEEDBACK_STORE_EMPTY=21
 
+	KIRIGAMI_MSG_OK=0
+	KIRIGAMI_MSG_ERROR=1
+	KIRIGAMI_MSG_WARNING=2
+	KIRIGAMI_MSG_INFO=3
+
+
 	def __init__(self):
 
 		self.packagesData=[]
 		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
-		self.initialStatusCode={"msgCode":'',"type":'Info'}
+		self.initialStatusCode={"msgCode":'',"type":''}
 		self.lockInfo={}
 		self.firstConnection=False
 		self.secondConnection=False
@@ -441,11 +447,11 @@ class EpiGuiManager:
 			zmdConfigured=self.epiManager.get_zmd_status(0)
 			if not self.loadEpiConf[0].get("selection_enabled",{}).get("active",False):
 				if zmdConfigured==1:
-					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_ALREADY_INSTALLED,"type":'Info'}
+					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_ALREADY_INSTALLED,"type":EpiGuiManager.KIRIGAMI_MSG_INFO}
 				elif zmdConfigured==0:
-					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_ZMD_NOT_EXECUTED,"type":'Warning'}
+					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_ZMD_NOT_EXECUTED,"type": EpiGuiManager.KIRIGAMI_MSG_WARNING}
 				elif zmdConfigured==-1:
-					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_EPI_FAILED,"type":'Warning'}
+					self.initialStatusCode={"msgCode":EpiGuiManager.INFO_EPI_FAILED,"type":EpiGuiManager.KIRIGAMI_MSG_WARNING}
 
 
 	#def _getInitialStatus
@@ -530,7 +536,7 @@ class EpiGuiManager:
 	def getResultCheckConnection(self):
 
 		self.endCheck = False
-		self.retConnection = [False, ""]
+		self.retConnection = {"status":True, "msgCode":'',"type":''}
 
 		doneFutures = [f for f in self.connectionFutures if f.done()]
 
@@ -546,7 +552,7 @@ class EpiGuiManager:
 
 			if success:
 				self.endCheck = True
-				self.retConnection = [False, ""]
+				self.retConnection = {"status":True, "msgCode":'',"type":''}
 				self.executor.shutdown(wait=False)
 				return
 			else:
@@ -566,7 +572,7 @@ class EpiGuiManager:
 				firstError="No response"
 
 			self._writeLog(f"{msgError}:{firstError}")
-			self.retConnection = [True, msgError]
+			self.retConnection = {"status":False, "msgCode":msgError,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
 
 	#getResultCheckConnection
 
@@ -650,36 +656,6 @@ class EpiGuiManager:
 
 	#def clearCache
 
-	'''
-	def checkRemoveMeta(self):
-
-		self._writeLog(f"Packages selected to uninstall: {self.epiManager.packages_selected}")
-		self.stopUninstall={"stop":False,"msgCode":''}
-		self.metaRemovedWarning=self.epiManager.check_remove_meta()
-		self._writeLog(f"Check remove meta-package. Packages blocked because remove metapackage.: {self.epiManager.blocked_remove_pkgs_list}")
-
-		if self.metaRemovedWarning:
-			if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_pkgs_list):
-				self.stopUninstall={"stop":True,"msgCode":EpiGuiManager.ERROR_UNINSTALL_STOP_META}
-				self._writeLog("Uninstall blocked due to remove metapackage warning")
-				return
-
-		if not self.stopUninstall.get("stop"):
-			self.skippedRemovedWarning=self.epiManager.check_remove_skip_pkg()
-			self._writeLog(f"Check remove meta-package. Packages blocked because remove metapackage.: {self.epiManager.blocked_remove_pkgs_list}")
-
-			if self.skippedRemovedWarning:
-				if len(self.epiManager.packages_selected)==len(self.epiManager.blocked_remove_skipped_pkgs_list):
-					self.stopUninstall={"stop":True,"msgCode":EpiGuiManager.ERROR_UNINSTALL_STOP_SKIP_PKG}
-					self._writeLog("Uninstall blocked due to remove skipped pkg warning")
-				else:
-					totalBlockedPkgs=len(self.epiManager.blocked_remove_skipped_pkgs_list)+len(self.epiManager.blocked_remove_pkgs_list)
-					if len(self.epiManager.packages_selected)==totalBlockedPkgs:
-						self.stopUninstall={"stop":True,"msgCode":EpiGuiManager.ERROR_UNINSTALL_STOP_META_SKIP_PKG}
-						self._writeLog("Uninstall blocked due to remove skipped and meta pkg warning")
-	
-	#def checkRemoveMeta
-	'''
 	def checkRemoveMeta(self):
 
 		selectedPkgs = self.epiManager.packages_selected
@@ -803,10 +779,9 @@ class EpiGuiManager:
 
 		if not downloadRet:
 			msgCode=EpiGuiManager.ERROR_INSTALL_DOWNLOAD
-			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,pkgId,'install',False,None)
-			self.feedBackCheck={"status":downloadRet,"msgCode":msgCode,"type":typeMsg}
-			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: {typeMsg} - Code: {msgCode}")
+			self.feedBackCheck={"status":downloadRet,"msgCode":msgCode,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
+			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: Error - Code: {msgCode}")
 
 		self.checkDownloadDone=True
 
@@ -834,10 +809,9 @@ class EpiGuiManager:
 		
 		if not preInstallRet:
 			msgCode=EpiGuiManager.ERROR_INSTALL_INIT
-			typeMsg="Error"
 			self._updateProcessModelInfo(self.order,'install',False,None)
-			self.feedBackCheck={"status":preInstallRet,"msgCode":msgCode,"type":typeMsg}
-			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: {typeMsg} - Code: {msgCode}")
+			self.feedBackCheck={"status":preInstallRet,"msgCode":msgCode,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
+			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: Error - Code: {msgCode}")
 
 		self.checkPreInstallDone=True
 
@@ -896,9 +870,8 @@ class EpiGuiManager:
 		if not self.installed:
 			self._updateProcessModelInfo(self.order,pkgId,'install',self.installed,self.dpkgStatus)
 			msgCode=EpiGuiManager.ERROR_INSTALL_INSTALL
-			typeMsg="Error"
-			self.feedBackCheck={"status":installed,"msgCode":msgCode,"type":typeMsg}
-			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: {typeMsg} - Code: {msgCode}")
+			self.feedBackCheck={"status":installed,"msgCode":msgCode,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
+			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: Error - Code: {msgCode}")
 	
 		self.checkInstallDone=True
 
@@ -928,14 +901,16 @@ class EpiGuiManager:
 
 			if not postInstallRet:
 				msgCode=EpiGuiManager.ERROR_INSTALL_ENDING
-				typeMsg="Error"
+				typeMsg=EpiGuiManager.KIRIGAMI_MSG_ERROR
+				status="Error"
 		
 			else:
 				msgCode=EpiGuiManager.SUCCESS_INSTALL_PROCESS
-				typeMsg="Ok"
+				typeMsg=EpiGuiManager.KIRIGAMI_MSG_OK
+				status="Ok"
 
 			self.feedBackCheck={"status":postInstallRet,"msgCode":msgCode,"type":typeMsg}
-			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: {typeMsg} - Code: {msgCode}")
+			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: {status} - Code: {msgCode}")
 
 			self.checkPostInstallDone=True
 
@@ -1009,24 +984,24 @@ class EpiGuiManager:
 		self._updateProcessModelInfo(0, pkgId, 'uninstall', remove, dpkgStatus)
 		self.checkRemoveDone = True
 
-		has_blocked = bool(self.epiManager.blocked_remove_pkgs_list)
-		has_skipped = bool(self.epiManager.blocked_remove_skipped_pkgs_list)
+		hasBlocked = bool(self.epiManager.blocked_remove_pkgs_list)
+		hasSkipped = bool(self.epiManager.blocked_remove_skipped_pkgs_list)
 
-		typeMsg = "Warning"
+		typeMsg = EpiGuiManager.KIRIGAMI_MSG_WARNING
 
 		if remove:
-			if has_blocked:
-				if not has_skipped:
+			if hasBlocked:
+				if not hasSkipped:
 					self.totalWarningSkipPkg += 1
 					msgCode = EpiGuiManager.WARNING_UNINSTALL_PROCESS_META
 				else:
 					self.totalWarningSkipMeta += 1
 					msgCode = EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP
-			elif has_skipped:
+			elif hasSkipped:
 				self.totalWarningSkipPkg += 1
 				msgCode = EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
 			else:
-				typeMsg = "Ok"
+				typeMsg = EpiGuiManager.KIRIGAMI_MSG_OK
 				msgCode = EpiGuiManager.SUCCESS_UNINSTALL_PROCESS
 		else:
 			if pkgId in self.epiManager.blocked_remove_pkgs_list:
@@ -1035,7 +1010,7 @@ class EpiGuiManager:
 				msgCode = EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG
 			else:
 				self.totalUninstallError += 1
-				typeMsg = "Error"
+				typeMsg = EpiGuiManager.KIRIGAMI_MSG_ERROR
 				msgCode = EpiGuiManager.ERROR_UNINSTALL_FAILED
 
 		self._writeLog(f"Uninstall process. Result: PkgId: {pkgId} - Status: {typeMsg} - Code: {msgCode}")
@@ -1045,15 +1020,15 @@ class EpiGuiManager:
 	def getUninstallGlobalResult(self):
 
 		if self.totalUninstallError>0:
-			return {"msgCode":EpiGuiManager.ERROR_UNINSTALL_FAILED,"type":'Error'}
+			return {"msgCode":EpiGuiManager.ERROR_UNINSTALL_FAILED,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
 		elif self.totalWarningSkipPkg>0:
-			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_META,"type":'Warning'}
+			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_META,"type":EpiGuiManager.KIRIGAMI_MSG_WARNING}
 		elif self.totalWarningSkipMeta>0:
-			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP,"type":'Warning'}
+			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_META_SKIP,"type":EpiGuiManager.KIRIGAMI_MSG_WARNING}
 		elif self.totalWarningSkipPkg>0:
-			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG,"type":'Warning'}
+			return {"msgCode":EpiGuiManager.WARNING_UNINSTALL_PROCESS_SKIP_PKG,"type":EpiGuiManager.KIRIGAMI_MSG_WARNING}
 		else:
-			return {"msgCode":EpiGuiManager.SUCCESS_UNINSTALL_PROCESS,"type":'Ok'}
+			return {"msgCode":EpiGuiManager.SUCCESS_UNINSTALL_PROCESS,"type":EpiGuiManager.KIRIGAMI_MSG_OK}
 
 	#def getUninstallGlobalResult
 
@@ -1188,10 +1163,10 @@ class EpiGuiManager:
 			if (pkgId != "all" and itemId != pkgId) or (itemId not in self.epiManager.packages_selected):
 				continue
 
-			isBblocked = (itemId in self.epiManager.blocked_remove_pkgs_list or 
+			isBlocked = (itemId in self.epiManager.blocked_remove_pkgs_list or 
                       itemId in self.epiManager.blocked_remove_skipped_pkgs_list)
 
-			if not isBblocked:
+			if not isBlocked:
 				tmpParam = {
 				"resultProcess": -1,
 				"showSpinner": True
@@ -1204,7 +1179,7 @@ class EpiGuiManager:
 	def getStoreInfo(self,pkgId):
 
 		self.epiManager.get_store_info(pkgId)
-		ret=[]
+		ret={}
 		summary=self.epiManager.pkg_info[pkgId]["summary"]
 
 		pkgIndex=0
@@ -1229,10 +1204,10 @@ class EpiGuiManager:
 			description=description.replace("**","")
 			description=description.strip()
 
-			ret.append(icon)
-			ret.append(name)
-			ret.append(summary)
-			ret.append(description)
+			ret["icon"]=icon
+			ret["name"]=name
+			ret["summary"]=summary
+			ret["description"]=description
 
 		return ret
 
@@ -1242,13 +1217,13 @@ class EpiGuiManager:
 
 		pkgAvailable=0
 		if self.totalPackages==len(self.pkgsInstalled):
-			return [True,False]
+			return {"allInstalled":True,"allAvailable":False}
 		else:
 			pkgAvailable=self.totalPackages-len(self.pkgsInstalled)
 			if pkgAvailable==self.totalPackages:
-				return [False,True]
+				return {"allInstalled":False,"allAvailable":True}
 			else:
-				return [False,False]
+				return {"allInstalled":False,"allAvailable":False}
 
 	#def isAllInstalled
 

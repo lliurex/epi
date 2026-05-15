@@ -29,7 +29,7 @@ Rectangle{
 
             Image{
                 id:pkgIcon
-                source:packageStackBridge.pkgStoreInfo[0]
+                source:packageStackBridge.pkgStoreInfo.icon
                 sourceSize.width:64
                 sourceSize.height:64
                 Layout.alignment:Qt.AlignVCenter
@@ -40,7 +40,7 @@ Rectangle{
                 Layout.alignment:Qt.AlignVCenter
                 Text{
                     id:pkgNameText
-                    text:packageStackBridge.pkgStoreInfo[1]
+                    text:packageStackBridge.pkgStoreInfo.name
                     visible:true
                     font.family: "Quattrocento Sans Bold"
                     font.pointSize: 14
@@ -50,7 +50,7 @@ Rectangle{
                 }
                 Text{
                     id:pkgSummayText
-                    text:packageStackBridge.pkgStoreInfo[2]
+                    text:packageStackBridge.pkgStoreInfo.summary
                     visible:true
                     font.family: "Quattrocento Sans"
                     font.pointSize: 12
@@ -76,7 +76,7 @@ Rectangle{
                    anchors.leftMargin:11
                    Text{
                        id:pkgDescriptionText
-                       text:packageStackBridge.pkgStoreInfo[3]
+                       text:packageStackBridge.pkgStoreInfo.description
                        font.family: "Quattrocento Sans"
                        font.pointSize: 11
                        horizontalAlignment:Text.AlignLeft
