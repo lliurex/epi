@@ -22,60 +22,61 @@ ApplicationWindow {
     }
     onClosing:(close)=> {
         close.accepted=closing;
-        mainStackBridge.closeApplication()
-        delay(100, function() {
-            if (mainStackBridge.closeGui){
-                closing=true,
-                closeTimer.stop(), 
-                mainWindow.close();
-            }
-        })
+
+        if (!closing) {
+            mainStackBridge.closeApplication();
+            closeTimer.start();
+        }
         
     }
+
+    Timer {
+        id: closeTimer
+        interval: 100
+        repeat: true
+        onTriggered: {
+            if (mainStackBridge.closeGui) {
+                stop();
+                mainWindow.closing = true;
+                mainWindow.close();
+            }
+        }
+    }
+
     
     ColumnLayout {
         id: mainLayout
         anchors.fill: parent
-        anchors.margins: margin
         Layout.minimumWidth:800
-        Layout.preferredWidth:800
         Layout.minimumHeight:580
 
-        RowLayout {
+        Rectangle{
             id: bannerBox
-            Layout.alignment:Qt.AlignTop
-            
-            Rectangle{
-                color: "#000886"
-                Layout.minimumWidth:mainLayout.width
-                Layout.preferredWidth:mainLayout.width
-                Layout.fillWidth:true
-                Layout.minimumHeight:120
-                Layout.maximumHeight:120
-                Image{
-                    id:banner
-                    source: "/usr/lib/python3/dist-packages/epigtk/rsrc/epi-banner.png"
-                    anchors.centerIn:parent
-                }
+            color: "#000886"
+            Layout.fillWidth:true
+            Layout.preferredHeight: 120
+
+            Image{
+                id:banner
+                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/epi-banner.png"
+                asynchronous: false
+                anchors.centerIn: parent
+                fillMode: Image.PreserveAspectFit  
             }
         }
 
         StackView {
             id: mainView
-            property int currentView:mainStackBridge.currentStack
-            Layout.minimumWidth:800
-            Layout.preferredWidth: 800
-            Layout.minimumHeight:460
-            Layout.preferredHeight:460
-            Layout.alignment:Qt.AlignHCenter|Qt.AlignVCenter
-            Layout.leftMargin:0
-            Layout.fillWidth:true
+            Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.preferredHeight:460
+
+            property int currentIndex: mainStackBridge.currentStack
 
             initialItem:loadingView
 
-            onCurrentViewChanged:{
-                switch(currentView){
+            onCurrentIndexChanged:{
+                switch(currentIndex){
                     case 0:
                         mainView.replace(loadingView)
                         break;
@@ -87,41 +88,46 @@ ApplicationWindow {
                         break
                 }
             }
-       }
+
+            replaceEnter: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 60
+                }
+            }
+            replaceExit: Transition {
+                NumberAnimation { 
+                    property: "opacity"
+                    from: 1
+                    to: 0
+                    duration: 60
+                }
+            }
          
-       Component{
-           id:loadingView
-           Loading{
-               id:loading
+           Component{
+               id:loadingView
+               Loading{
+                   id:loading
+               }
+
            }
 
-       }
+           Component{
+            id:errorView
+                ErrorPanel{
+                    id:errorPanel
+                }
+            }
 
-       Component{
-        id:errorView
-            ErrorPanel{
-                id:errorPanel
+            Component{
+                id:applicationOptionView
+                ApplicationOptions{
+                    id:applicationOptions
+                }
             }
         }
-
-        Component{
-            id:applicationOptionView
-            ApplicationOptions{
-                id:applicationOptions
-            }
-        }
     }
-
-    Timer{
-        id:closeTimer
-    }
-
-    function delay(delayTime,cb){
-        closeTimer.interval=delayTime;
-        closeTimer.repeat=true;
-        closeTimer.triggered.connect(cb);
-        closeTimer.start()
-    }
-
 }
 
