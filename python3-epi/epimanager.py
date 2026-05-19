@@ -507,7 +507,6 @@ class EpiManager:
 
 	#def check_root		
 
-
 	def required_root (self):
 
 		match=False
@@ -520,7 +519,6 @@ class EpiManager:
 		return match
 
 	#def required_root		
-
 
 	def required_eula(self):
 
@@ -725,6 +723,8 @@ class EpiManager:
 
 		return version
 
+	#def get_app_version
+
 	def download_app(self, pkg_id):
 
 		self.manage_download = True
@@ -823,14 +823,7 @@ class EpiManager:
 		token_path=self.token_result_download[1]
 		
 		if os.path.exists(token_path):
-			with open(token_path,'r') as fd:
-				content=fd.readline()
-				
-			if '0' not in content:
-				result=False
-				
-			os.remove(self.token_result_download[1])
-			
+			result, content=self._handle_file_token(token_path)
 			selection_active = self.epi_conf.get("selection_enabled", {}).get("active", False)
 			
 			if result:
@@ -880,13 +873,7 @@ class EpiManager:
 
 		try:
 			if os.path.exists(self.token_result_preinstall[1]):
-				with open(self.token_result_preinstall[1],'r') as fd:
-					content=fd.readline()
-				
-				if '0' not in content:
-					result=False
-				os.remove(self.token_result_preinstall[1])
-
+				result, content=self._handle_file_token(self.token_result_preinstall[1])
 		except Exception:			
 			pass
 
@@ -1023,108 +1010,17 @@ class EpiManager:
 				
 		return cmd
 		
-	#def update_keyring			
+	#def update_keyring	
 
 	def check_install_remove(self,action,pkg_id):
 
-		dpkg_status = {}
-		count_not_installed = 0
-		pkgs_installed_count = 0
-		pkgs_ref = []
-		result = False
-		content = ""
-
-		if action == "install":
-			epi_type = self.type
-			config = self.epi_conf
-			if hasattr(self, 'token_result_install') and self.token_result_install:
-				token = self.token_result_install[1] 
-			else:
-				token=""
+		if action=="install":
+			return self._check_install(pkg_id)
 		else:
-			config = self.epiFiles[0]
-			epi_type = config.get("type")
-			if hasattr(self, 'token_result_remove') and self.token_result_remove: 
-				token = self.token_result_remove[1]
-			else:
-				token=""
+			return self._check_remove(pkg_id)
 
-		selection_enabled = config.get("selection_enabled", {}).get("active", False)
-		pkgs_list = config.get("pkg_list", [])
-		file_with_list = (epi_type == "file" and selection_enabled)
+	#def check_install_remove
 
-		if not file_with_list and epi_type == "file":
-			if pkgs_list:
-				target_pkg_id = pkgs_list[0]["name"]
-			else:
-				target_pkg_id=pkg_id
-		else:
-			for item in pkgs_list:
-				name = item["name"]
-				if pkg_id != "all" and name != pkg_id:
-					continue
-
-				if name in self.packages_selected:
-					if action == "remove":
-						is_blocked = (name in self.blocked_remove_skipped_pkgs_list or (epi_type != "file" and name in self.blocked_remove_pkgs_list))
-						if not is_blocked:
-							pkgs_ref.append(name)
-					else:
-						pkgs_ref.append(name)
-
-		if epi_type == "file" and not file_with_list:
-			if token and os.path.exists(token):
-				with open(token, 'r') as f:
-					content = f.readline().strip()
-				result = ('0' in content)
-				os.remove(token)
-			else:
-				status = self.check_pkg_status(target_pkg_id, epi_type, self.check_getStatus_byScript(0))
-				is_installed = (status == "installed")
-				if action == "install": 
-					result = is_installed
-				else:
-					result= not is_installed
-
-		else:
-			if epi_type == "mix" and action == "install":
-				order = self.epi_order
-			elif epi_type in ["mix", "file"]:
-				order = 0
-			else:
-				order = ""
-			script = self.check_getStatus_byScript(order)
-			for item in pkgs_list:
-				name = item["name"]
-				if pkg_id != "all" and name != pkg_id:
-					continue
-
-				if name in self.packages_selected:
-					if epi_type == "mix":
-						p_type = item["type"] 
-					else:
-						p_type=epi_type
-
-					status = self.check_pkg_status(name, p_type, script)
-					dpkg_status[name] = status
-					if status != "installed":
-						count_not_installed += 1
-				else:
-					if self.pkg_info.get(name, {}).get("status") == "installed":
-						pkgs_installed_count += 1
-
-			if action == "install":
-				result = (count_not_installed == 0)
-			else:
-				result = (count_not_installed > 0 and count_not_installed == len(pkgs_ref))
-				self.partial_installed = (pkgs_installed_count > 0)
-
-		self._show_debug("check_install_remove", f"Action: {action} - Result: {result} - Dpkg Status: {dpkg_status} - Token: {content}")
-		
-		return dpkg_status, result
-
-	#def check_install_remove	
-	
 	def postinstall_app(self, pkg_id):
 
 		cmd = ""
@@ -1153,12 +1049,7 @@ class EpiManager:
 		content=""
 		try:
 			if os.path.exists(self.token_result_postinstall[1]):
-				with open(self.token_result_postinstall[1],'r') as fd:
-					content=fd.readline()
-				
-				if '0' not in content:
-					result=False
-				os.remove(self.token_result_postinstall[1])
+				result, content =self._handle_file_token(self.token_result_postinstall[1])
 		except Exception:
 			pass			
 
@@ -1679,9 +1570,135 @@ class EpiManager:
 
 		return [ pkg for pkg in pkg_list 
 			if not any('client' in flavour for flavour in pkg.get("skip_flavours", []))
-    	]
+		]
+	
+	#def _clean_pkg_skipped_for_client
+	
+	def _check_install(self, pkg_id):
+		
+		dpkg_status, pkgs_ref, result, content = {}, [], False, ""
+		
+		epi_type = self.type
+		config = self.epi_conf
+		token = self.token_result_install[1] if hasattr(self, 'token_result_install') and self.token_result_install else ""
+		
+		selection_enabled = config.get("selection_enabled", {}).get("active", False)
+		file_with_list = (epi_type == "file" and selection_enabled)
+		pkgs_list, pkgs_ref = self._get_common_pkg_lists(config, epi_type, pkg_id, "install")
+		
+		if epi_type == "file" and not file_with_list:
+			if token and os.path.exists(token):
+				result, content = self._handle_file_token(token)
+			else:
+				target_pkg_id = pkgs_list[0]["name"] if pkgs_list else pkg_id
+				status = self.check_pkg_status(target_pkg_id, epi_type, self.check_getStatus_byScript(0))
+				result = (status == "installed")
+		else:
+			order = self.epi_order if epi_type == "mix" else ""
+			script = self.check_getStatus_byScript(order)
+			
+			dpkg_status, count_not_installed, _ = self._process_pkg_status(pkgs_list, pkg_id, epi_type, script)
+			result = (count_not_installed == 0)
+			
+		self._show_debug("check_install", f"Action: install - Result: {result} - Dpkg Status: {dpkg_status} - Token: {content}")
+		
+		return dpkg_status, result
+	
+	#def _chek_install
+	
+	def _check_remove(self, pkg_id):
+		
+		dpkg_status, pkgs_ref, result, content = {}, [], False, ""
+		
+		config = self.epiFiles[0]
+		epi_type = config.get("type")
+		token = self.token_result_remove[1] if hasattr(self, 'token_result_remove') and self.token_result_remove else ""
+		
+		selection_enabled = config.get("selection_enabled", {}).get("active", False)
+		file_with_list = (epi_type == "file" and selection_enabled)
+		pkgs_list, pkgs_ref = self._get_common_pkg_lists(config, epi_type, pkg_id, "remove")
+		
+		if epi_type == "file" and not file_with_list:
+			if token and os.path.exists(token):
+				result, content = self._handle_file_token(token)
+			else:
+				target_pkg_id = pkgs_list[0]["name"] if pkgs_list else pkg_id
+				status = self.check_pkg_status(target_pkg_id, epi_type, self.check_getStatus_byScript(0))
+				result = (status != "installed")
+		else:
+			order = 0 if epi_type in ["mix", "file"] else ""
+			script = self.check_getStatus_byScript(order)
+			
+			dpkg_status, count_not_installed, pkgs_installed_count = self._process_pkg_status(pkgs_list, pkg_id, epi_type, script)
+			result = (count_not_installed > 0 and count_not_installed == len(pkgs_ref))
+			self.partial_installed = (pkgs_installed_count > 0)
+			
+		self._show_debug("check_remove", f"Action: remove - Result: {result} - Dpkg Status: {dpkg_status} - Token: {content}")
+		
+		return dpkg_status, result
 
-    #def _clean_pkg_skipped_for_client
+	#def check_remove
+	
+	def _get_common_pkg_lists(self, config, epi_type, pkg_id, action):
+		
+		pkgs_ref = []
+		pkgs_list = config.get("pkg_list", [])
+		
+		for item in pkgs_list:
+			name = item["name"]
+			if pkg_id != "all" and name != pkg_id:
+				continue
+				
+			if name in self.packages_selected:
+				if action == "remove":
+					is_blocked = (name in self.blocked_remove_skipped_pkgs_list or 
+					(epi_type != "file" and name in self.blocked_remove_pkgs_list))
+					if not is_blocked:
+						pkgs_ref.append(name)
+				else:
+					pkgs_ref.append(name)
+					
+		return pkgs_list, pkgs_ref
+
+	#def _get_common_pkg_lists
+
+	def _process_pkg_status(self, pkgs_list, pkg_id, epi_type, script):
+		
+		dpkg_status = {}
+		count_not_installed = 0
+		pkgs_installed_count = 0
+		
+		for item in pkgs_list:
+			name = item["name"]
+			if pkg_id != "all" and name != pkg_id:
+				continue
+				
+			if name in self.packages_selected:
+				p_type = item["type"] if epi_type == "mix" else epi_type
+				status = self.check_pkg_status(name, p_type, script)
+				dpkg_status[name] = status
+				
+				if status != "installed":
+					count_not_installed += 1
+			else:
+				if self.pkg_info.get(name, {}).get("status") == "installed":
+					pkgs_installed_count += 1
+					
+		return dpkg_status, count_not_installed, pkgs_installed_count	
+
+	#def _process_pkg_status
+
+	def _handle_file_token(self, token):
+		
+		with open(token, 'r') as f:
+			content = f.readline().strip()
+			
+		result = ('0' in content)
+		os.remove(token)
+		
+		return result, content
+
+	#def _handle_file_token
 
 #class EpiManager
 
