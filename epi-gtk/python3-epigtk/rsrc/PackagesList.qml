@@ -7,48 +7,34 @@ import QtQuick.Layouts
 
 
 Rectangle{
+    id: optionsGrid
     property alias packagesModel:filterModel.model
     property alias listCount:listPkg.count
-    id: optionsGrid
+    Layout.fillWidth:true
+    Layout.fillHeight:true
     color:"transparent"
 
-    GridLayout{
+    ColumnLayout{
         id:mainGrid
-        rows:3
-        flow: GridLayout.TopToBottom
-        rowSpacing:10
-        anchors.left:parent.left
         anchors.fill:parent
+        spacing:10
+
         RowLayout{
             Layout.alignment:Qt.AlignRight
             spacing:10
-            Layout.topMargin:{
-                if(packageStackBridge.selectPkg){
-                    40
-                }else{
-                    0
-                }
-            }
+            Layout.topMargin:packageStackBridge.selectPkg?15:0
+
             PC.Button{
                 id:statusFilterBtn
                 display:AbstractButton.IconOnly
                 icon.name:"view-filter"
                 visible:packageStackBridge.selectPkg
-                enabled:{
-                    if (packageStackBridge.totalErrorInProcess==0){
-                        if (packageStackBridge.enablePkgList){
-                            if (packageStackBridge.isAllInstalled.allInstalled || packageStackBridge.isAllInstalled.allAvailable){
-                                false
-                            }else{
-                                true
-                            }
-                        }else{
-                            false
-                        }
-                    }else{
-                        true
-                    }
-                }
+                enabled:packageStackBridge.totalErrorInProcess==0 &&
+                        packageStackBridge.enablePkgList &&
+                        !packageStackBridge.isAllInstalled.allInstalled &&
+                        !packageStackBridge.isAllInstalled.allAvailable
+
+                
                 ToolTip{
                     id:filterToolTip
                     delay: 1000
@@ -71,26 +57,14 @@ Rectangle{
                     PC.MenuItem{
                         icon.name:"installed"
                         text:i18nd("epi-gtk","Show installed apps")
-                        enabled:{
-                            if (packageStackBridge.filterStatusValue!="installed"){
-                                true
-                            }else{
-                                false
-                            }
-                        }
+                        enabled:packageStackBridge.filterStatusValue!="installed"?true:false
                         onClicked:packageStackBridge.manageStatusFilter("installed")
                     }
 
                     PC.MenuItem{
                         icon.name:"noninstalled"
                         text:i18nd("epi-gtk","Show uninstalled apps")
-                        enabled:
-                            if (packageStackBridge.filterStatusValue!="available"){
-                                true
-                            }else{
-                                false
-                            }
-
+                        enabled:packageStackBridge.filterStatusValue!="available"?true:false
                         onClicked:packageStackBridge.manageStatusFilter("available")
                     }
                     PC.MenuItem{
@@ -112,13 +86,7 @@ Rectangle{
                     PC.MenuItem{
                         icon.name:"kt-remove-filters"
                         text:i18nd("epi-gtk","Remove filter")
-                        enabled:{
-                            if (packageStackBridge.filterStatusValue!="all"){
-                                true
-                            }else{
-                                false
-                            }
-                        }
+                        enabled:packageStackBridge.filterStatusValue!="all"?true:false
                         onClicked:packageStackBridge.manageStatusFilter("all")
                     }
                 }
@@ -128,17 +96,13 @@ Rectangle{
                 id:pkgSearchEntry
                 font.pointSize:10
                 horizontalAlignment:TextInput.AlignLeft
-                Layout.alignment:Qt.AlignRight
                 focus:true
                 width:100
                 text:packageStackBridge.appFromStore
                 visible:packageStackBridge.selectPkg
                 enabled:packageStackBridge.enablePkgList
                 placeholderText:i18nd("epi-gtk","Search...")
-                onTextChanged:{
-                    filterModel.update()
-                }
-            }
+             }
         }
 
         Rectangle {
@@ -147,34 +111,23 @@ Rectangle{
             color:"white"
             Layout.fillHeight:true
             Layout.fillWidth:true
-            Layout.topMargin:{
-                if(packageStackBridge.selectPkg){
-                    0
-                }else{
-                    40
-                }
-            }
-
+            Layout.topMargin:packageStackBridge.selectPkg?0:40
+  
             border.color: "#d3d3d3"
 
             PC.ScrollView{
-                implicitWidth:parent.width
-                implicitHeight:parent.height
-                anchors.leftMargin:10
+                anchors.fill:parent
        
                 ListView{
                     id: listPkg
-                    property int totalItems
-                    anchors.fill:parent
-                    height: parent.height
-                    enabled:true
-                    currentIndex:-1
-                    clip: true
-                    focus:true
-                    boundsBehavior: Flickable.StopAtBounds
-                    highlight: Rectangle { color: "#add8e6"; opacity:0.8;border.color:"#53a1c9" }
-                    highlightMoveDuration: 0
-                    highlightResizeDuration: 0
+
+                    Timer {
+                        id: searchTimer
+                        interval: 150
+                        repeat: false
+                        onTriggered: filterModel.update()
+                    }
+
                     model:FilterDelegateModel{
                         id:filterModel
                         model:packagesModel
@@ -182,9 +135,10 @@ Rectangle{
                         showDepend:packageStackBridge.showDependEpi
                         search:pkgSearchEntry.text.trim()
                         statusFilter:packageStackBridge.filterStatusValue
+                        externalTimer: searchTimer
                         
                         delegate: ListDelegatePkgItem{
-                            width:pkgTable.width
+                            width:listPkg.width
                             pkgId:model.pkgId
                             showCb:model.showCb
                             isChecked:model.isChecked
@@ -201,17 +155,31 @@ Rectangle{
                         }
                     }
 
+                    currentIndex:-1
+                    clip: true
+                    focus:true
+                    boundsBehavior: Flickable.StopAtBounds
+                    highlight: Rectangle { 
+                        color: Kirigami.Theme.highlightColor
+                        opacity: 0.3
+                    }
+                    highlightMoveDuration: 0
+                    highlightResizeDuration: 0
+                   
+
                     Kirigami.PlaceholderMessage { 
                         id: emptyHint
                         anchors.centerIn: parent
                         width: parent.width - (Kirigami.Units.largeSpacing * 4)
                         visible: listPkg.count==0?true:false
                         text: i18nd("epi-gtk","Applications not found")
+                        icon.name:"epi-gtk"
                     }
 
                  } 
             }
         }
+
         RowLayout{
             Layout.fillWidth:true
 
@@ -220,22 +188,10 @@ Rectangle{
                 visible:packageStackBridge.selectPkg
                 focus:true
                 display:AbstractButton.TextBesideIcon
-                icon.name:{
-                    if (packageStackBridge.uncheckAll){
-                        "list-remove"
-                    }else{
-                        "list-add"
-                    }
-                }
-                text:{
-                    if (packageStackBridge.uncheckAll){
-                        i18nd("epi-gtk","Uncheck all packages")
-                    }else{
-                        i18nd("epi-gtk","Check all packages")
-                    }
-                }
+                icon.name:packageStackBridge.uncheckAll?"list-remove":"list-add"
+                text: packageStackBridge.uncheckAll?i18nd("epi-gtk","Uncheck all packages"):i18nd("epi-gtk","Check all packages")
                 enabled:packageStackBridge.enablePkgList
-                Layout.preferredHeight:40
+
                 Layout.rightMargin:10
                 Keys.onReturnPressed: selectBtn.clicked()
                 Keys.onEnterPressed: selectBtn.clicked()
@@ -248,10 +204,8 @@ Rectangle{
                 id:dependText
                 text:i18nd("epi-gtk","(D) Addicitional application required")
                 visible:packageStackBridge.showDependLabel
-                font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10
                 horizontalAlignment:Text.AlignLeft
-                Layout.preferredWidth:200
                 Layout.fillWidth:true
                 Layout.alignment:Qt.AlignLeft
             }

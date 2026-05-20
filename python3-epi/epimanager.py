@@ -401,7 +401,7 @@ class EpiManager:
 		self._show_debug("_get_pkg_status",f"pkg: {pkg}; result by command:{p}")
 		
 		if code!=0:
-			return "availale"
+			return "available"
 
 		if status_by_code:
 			return 'installed'

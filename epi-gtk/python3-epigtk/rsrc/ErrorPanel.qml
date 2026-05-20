@@ -6,6 +6,8 @@ import org.kde.kirigami as Kirigami
 Rectangle{
     visible: true
     color:"transparent"
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
     ColumnLayout{
         id: mainLoaderLayout
@@ -20,9 +22,9 @@ Rectangle{
             text:getErrorText(mainStackBridge.loadErrorCode)
             type:{
                 if (mainLoaderLayout.warningCode.includes(mainStackBridge.loadErrorCode)){
-                    Kirigami.MessageType.Warning;
+                    Kirigami.MessageType.Warning
                 }else{
-                    Kirigami.MessageType.Error;
+                    Kirigami.MessageType.Error
                 }
             }
             Layout.fillWidth:true

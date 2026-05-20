@@ -7,6 +7,8 @@ Rectangle{
     id: loadRoot
     visible: true
     color:"transparent"
+    Layout.fillWidth: true
+    Layout.fillHeight: true
 
     ColumnLayout{
         id: mainLoaderLayout

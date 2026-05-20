@@ -3,14 +3,15 @@ import QtQml.Models
 
 DelegateModel {
 	id:filterModel
-	property string role
-	property string search
-	property bool showDepend
+	property var externalTimer: null
+	property string role: ""
+	property string search:""
+	property bool showDepend:false
 	property string statusFilter
-	onRoleChanged:Qt.callLater(update)
-	onSearchChanged:Qt.callLater(update)
-	onShowDependChanged:Qt.callLater(update)
-	onStatusFilterChanged:Qt.callLater(update)
+	onRoleChanged:if (externalTimer) externalTimer.restart()
+	onSearchChanged:if (externalTimer) externalTimer.restart()
+	onShowDependChanged:if (externalTimer) externalTimer.restart()
+	onStatusFilterChanged:if (externalTimer) externalTimer.restart()
 	property var visibleElements:[]
 	
 	groups: [
@@ -18,7 +19,7 @@ DelegateModel {
 			id:allItems
 			name:"all"
 			includeByDefault:true
-			onCountChanged:Qt.callLater(update)
+			onCountChanged:if (externalTimer) externalTimer.restart()
 		},
 		DelegateModelGroup{
 			id:visibleItems
@@ -65,6 +66,6 @@ DelegateModel {
     	}
 
 	}
-	Component.onCompleted: Qt.callLater(update)
+	Component.onCompleted: if (externalTimer) externalTimer.restart()
 
 }

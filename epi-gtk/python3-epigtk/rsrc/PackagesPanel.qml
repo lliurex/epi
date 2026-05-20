@@ -1,35 +1,29 @@
-import org.kde.plasma.core as PlasmaCore
-import org.kde.kirigami as Kirigami
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
 
-GridLayout{
+RowLayout{
     id:generalPkgLayout
-    rows:1
-    flow: GridLayout.TopToBottom
-    rowSpacing:10
+    spacing: 10
+    Layout.fillWidth: true
+    Layout.fillHeight: true
  
     StackView{
         id:generalPkgView
         property int currentPkgOption:packageStackBridge.currentPkgOption
         Layout.fillHeight:true
         Layout.fillWidth:true
-        Layout.alignment:Qt.AlignHCenter
         initialItem:pkgInfoView
 
         onCurrentPkgOptionChanged:{
             switch(currentPkgOption){
                 case 0:
-                    generalPkgView.replace(pkgInfoView)
-                    break
+                    return generalPkgView.replace(pkgInfoView)
                 case 1:
-                    generalPkgView.replace(pkgEulaView)
-                    break
+                    return generalPkgView.replace(pkgEulaView)
                 case 2:
-                    generalPkgView.replace(infoView)
-                    break;
+                    return generalPkgView.replace(infoView)
             }
         }
 
@@ -38,7 +32,7 @@ GridLayout{
                 property: "opacity"
                 from: 0
                 to:1
-                duration: 600
+                duration: 60
             }
         }
         replaceExit: Transition {
@@ -46,7 +40,7 @@ GridLayout{
                 property: "opacity"
                 from: 1
                 to:0
-                duration: 600
+                duration: 60
             }
         }
 

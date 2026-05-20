@@ -99,6 +99,8 @@ RowLayout{
         RowLayout{
             id:feedbackRow
             spacing:10
+            Layout.leftMargin:5
+            Layout.rightMargin:5
             Layout.topMargin:15
             Layout.bottomMargin:15
             Layout.fillWidth:true
@@ -200,7 +202,7 @@ RowLayout{
                 text:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
-                            if (packageStackBridge.isAllInstalled){
+                            if (packageStackBridge.isAllInstalled.allInstalled){
                                 return i18nd("epi-gtk","Reinstall")
                             }else{
                                 return i18nd("epi-gtk","Install")

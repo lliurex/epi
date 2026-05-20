@@ -78,14 +78,11 @@ ApplicationWindow {
             onCurrentIndexChanged:{
                 switch(currentIndex){
                     case 0:
-                        mainView.replace(loadingView)
-                        break;
+                        return mainView.replace(loadingView)
                     case 1:
-                        mainView.replace(errorView)
-                        break;
+                        return mainView.replace(errorView)
                     case 2:
-                        mainView.replace(applicationOptionView)
-                        break
+                        return mainView.replace(applicationOptionView)
                 }
             }
 
