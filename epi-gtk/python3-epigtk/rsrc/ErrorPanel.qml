@@ -6,8 +6,6 @@ import org.kde.kirigami as Kirigami
 Rectangle{
     visible: true
     color:"transparent"
-    Layout.fillWidth: true
-    Layout.fillHeight: true
 
     ColumnLayout{
         id: mainLoaderLayout

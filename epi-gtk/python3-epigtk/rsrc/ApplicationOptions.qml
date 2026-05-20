@@ -6,8 +6,6 @@ import org.kde.kirigami as Kirigami
 
 RowLayout{
     id: optionsGrid
-    Layout.fillWidth: true
-    Layout.fillHeight: true
     spacing:10
 
     Rectangle{
@@ -45,13 +43,7 @@ RowLayout{
                 id:helpOption
                 optionText:i18nd("epi-gtk","Help")
                 optionIcon:"help-contents"
-                visible:{
-                    if (packageStackBridge.wikiUrl!=""){
-                        true
-                    }else{
-                        false
-                    }
-                }
+                visible:packageStackBridge.wikiUrl!=""?true:false
                 onMenuOptionClicked:mainStackBridge.openHelp()
             }
 
@@ -107,17 +99,8 @@ RowLayout{
 
             PC.Button {
                 id:uninstallBtn
-                visible:{
-                    if (packageStackBridge.currentPkgOption==0){
-                        if (mainStackBridge.showRemoveBtn){
-                            true
-                        }else{
-                            false
-                        }
-                    }else{
-                        true
-                    }
-                }
+                visible: packageStackBridge.currentPkgOption!==0 ||
+                         mainStackBridge.showRemoveBtn
                 focus:true
                 display:AbstractButton.TextBesideIcon
                 icon.name:{
@@ -140,29 +123,23 @@ RowLayout{
                             return i18nd("epi-gtk","Back")
                     }
                 }
-                enabled:{
-                    if (mainStackBridge.enableRemoveBtn){
-                        true
-                    }else{
-                        if (packageStackBridge.currentPkgOption==2){
-                            true
-                        }else{
-                            false
-                        }
-                    }
-                }
-
+                enabled: mainStackBridge.enableRemoveBtn ||
+                         (packageStackBridge.currentPkgOption==2)
+                 
                 Layout.rightMargin:10
                 Keys.onReturnPressed: uninstallBtn.clicked()
                 Keys.onEnterPressed: uninstallBtn.clicked()
                 onClicked:{
                     switch (packageStackBridge.currentPkgOption){
                         case 0:
-                            return uninstallDialog.open()
+                            uninstallDialog.open()
+                            break
                         case 1:
-                            return packageStackBridge.rejectEula()
+                            packageStackBridge.rejectEula()
+                            break
                         case 2:
-                            return packageStackBridge.showPkgInfo([1,""])
+                            packageStackBridge.showPkgInfo([1,""])
+                            break
                     }
                 }
             }
@@ -307,9 +284,9 @@ RowLayout{
             case -14:
                 return i18nd("epi-gtk","Internet connection not detected")
             case -15:
-                return errorHeaded+i18nd("epi-gtk","It is part of the system meta-package");
+                return errorHeaded+i18nd("epi-gtk","It is part of the system meta-package")
             case -16:
-                return i18nd("epi-gtk","Uninstalled process ending with errors");
+                return i18nd("epi-gtk","Uninstalled process ending with errors")
             case -17:
                 return i18nd("epi-gtk","Installation aborted. Error preparing system")
             case -18:
@@ -325,15 +302,15 @@ RowLayout{
             case -23:
                 return i18nd("epi-gtk","The installation process ended with errors")
             case 3:
-                return i18nd("epi-gtk","Checking internet connection. Wait a moment...");
+                return i18nd("epi-gtk","Checking internet connection. Wait a moment...")
             case 4:
                 return i18nd("epi-gtk","Application already installed");
             case 5:
-                return i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation");
+                return i18nd("epi-gtk","It seems that the packages were installed without using EPI.\nIt may be necessary to run EPI for proper operation")
             case 6:
-                return i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation");
+                return i18nd("epi-gtk","It seems that the packages were installed but the execution of EPI failed.\nIt may be necessary to run EPI for proper operation")
             case 7:
-                return i18nd("epi-gtk","Showing the end user license agreement for:\n")+packageStackBridge.currentEulaPkg;
+                return i18nd("epi-gtk","Showing the end user license agreement for:\n")+packageStackBridge.currentEulaPkg
             case 8:
                 return i18nd("epi-gtk","Checking if repositories need updating...")
             case 9:
@@ -355,9 +332,9 @@ RowLayout{
             case 17:
                 return i18nd("epi-gtk","Uninstall selected applications. Wait a moment...")
             case 18:
-                return i18nd("epi-gtk","Applications successfully uninstalled");
+                return i18nd("epi-gtk","Applications successfully uninstalled")
             case 19:
-                return warningHeaded+i18nd("epi-gtk","they are part of the system's meta-package");
+                return warningHeaded+i18nd("epi-gtk","they are part of the system's meta-package")
             case 20:
                 return i18nd("epi-gtk","Searching information.Wait a moment...")
             case 21:
@@ -375,14 +352,14 @@ RowLayout{
 
         switch(mainStackBridge.showStatusMessage.type){
             case 0:
-                return Kirigami.MessageType.Positive;
+                return Kirigami.MessageType.Positive
             case 1:
-                return Kirigami.MessageType.Error;
+                return Kirigami.MessageType.Error
             case 2:
-                return Kirigami.MessageType.Warning;
+                return Kirigami.MessageType.Warning
             case 3:
             default:
-                return Kirigami.MessageType.Information;
+                return Kirigami.MessageType.Information
         }
     }
 
@@ -390,14 +367,14 @@ RowLayout{
 
         switch(mainStackBridge.showStatusMessage.type){
             case 0:
-                return "#3cb371";
+                return "#3cb371"
             case 1:
-                return "#dc143c";
+                return "#dc143c"
            case 2:
-                return "#ff8c00";
+                return "#ff8c00"
             case 3:
             default:
-                return "#00bfff";
+                return "#00bfff"
          }
     }
 

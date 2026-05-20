@@ -6,8 +6,6 @@ import org.kde.plasma.components as PC
 Rectangle {
     id: root
     color: "transparent"
-    Layout.fillWidth:true
-    Layout.fillHeight:true
 
     ColumnLayout {
         id: infoLayout

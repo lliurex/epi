@@ -6,8 +6,6 @@ import QtQuick.Layouts
 Rectangle {
     visible: true
     property alias eulaUrl:webEngine.url
-    Layout.fillWidth:true
-    Layout.fillHeight:true
 
     Component.onDestruction:{
         closeConnection()

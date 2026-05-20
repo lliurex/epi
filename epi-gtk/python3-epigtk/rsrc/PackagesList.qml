@@ -70,16 +70,8 @@ Rectangle{
                     PC.MenuItem{
                         icon.name:"emblem-error"
                         text:i18nd("epi-gtk","Show apps with error")
-                        enabled:
-                            if (packageStackBridge.filterStatusValue!="error"){
-                                if (packageStackBridge.totalErrorInProcess>0){
-                                    true
-                                }else{
-                                    false
-                                }
-                            }else{
-                                false
-                            }
+                        enabled: packageStackBridge.filterStatusValue!="error" &&
+                                 packageStackBridge.totalErrorInProcess>0
 
                         onClicked:packageStackBridge.manageStatusFilter("error")
                     }

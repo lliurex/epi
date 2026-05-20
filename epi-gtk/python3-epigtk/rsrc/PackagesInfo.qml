@@ -5,8 +5,6 @@ import QtQuick.Layouts
 
 Rectangle{
     color:"transparent"
-    Layout.fillWidth:true
-    Layout.fillHeight:true
 
     ColumnLayout{
         id:generalPackagesLayout

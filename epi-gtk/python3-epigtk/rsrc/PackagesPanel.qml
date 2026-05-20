@@ -19,11 +19,14 @@ RowLayout{
         onCurrentPkgOptionChanged:{
             switch(currentPkgOption){
                 case 0:
-                    return generalPkgView.replace(pkgInfoView)
+                    generalPkgView.replace(pkgInfoView)
+                    break
                 case 1:
-                    return generalPkgView.replace(pkgEulaView)
+                    generalPkgView.replace(pkgEulaView)
+                    break
                 case 2:
-                    return generalPkgView.replace(infoView)
+                    generalPkgView.replace(infoView)
+                    break
             }
         }
 
