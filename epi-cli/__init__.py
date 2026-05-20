@@ -17,114 +17,109 @@ class EPIC(object):
 
 		self.epicore=EpiManager.EpiManager(debug)
 		signal.signal(signal.SIGINT,self.handler_signal)
-		if app!=None:
-			self.pkgsToInstall=pkgsToInstall
-			self.valid_json=self.epicore.read_conf(app,True)
 
-			if len(self.epicore.epiFiles)==0:
-				if self.valid_json["error"]=="path":
-					msg_log='APP epi file not exist or its path is invalid. Use showlist to get avilabled APP epi'
-				elif self.valid_json["error"]=="empty":
-					msg_log='APP epi file is empty'
-				else:	
-					msg_log='APP epi file it is not a valid json'	
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				sys.exit(1)
-			else:
-				valid_script=self.epicore.check_script_file()
-				if not valid_script["status"]:
-					if valid_script["error"]=="path":
-						msg_log='Associated script does not exist or its path is invalid'
-					else:
-						msg_log='Associated script does not have execute permissions'
-					print ('  [EPIC]: '+msg_log)
-					self.write_log(msg_log)	
-					sys.exit(1)
+		if app is None:
+			return
 
-				msg_log='APP epi file loaded by EPIC: ' + app
-				self.write_log(msg_log)	
-				self.remote_install,self.gui_install=self.epicore.check_remote_epi(app)
+		self.pkgsToInstall=pkgsToInstall
+		self.valid_json=self.epicore.read_conf(app,True)
+
+		if not self.epicore.epiFiles:
+			errors={
+				"path":"APP epi file not exist or its path is invalid. Use showlist to get avilabled APP epi",
+				"empty":"APP epi file is empty"
+			}
+			msg_log=errors.get(self.valid_json.get("error"),"PP epi file it is not a valid json")
+			print (f'  [EPIC]: {msg_log}')
+			self.write_log(msg_log)
+			sys.exit(1)
+
+		valid_script=self.epicore.check_script_file()
+
+		if not valid_script.get("status"):
+			msg_log=('Associated script does not exist or its path is invalid'
+				if valid_json.get("error")=="path"
+				else "Associated script does not have execute permissions"
+			)
+			print (f'  [EPIC]: {msg_log}')
+			self.write_log(msg_log)	
+			sys.exit(1)
+
+
+		msg_log=f'APP epi file loaded by EPIC: {app}'
+		self.write_log(msg_log)	
+
+		self.remote_install,self.gui_install=self.epicore.check_remote_epi(app)
 
 	#def __init__
 
-	def get_info(self,show_all):
+	def get_info(self, show_all):
 
-		order=len(self.epicore.epiFiles)
-		depends=""
-		pkgs_selected=""
-		pkgs_available=""
-		pkgs_default=""
-		tmp_list=[]
-		pkgs_installed=""
-		pkgs_available_gui=""
+	    depends = ""
+	    pkgs_selected = ""
+	    pkgs_available = ""
+	    pkgs_default = ""
+	    tmp_list = []
+	    pkgs_installed = ""
+	    pkgs_available_gui = ""
 
-		for item in self.epicore.epiFiles:
-			order=order-1
-			if order>0:
-				tmp=self.epicore.epiFiles[order]
-				for item in tmp["pkg_list"]:
-					depends=depends+item["name"]+" "
-					self.epicore.packages_selected.append(item["name"])
-			else:
-				if len(self.remote_install)>0:
-					for item in self.remote_install:
-						if  self.epicore.pkg_info[item["name"]]["status"]=="installed":
-							pkgs_installed=pkgs_installed+item["name"]+" "
-						pkgs_available=pkgs_available+item["name"]+" "
-						if item["default_pkg"]:
-							pkgs_default=pkgs_default+item["name"]+" "
-							tmp_list.append(item["name"])
+	    # 1. Procesar dependencias (índices desde len-1 hasta 1)
+	    for order in range(len(self.epicore.epiFiles) - 1, -1, -1):
+	    	if order>0:
+	    		tmp = self.epicore.epiFiles[order]
+	    		for item in tmp["pkg_list"]:
+	    			depends += item["name"] + " "
+	    			self.epicore.packages_selected.append(item["name"])
+	    	else:
+			    if self.remote_install:
+			        for item in self.remote_install:
+			            name = item["name"]
+			            if self.epicore.pkg_info[name]["status"] == "installed":
+			                pkgs_installed += name + " "
+			            pkgs_available += name + " "
+			            if item["default_pkg"]:
+			                pkgs_default += name + " "
+			                tmp_list.append(name)
 
-					if not show_all:
-						if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
-							if len(self.pkgsToInstall)==0:
-								pkgs_selected=pkgs_default
-								for item in tmp_list:
-									self.epicore.packages_selected.append(item)
-							else:
-								if 'all' in self.pkgsToInstall:
-									pkgs_selected='all'
-									for item in self.remote_install:
-										self.epicore.packages_selected.append(item["name"])
-								else:
-									for item in self.pkgsToInstall:
-										pkgs_selected=pkgs_selected+item +" "
-										self.epicore.packages_selected.append(item)
-						else:
-							pkgs_selected=pkgs_available
-							for item in self.remote_install:
-								self.epicore.packages_selected.append(item["name"])
+			        if not show_all:
+			            if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
+			                if not self.pkgsToInstall:
+			                    pkgs_selected = pkgs_default
+			                    self.epicore.packages_selected.extend(tmp_list)
+			                elif 'all' in self.pkgsToInstall:
+			                    pkgs_selected = 'all'
+			                    self.epicore.packages_selected.extend(item["name"] for item in self.remote_install)
+			                else:
+			                    pkgs_selected = "".join(f"{item} " for item in self.pkgsToInstall)
+			                    self.epicore.packages_selected.extend(self.pkgsToInstall)
+			            else:
+			                pkgs_selected = pkgs_available
+			                self.epicore.packages_selected.extend(item["name"] for item in self.remote_install)
 
-				if len (self.gui_install)>0:
-					for item in self.gui_install:
-						if  self.epicore.pkg_info[item["name"]]["status"]=="installed":
-							pkgs_installed=pkgs_installed+item["name"]+" "
-						pkgs_available_gui=pkgs_available_gui+item["name"]+" "
-						if item["default_pkg"]:
-							pkgs_default=pkgs_default+item["name"]+" "
+			    if self.gui_install:
+			        for item in self.gui_install:
+			            name = item["name"]
+			            if self.epicore.pkg_info[name]["status"] == "installed":
+			                pkgs_installed += name + " "
+			            pkgs_available_gui += name + " "
+			            if item["default_pkg"]:
+			                pkgs_default += name + " "
 
-		return depends,pkgs_available,pkgs_default,pkgs_installed,pkgs_selected,pkgs_available_gui
+	    return depends, pkgs_available, pkgs_default, pkgs_installed, pkgs_selected, pkgs_available_gui
 
-	#def get_info			
-
+	#def get_info
+	
 	def listEpi(self):
 
 		epi_list=sorted(self.epicore.cli_available_epis, key=lambda d: list(d.keys()))
 		count_epi=len(epi_list)
-		tmp=""
-		count=1
+		tmp_list=""
 
-		if count_epi>0:				
-			for item in epi_list:
-				for element in item:
-					if count<count_epi:
-						tmp=tmp+element+", "
-					else:
-						tmp=tmp+element
-					count+=1
-			print ('  [EPIC]: List of all epi files that can be installed with EPIC: '+tmp)
-		
+		if count_epi>0:	
+			all_keys=[element for item in epi_list for element in item]
+			tmp_list=", ".join(all_keys)
+
+			print (f'  [EPIC]: List of all epi files that can be installed with EPIC: {tmp_list}')
 		else:
 			print ('  [EPIC]: No available epi file app detected')
 
@@ -134,19 +129,13 @@ class EPIC(object):
 
 		epi_list=sorted(self.epicore.all_available_epis, key=lambda d: list(d.keys()))
 		count_epi=len(epi_list)
-		tmp=""
-		count=1
+		tmp_list=""
 
-		if count_epi>0:				
-			for item in epi_list:
-				for element in item:
-					if count<count_epi:
-						tmp=tmp+element+", "
-					else:
-						tmp=tmp+element
-					count+=1
-			print ('  [EPIC]: List of all epi files availables in the system: '+tmp)
-		
+		if count_epi>0:
+			all_keys=[element for item in epi_list for element in item]
+			tmp_list=", ".join(all_keys)
+			print (f'  [EPIC]: List of all epi files availables in the system: {tmp_list}')
+
 		else:
 			print ('  [EPIC]: No available epi file app detected')
 
@@ -164,79 +153,73 @@ class EPIC(object):
 			print ('  [EPIC]: Searching information...')
 			self.epicore.get_pkg_info()
 
-		if self.epicore.pkg_info:
-			if checksystem:
-				depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs,pkgs_available_gui=self.get_info(show_all)
-
-				epi_conf=self.epicore.epiFiles[0]
-				status=epi_conf["status"]
-				
-				if status=="installed":
-					zmd_status=self.epicore.get_zmd_status(0)
-					if zmd_status==0:
-						status="installed. It seems that the packages were installed without using EPI.It may be necessary to run EPI for proper operation"
-					elif zmd_status==-1:
-						status="installed. It seems that the packages were installed but the execution of EPI failed.It may be necessary to run EPI for proper operation"
-				try:
-					if epi_conf["script"]["remove"]:
-						if not self.epicore.lock_remove_for_group:
-							self.uninstall="Yes"
-						else:
-							self.uninstall="No"
-				except Exception as e:
-					self.uninstall="No"
-
-				print ("  [EPIC]: Information availabled:")
-				if self.epicore.epiFiles[0]["selection_enabled"]["active"]:
-					self.sequentialProcess=True
-
-					if pkgs_available=="":
-						print ("     - Packages not availables for install with EPIC in this flavour" )
-						if pkgs_available_gui!="":
-							print ("     - Packages availables to install ONLY with GUI (EPI): " + pkgs_available_gui)
-						return 0	
-					else:
-						print ("     - Packages availables to install with EPIC: " + pkgs_available)
-						if pkgs_available_gui!="":
-							print ("     - Packages availables to install ONLY with GUI (EPI): " + pkgs_available_gui)
-						if not self.epicore.epiFiles[0]["selection_enabled"]["all_selected"]:
-							if pkgs_default=="":
-								print ("     - Packages selected by defafult: None")
-							else:
-								print ("     - Packages selected by defafult: "+pkgs_default)
-							print ("     - If you want to install all, indicate 'all'. If you want to install only some packages indicate their names separated by space")
-						else:
-							print ("     - All packages are selected by default to be installed")
-							print ("     - If you want to install only some packages indicate their names separated by space")
-					
-						if pkgs_installed=="":
-							print("     - Packages already installed: None")
-						else:
-							if pkgs_installed==pkgs_available:
-								print("     - Packages already installed: all")
-							else:
-								print("     - Packages already installed: "+pkgs_installed)
-
-				else:
-					if pkgs_available=="":
-						print ("     - Application (ONLY availabled to install/uninstall with GUI (EPI) in this flavour): "+pkgs_available_gui)
-						#return 0
-					else:
-						print ("     - Application: " + pkgs_available)
-					
-				print ("     - Status: " + status)
-				
-				print ("     - Uninstall process availabled: " + self.uninstall)
-				if len(depends)>0:
-					print ("     - Additional application required: " + depends)
-
-				return 0
-			else:
-				return 1
-		else:
+		if not self.epicore.pkg_info:
 			msg_log="Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information"
-			print ('  [EPIC]: '+ msg_log)
+			print (f'  [EPIC]: {msg_log}')
+			return 1
+
+		if not checksystem:
 			return 1	
+		
+		depends,pkgs_available,pkgs_default,pkgs_installed,self.pkgs,pkgs_available_gui=self.get_info(show_all)
+		epi_conf=self.epicore.epiFiles[0]
+		status=epi_conf.get("status")
+
+		if status=="installed":
+			zmd_status=self.epicore.get_zmd_status(0)
+			if zmd_status==0:
+				status="installed. It seems that the packages were installed without using EPI.It may be necessary to run EPI for proper operation"
+			elif zmd_status==-1:
+				status="installed. It seems that the packages were installed but the execution of EPI failed.It may be necessary to run EPI for proper operation"
+
+		script_conf=epi_conf.get("script",{})
+
+		if script_conf.get("remove") and not self.epicore.lock_remove_for_group:
+			self.uninstall="Yes"
+		else:
+			self.uninstall="No"
+
+		print ("  [EPIC]: Information availabled:")
+		
+		if epi_conf["selection_enabled"]["active"]:
+			self.sequentialProcess=True
+			if not pkgs_available:
+				print ("     - Packages not availables for install with EPIC in this flavour" )
+				if pkgs_available_gui!="":
+					print (f"     - Packages availables to install ONLY with GUI (EPI): {pkgs_available_gui}")
+				return 0	
+	
+			print (f"     - Packages availables to install with EPIC: {pkgs_available}")
+			if pkgs_available_gui!="":
+				print (f"     - Packages availables to install ONLY with GUI (EPI): {pkgs_available_gui}")
+			
+			if not epi_conf["selection_enabled"]["all_selected"]:
+				msg_default=pkgs_default if pkgs_default else 'None'
+				print (f"     - Packages selected by defafult: {msg_default}")
+			else:
+				print ("     - All packages are selected by default to be installed")
+				print ("     - If you want to install only some packages indicate their names separated by space")
+					
+			if not pkgs_installed:
+				print("     - Packages already installed: None")
+			elif pkgs_installed==pkgs_available:
+				print("     - Packages already installed: all")
+			else:
+				print(f"     - Packages already installed: {pkgs_installed}")
+
+		else:
+			if not pkgs_available:
+				print (f"     - Application (ONLY availabled to install/uninstall with GUI (EPI) in this flavour): {pkgs_available_gui}")
+			else:
+				print (f"     - Application: {pkgs_available}")
+		
+		print (f"     - Status: {status}")
+		print (f"     - Uninstall process availabled: {self.uninstall}")
+		
+		if depends:
+			print (f"     - Additional application required: {depends}")
+
+		return 0
 
 	#def showInfo	
 
@@ -247,7 +230,7 @@ class EPIC(object):
 		
 		if self.check_root:
 			self.lock_info=self.epicore.check_locks()
-			msg_log="Lock info :"+str(self.lock_info)
+			msg_log=f"Lock info: {self.lock_info}"
 		else:
 			self.lock_info={}
 			msg_log="Locks info: Not checked. User is not root"	
@@ -261,43 +244,42 @@ class EPIC(object):
 		check=True
 		msg_log=""
 		self.epicore.get_pkg_info()
-		if self.epicore.pkg_info:
-			self.required_root=self.epicore.required_root()
-			self.required_x=self.check_required_x()
-			self.check_pkgList=self.check_list()
-			if self.required_root:
-				msg_log="You need root privileges to " + action + " the application"
-				print ('  [EPIC]: '+msg_log)
-				self.write_log(msg_log)
-				check=False
-			if self.required_x:
-				msg_log="Can not " + action + " the application with EPIC. Use epi-gtk for this"
-				print ('  [EPIC]: '+ msg_log)
-				self.write_log(msg_log)
-				check=False
-			if not self.check_pkgList["status"]:
-				if self.check_pkgList["error"]=="empty":
-					msg_log="No packages indicated to "+action
-					print ('  [EPIC]: '+ msg_log+ '. Execute showinfo to know the packages available')
-					check=False
-				elif self.check_pkgList["error"]=="name":
-					msg_log="Wrong packages indicated to "+action
-					print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
-					check=False
-				elif self.check_pkgList["error"]=="flavour":
-					msg_log="There are packages that can not " + action + " in this flavour"
-					print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
-					check=False		
-				elif self.check_pkgList["error"]=="cli":
-					msg_log="There are packages that can not " + action + " with EPIC"	
-					print ('  [EPIC]: '+ msg_log+'. Execute showinfo to know the packages available')
-					check=False
-		else:
+		
+		if not self.epicore.pkg_info:
 			msg_log="Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information"
-			print ('  [EPIC]: '+ msg_log)
+			print (f'  [EPIC]: {msg_log}')
+			return False
+
+		self.required_root=self.epicore.required_root()
+		self.required_x=self.check_required_x()
+		self.check_pkgList=self.check_list()
+		
+		if self.required_root:
+			msg_log=f"You need root privileges to {action} the application"
+			print (f'  [EPIC]:  {msg_log}')
+			self.write_log(msg_log)
+			check=False
+		
+		if self.required_x:
+			msg_log=f"Can not {action} the application with EPIC. Use epi-gtk for this"
+			print (f'  [EPIC]: {msg_log}')
+			self.write_log(msg_log)
 			check=False
 
-		self.write_log(msg_log)
+		if not self.check_pkgList["status"]:
+			error_message={
+				"empty":f"No packages indicated to {action}",
+				"name":f"Wrong packages indicated to {action}",
+				"flavour":f"There are packages that can not {action} in this flavour",
+				"cli":f"There are packages that can not {action} with EPIC"
+			}
+			error_type=self.check_pkgList.get("error")
+			if error_type in error_message:
+				msg_log=error_message[error_type]
+				print (f'  [EPIC]: {msg_log}. Execute showinfo to know the packages available')
+				self.write_log(msg_log)
+				check=False
+		
 		return check
 
 	#def check_epi	
