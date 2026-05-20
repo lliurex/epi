@@ -12,6 +12,7 @@ Rectangle {
         spacing: 5
         anchors.fill: parent
         anchors.leftMargin:5
+        anchors.rightMargin:15
         anchors.bottomMargin: 25
 
         Text {
@@ -24,7 +25,7 @@ Rectangle {
             spacing: 15
             Layout.topMargin: 15
             Layout.bottomMargin: 10
-            Layout.leftMargin:10
+            Layout.leftMargin:15
             Layout.rightMargin:10
             Layout.fillWidth: true
 
@@ -73,6 +74,7 @@ Rectangle {
             PC.ScrollView {
                 anchors.fill: parent
                 anchors.leftMargin: 11
+                anchors.rightMargin:10
                 contentWidth: availableWidth
 
                 Text {

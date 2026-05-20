@@ -164,7 +164,10 @@ Rectangle{
                         anchors.centerIn: parent
                         width: parent.width - (Kirigami.Units.largeSpacing * 4)
                         visible: listPkg.count==0?true:false
-                        text: i18nd("epi-gtk","Applications not found")
+                        text: (pkgSearchEntry.text !== "" || 
+                              packageStackBridge.filterStatusValue !== "all") 
+                                ? i18nd("epi-gtk", "Applications not found") 
+                                : i18nd("epi-gtk", "Loading application list...")
                         icon.name:"epi-gtk"
                     }
 
