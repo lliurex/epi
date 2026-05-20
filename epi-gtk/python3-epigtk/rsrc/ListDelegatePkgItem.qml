@@ -99,8 +99,8 @@ PC.ItemDelegate {
                 id: animationFrame
                 color: "transparent"
                 Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: visible ? 32 : 0
-                Layout.preferredHeight: visible ? 32 : 0
+                Layout.preferredWidth: visible ? 24 : 0
+                Layout.preferredHeight: visible ? 24 : 0
                 visible: packageCheck.checked && listPkgItem.showSpinner && mainStackBridge.isProcessRunning
 
                 AnimatedImage {

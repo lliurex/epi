@@ -398,7 +398,8 @@ class EpiGuiManager:
 	        
 	        if self.showRemoveBtn and len(self.epiManager.skipped_pkgs_groups) == self.totalPackages:
 	            self.showRemoveBtn = False
-		
+
+
 	#def _getEpiContent	
 
 	def _getPkgIcon(self, order, pkgIndex, status):

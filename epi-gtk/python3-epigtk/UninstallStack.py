@@ -103,14 +103,18 @@ class UninstallStack(QObject):
 				self.pkgProcessed=True
 
 		if not self.endAction:
-			if self.epiGuiManager.removePkgDone:
-				if not self.epiGuiManager.checkRemoveLaunched:
-					self.epiGuiManager.checkRemoveLaunched=True
-					self.epiGuiManager.checkRemove(self.pkgToProcess)
+			if not self.epiGuiManager.removePkgDone:
+				return self._checkProcessToken()
+		
+			if not self.epiGuiManager.checkRemoveLaunched:
+				self.epiGuiManager.checkRemoveLaunched=True
+				self.epiGuiManager.checkRemove(self.pkgToProcess)
 
-				if self.epiGuiManager.checkRemoveDone:
-					self.core.packageStack.updateResultPackagesModel("end","uninstall")
-					self.pkgProcessed=False
+			if not self.epiGuiManager.checkRemoveDone:
+				return;
+		
+			self.core.packageStack.updateResultPackagesModel("end","uninstall")
+			self.pkgProcessed=False
 		
 		else:
 			self.core.mainStack.isProgressBarVisible=False
@@ -138,6 +142,20 @@ class UninstallStack(QObject):
 					self.epiGuiManager.removePkgDone=True
 		
 	#def _uninstallProcessTimerRet
+
+	def _checkProcessToken(self):
+
+		processPkgToken=[
+			("removePkg", "tokenUninstall")
+		]
+
+		for prefix, token in processPkgToken:
+			if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
+				tmpToken=getattr(self.epiGuiManager,token)[1]
+				if not os.path.exists(tmpToken):
+					setattr(self.epiGuiManager, f"{prefix}Done", True)
+
+	#def _checkProcessToken
 
 #class UninstallStack
 
