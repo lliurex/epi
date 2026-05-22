@@ -136,6 +136,14 @@ class EpiManager:
 			path=self._get_epi_path(epi_file)
 			if path!="":
 				epi_file=path
+			else:
+				if any(epi_file in item for item in self.epi_with_json_problems):
+					return {"status":False,"error":"json"}
+				
+				for item in self.epi_with_depends_problems:
+					if epi_file in item.get("epi",""):
+						return {"status":False,"error":"depends","data":item.get("depends","")}
+
 
 		if not os.path.isfile(epi_file):
 			self._show_debug("read_conf", f"Epi file does not exist or path is invalid: {epi_file}")
@@ -219,36 +227,36 @@ class EpiManager:
 			script=self.check_getStatus_byScript(item)
 			info=self.get_basic_info(pkg_list,item,type_epi,script)
 
-			if info:
-				if item==0:
-					self.lock_remove_for_group=self._is_remove_lock_for_group(epi_file["lock_remove_groups"])	
-					self.check_meta=epi_file["check_meta"]
-
-				all_installed = all(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
-				any_installed = any(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
-
-				if all_installed:
-					if item>0:
-						if self.get_zmd_status(item)==1:
-							items_to_pop.append(item)
-						else:
-							epi_file["status"]="availabled"
-							self.pkg_info.update(info)
-
-					else:
-						epi_file["status"]="installed"
-						self.pkg_info.update(info)
-				else:
-					if item == 0 and any_installed and epi_file.get("selection_enabled", {}).get("active"):
-						self.partial_installed=True
-					
-					epi_file["status"]="availabled"
-					self.pkg_info.update(info)
-			
-			else:
+			if not info:
 				self.pkg_info={}
 				break
 
+			if item==0:
+				self.lock_remove_for_group=self._is_remove_lock_for_group(epi_file["lock_remove_groups"])	
+				self.check_meta=epi_file["check_meta"]
+
+			all_installed = all(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
+			any_installed = any(info.get(el["name"], {}).get("status") == "installed" for el in pkg_list)
+
+			if all_installed:
+				if item>0:
+					if self.get_zmd_status(item)==1:
+						items_to_pop.append(item)
+					else:
+						epi_file["status"]="availabled"
+						self.pkg_info.update(info)
+
+				else:
+					epi_file["status"]="installed"
+					self.pkg_info.update(info)
+			else:
+				if item == 0 and any_installed and epi_file.get("selection_enabled", {}).get("active"):
+					self.partial_installed=True
+				
+				epi_file["status"]="availabled"
+				self.pkg_info.update(info)
+			
+	
 		for item in items_to_pop:
 			self.epiFiles.pop(item)
 			self.zomando_name.pop(item)
@@ -279,54 +287,57 @@ class EpiManager:
 			else:
 				pkg_type=type_epi
 
-			if pkg_type:
-				if pkg_type in self.valid_epi_files:
-					if pkg_type!="localdeb":
-						pkg=item.get("name","")
-						download_byScript=self._check_download_byScript(order)
-						if pkg_type=="file":
-							if script=="":
-								self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
-								break
-						if pkg_type in self.types_with_download:
-							if not download_byScript:
-								abort=False
-								if "version" not in item:
-									self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
-									abort=True
-								if 'url_download' not in item:
-									self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
-									abort=True
-								if abort:
-									self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value. This key is required if pkg_list's 'version' and 'url_download' keys are not defined")
-									break
-						status=self.check_pkg_status(app,pkg_type,script)
-					else:
-						data=self.get_localdeb_info(app,order)	
-						summary=data[0]
-						description=data[1]
-						status=data[2]
-						name=item["name"]
-						debian_name=item["version"]["all"]	
-						search=True	
-					
-					pkg_info[app]={}
-					pkg_info[app]["debian_name"]=debian_name
-					pkg_info[app]["component"]=component
-					pkg_info[app]["status"]=status
-					pkg_info[app]["description"]=description
-					pkg_info[app]["icon"]=icon
-					pkg_info[app]["name"]=name
-					pkg_info[app]["summary"]=summary
-					pkg_info[app]["type"]=pkg_type
-					pkg_info[app]["search"]=search
-				else:
-					self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' for pkg {item['name']} has incorrect value: {pkg_type}")
-					break
-			else:
+			if not pkg_type:
 				self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' not defined in 'pkg_list' for pkg {item['name']}")
+				pkg_info={}
 				break
-
+		
+			if pkg_type not in self.valid_epi_files:
+				self._show_debug("get_pkg_info",f"Unable to get pkg info. Key 'pkg_type' for pkg {item['name']} has incorrect value: {pkg_type}")
+				pkg_info={}
+				break
+			
+			if pkg_type!="localdeb":
+				pkg=item.get("name","")
+				download_byScript=self._check_download_byScript(order)
+				if pkg_type=="file":
+					if script=="":
+						self._show_debug("get_pkg_info","Unable to get pkg info. Key 'getStatus' not defined in script or has 'False' value")
+						break
+				if pkg_type in self.types_with_download:
+					if not download_byScript:
+						abort=False
+						if "version" not in item:
+							self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'version' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
+							abort=True
+						if 'url_download' not in item:
+							self._show_debug('get_pkg_info',f"Unable to get pkg info. Key 'url_download' not defined in pkg_list for pkg {pkg}. This key is required if script's 'download' key is not defined or has a value of 'False'")
+							abort=True
+						if abort:
+							self._show_debug("get_pkg_info","Unable to get pkg info. Key 'download' not defined in script or  has 'False' value. This key is required if pkg_list's 'version' and 'url_download' keys are not defined")
+							pkg_info={}
+							break
+				status=self.check_pkg_status(app,pkg_type,script)
+			else:
+				data=self.get_localdeb_info(app,order)	
+				summary=data[0]
+				description=data[1]
+				status=data[2]
+				name=item["name"]
+				debian_name=item["version"]["all"]	
+				search=True	
+			
+			pkg_info[app]={}
+			pkg_info[app]["debian_name"]=debian_name
+			pkg_info[app]["component"]=component
+			pkg_info[app]["status"]=status
+			pkg_info[app]["description"]=description
+			pkg_info[app]["icon"]=icon
+			pkg_info[app]["name"]=name
+			pkg_info[app]["summary"]=summary
+			pkg_info[app]["type"]=pkg_type
+			pkg_info[app]["search"]=search
+		
 		return pkg_info
 
 	#def get_basic_info			
@@ -353,7 +364,6 @@ class EpiManager:
 			except Exception as e:
 				self._show_debug("_get_store_info",f"pkg: {pkg}; error parsing json: {e}")
 		
-
 	#def get_store_info			
 
 	def check_pkg_status(self,pkg,pkg_type,script):
@@ -597,44 +607,53 @@ class EpiManager:
 		cmd=""
 		update_repo=False
 
-		if self.type in ["apt","mix"]:
-			current_date=datetime.date.today().strftime('%y%m%d')
-			filename='/var/cache/apt/pkgcache.bin'
+		if self.type not in ["apt","mix"]:
+			self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
+			return cmd
+	
+		current_date=datetime.date.today().strftime('%y%m%d')
+		filename='/var/cache/apt/pkgcache.bin'
 
-			if os.path.exists(filename):
-				lastmod=os.path.getmtime(filename)
-				lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
-			else:
-				self.update=True
-				lastupdate=current_date
+		if os.path.exists(filename):
+			lastmod=os.path.getmtime(filename)
+			lastupdate=datetime.datetime.fromtimestamp(lastmod).strftime('%y%m%d')
+		else:
+			self.update=True
+			lastupdate=""
 		
-			if current_date !=lastupdate or self.update:
-				cmd="LANG=C LANGUAGE=en apt-get update; "
-			else:
-				for item in self.epi_conf.get("pkg_list",[]):
-					app=item.get("name","")
-					if app in self.packages_selected:
-						update_repo=False
-						app=item["name"]
-						command=f"LANG=C LANGUAGE=en apt-cache policy {app}"
-						p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE)
-						output,_=p.communicate()
-						if output:
-							lines = output.decode(errors="ignore").splitlines()
-							if len(lines)<=2:
-								update_repo=True
-							else:
-								try:
-									update_repo=lines[2].split(":")[1].strip() == ""
-								except:
-									update_repo=True
-						else:
-							update_repo=True
+		if current_date !=lastupdate or self.update:
+			cmd="LANG=C LANGUAGE=en apt-get update; "
+			self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
+			return cmd
 
-						if update_repo:
-							cmd="LANG=C LANGUAGE=en apt-get update; "
-							self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
-							return cmd		
+			
+		for item in self.epi_conf.get("pkg_list",[]):
+			app=item.get("name","")
+			
+			if not app or app not in self.packages_selected:
+				continue
+			
+			update_repo=False
+			command=f"LANG=C LANGUAGE=en apt-cache policy {app}"
+			p=subprocess.Popen(command,shell=True, stdout=subprocess.PIPE,text=True)
+			output,_=p.communicate()
+			
+			if output:
+				lines = output.splitlines()
+				if len(lines)<=2:
+					update_repo=True
+				else:
+					try:
+						update_repo=lines[2].split(":")[1].strip() == ""
+					except:
+						update_repo=True
+			else:
+				update_repo=True
+
+			if update_repo:
+				cmd="LANG=C LANGUAGE=en apt-get update; "
+				self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
+				return cmd		
 
 		
 		self._show_debug("check_update_repos",f"Required update: {update_repo} - Command to update: {cmd}")
@@ -648,13 +667,15 @@ class EpiManager:
 		self.force32=self.epi_conf['force32']
 		cmd=""
 		
-		if self.force32:
-			if platform.architecture()[0]=='64bit':
-				cmd='dpkg --add-architecture i386; '
-				self.update=True
+		if not self.force32:
+			self._show_debug("check_arquitecture",f"Required i386: {self.force32} - Command to add i386:{cmd}")
+			return cmd		
+		
+		if platform.architecture()[0]=='64bit':
+			cmd='dpkg --add-architecture i386; '
+			self.update=True
 								
 		self.arquitecture=True
-		
 		self._show_debug("check_arquitecture",f"Required i386: {self.force32} - Command to add i386:{cmd}")
 		
 		return cmd		
@@ -754,7 +775,8 @@ class EpiManager:
 			if item["name"] in self.packages_selected and (pkg_id == "all" or item["name"] == pkg_id)
 		]
 
-		self.token_result_download = tempfile.mkstemp("_result_download")
+		self.token_result_download = tempfile.NamedTemporaryFile(suffix="_result_download",delete=False)
+		self.token_result_download.close()
 
 		if self.type in self.types_with_download:
 			if self.type == "file" and not self.manage_download:
@@ -776,7 +798,7 @@ class EpiManager:
 			cmd = f"{cmd} {external_script}{cmd_file}".strip()
 
 		if cmd.strip():
-			cmd = f"{cmd.strip()}; echo $? > {self.token_result_download[1]};"
+			cmd = f"{cmd.strip()}; echo $? > {self.token_result_download.name};"
 
 		self._show_debug("download_app", f"Command to download: {cmd}")
 
@@ -816,29 +838,25 @@ class EpiManager:
 		content=""
 
 		if self.type in self.types_without_download:
-			self._show_debug("check_download",f"Downlodad status: Result: {result} - Token Content: {content}")
+			self._show_debug("check_download",f"Download status: Result: {result} - Token Content: {content}")
 			return result
 		
 		pkgs_todownload=len(self.download_folder)
 
 		count = sum( 1 for item in self.download_folder if os.path.exists(item) and (pkg_id == "all" or pkg_id in item))
 		
-		token_path=self.token_result_download[1]
+		token_path=self.token_result_download.name
 		
 		if os.path.exists(token_path):
 			result, content=self._handle_file_token(token_path)
 			selection_active = self.epi_conf.get("selection_enabled", {}).get("active", False)
 			
-			if result:
-				if self.manage_download and count != pkgs_todownload:
-					if not selection_active:
-						result=False
-			else:
-				if selection_active:
-					if count>0:
-						result=True
+			if result and self.manage_download and count != pkgs_todownload and not selection_active:
+				result=False
+			elif not result and selection_active and count >0:
+				result=True
 
-		self._show_debug("check_download",f"Downlodad status: Result: {result} - Token Content: {content}")
+		self._show_debug("check_download",f"Download status: Result: {result} - Token Content: {content}")
 		
 		return result
 
@@ -854,14 +872,16 @@ class EpiManager:
 			script_path=script_conf["name"]
 
 			if os.path.exists(script_path):
-				self.token_result_preinstall=tempfile.mkstemp("_result_preinstall")
+				self.token_result_preinstall=tempfile.NamedTemporaryFile(suffix="_result_preinstall",delete=False)
+				self.token_result_preinstall.close()
+
 				selected_pkgs = [
 					pkg["name"] for pkg in self.epi_conf.get("pkg_list", [])
 						if pkg["name"] in self.packages_selected and (pkg_id == "all" or pkg["name"] == pkg_id)
 				]
 				if selected_pkgs:
 					pkg_string = " ".join(selected_pkgs)
-					cmd = f"{script_path} preInstall {pkg_string}; echo $? > {self.token_result_preinstall[1]};"
+					cmd = f"{script_path} preInstall {pkg_string}; echo $? > {self.token_result_preinstall.name};"
 
 		self._show_debug("preinstall_app",f"Preinstall Command: {cmd}")
 		
@@ -875,8 +895,8 @@ class EpiManager:
 		content=""
 
 		try:
-			if os.path.exists(self.token_result_preinstall[1]):
-				result, content=self._handle_file_token(self.token_result_preinstall[1])
+			if os.path.exists(self.token_result_preinstall.name):
+				result, content=self._handle_file_token(self.token_result_preinstall.name)
 		except Exception:			
 			pass
 
@@ -918,7 +938,7 @@ class EpiManager:
 		elif install_type == "file":
 			base_cmd = self._get_install_file_cmd_base()
 			if base_cmd:
-				token_suffix = f'; echo $? > {self.token_result_install[1]}' if self.token_result_install else ""
+				token_suffix = f'; echo $? > {self.token_result_install.name}' if self.token_result_install else ""
 				cmd = f"{base_cmd} {payload}{token_suffix}"
 				
 		cmd = cmd.strip()
@@ -976,7 +996,8 @@ class EpiManager:
 
 	def _get_install_file_cmd_base(self):
 
-		self.token_result_install=tempfile.mkstemp("_result")
+		self.token_result_install=tempfile.NamedTemporaryFile(suffix="_result",delete=False)
+		self.token_result_install.close()
 		script=self.epi_conf.get("script",{}).get("name","")
 		
 		if os.path.exists(script):
@@ -1031,7 +1052,8 @@ class EpiManager:
 		script_path = script_conf.get("name", "")
 
 		if script_conf and os.path.exists(script_path):
-			self.token_result_postinstall= tempfile.mkstemp("_result_postinstall")
+			self.token_result_postinstall= tempfile.NamedTemporaryFile(suffix="_result_postinstall",delete=False)
+			self.token_result_postinstall.close()
 			
 			pkgs_to_add = [
 				item["name"] for item in self.epi_conf.get("pkg_list", [])
@@ -1039,7 +1061,7 @@ class EpiManager:
 			]
 			
 			args = " ".join(pkgs_to_add)
-			cmd = f"{script_path} postInstall {args}; echo $? > {self.token_result_postinstall[1]};"
+			cmd = f"{script_path} postInstall {args}; echo $? > {self.token_result_postinstall.name};"
 			self._show_debug("postinstall_app", f"Postinstall Command: {cmd}")
 			
 		return cmd
@@ -1051,8 +1073,8 @@ class EpiManager:
 		result=True
 		content=""
 		try:
-			if os.path.exists(self.token_result_postinstall[1]):
-				result, content =self._handle_file_token(self.token_result_postinstall[1])
+			if os.path.exists(self.token_result_postinstall.name):
+				result, content =self._handle_file_token(self.token_result_postinstall.name)
 		except Exception:
 			pass			
 
@@ -1084,7 +1106,8 @@ class EpiManager:
 		script_path = script_conf.get("name", "")
 
 		if script_conf.get("remove") and os.path.exists(script_path):
-			self.token_result_remove = tempfile.mkstemp("_result_remove")
+			self.token_result_remove = tempfile.NamedTemporaryFile(suffix="_result_remove",delete=False)
+			self.token_result_remove.close()
 
 			pkgs_to_remove = [
 				item["name"] for item in epi_file.get("pkg_list", [])
@@ -1096,12 +1119,9 @@ class EpiManager:
 
 			if pkgs_to_remove:
 				args = " ".join(pkgs_to_remove)
-				cmd = f"{script_path} remove {args}; echo $? > {self.token_result_remove[1]};"
-			'''
-			else:
-				cmd = f"{script_path} remove; echo $? > {self.token_result_remove[1]};"
-			'''
-		self._show_debug("uninstall_app", f"Uninstall Command: {cmd}")
+				cmd = f"{script_path} remove {args}; echo $? > {self.token_result_remove.name};"
+	
+			self._show_debug("uninstall_app", f"Uninstall Command: {cmd}")
 
 		return cmd
 
@@ -1230,6 +1250,7 @@ class EpiManager:
 							if conf.get("error")=="json":
 								if epi_path not in self.epi_with_json_problems:
 									self.epi_with_json_problems.append(epi_path)
+						continue
 
 					remote = self.cli_install()
 					epi_name = os.path.basename(epi_path)
@@ -1257,6 +1278,8 @@ class EpiManager:
 
 			except Exception as e:
 				self._show_debug("list_available_epi", f"Error processing {item}: {e}")
+
+	#def list_available_epi
 
 	def check_remote_epi(self, epi):
 
@@ -1306,20 +1329,25 @@ class EpiManager:
 
 	def get_epi_deb(self,epi=None):
 
-		epi_deb=""
-		if epi!=None:	
-			epi_path=self._get_epi_path(epi)
-			cmd=f"dpkg -S {epi_path}"
-			p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			poutput,perror=p.communicate()
+		if epi is None:
+			return ""
 
-			if len(poutput)>0:
-				if type(poutput) is bytes:
-					poutput=poutput.decode()
+		epi_path=self._get_epi_path(epi)
+		cmd=f"dpkg -S {epi_path}"
+		p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+		poutput,_=p.communicate()
 
-				epi_deb=poutput.split(":")[0]
+		if not poutput:
+			return ""
 
-		return epi_deb
+		for line in poutput.strip().split("\n"):
+			if ":" not in line:
+				continue
+			pkg,path=line.split(":",1)
+			if path.strip()==epi_path:
+				return pkg.strip()
+
+		return ""
 
 	#def get_epi_deb
 
@@ -1595,7 +1623,7 @@ class EpiManager:
 		
 		epi_type = self.type
 		config = self.epi_conf
-		token = self.token_result_install[1] if hasattr(self, 'token_result_install') and self.token_result_install else ""
+		token = self.token_result_install.name if hasattr(self, 'token_result_install') and self.token_result_install else ""
 		
 		selection_enabled = config.get("selection_enabled", {}).get("active", False)
 		file_with_list = (epi_type == "file" and selection_enabled)
@@ -1627,7 +1655,7 @@ class EpiManager:
 		
 		config = self.epiFiles[0]
 		epi_type = config.get("type")
-		token = self.token_result_remove[1] if hasattr(self, 'token_result_remove') and self.token_result_remove else ""
+		token = self.token_result_remove.name if hasattr(self, 'token_result_remove') and self.token_result_remove else ""
 		
 		selection_enabled = config.get("selection_enabled", {}).get("active", False)
 		file_with_list = (epi_type == "file" and selection_enabled)

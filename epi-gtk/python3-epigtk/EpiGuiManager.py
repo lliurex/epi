@@ -947,32 +947,32 @@ class EpiGuiManager:
 
 		cmd=""
 		if action=="keys":
-			self.tokenKeys=tempfile.mkstemp('_keys')
-			removeTmp=f' rm -f {self.tokenKeys[1]}'
+			self.tokenKeys=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenKeys}'
 		elif action=="keyring":
-			self.tokenKeyring=tempfile.mkstemp('_keyring')
-			removeTmp=f' rm -f {self.tokenKeyring[1]}'
+			self.tokenKeyring=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenKeyring}'
 		elif action=="download":
-			self.tokenDownload=tempfile.mkstemp('_download')
-			removeTmp=f' rm -f {self.tokenDownload[1]}'
+			self.tokenDownload=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenDownload}'
 		elif action=="preInstall":
-			self.tokenPreInstall=tempfile.mkstemp('_preInstall')	
-			removeTmp=f' rm -f {self.tokenPreInstall[1]}'
+			self.tokenPreInstall=self._getTempFile(action)	
+			removeTmp=f' rm -f {self.tokenPreInstall}'
 		elif action=="arquitecture":
-			self.tokenArquitecture=tempfile.mkstemp('_arquitecture')	
-			removeTmp=f' rm -f {self.tokenArquitecture[1]}'	
+			self.tokenArquitecture=self._getTempFile(action)	
+			removeTmp=f' rm -f {self.tokenArquitecture}'	
 		elif action=="updaterepos":
-			self.tokenUpdaterepos=tempfile.mkstemp('_updaterepos')	
-			removeTmp=f' rm -f {self.tokenUpdaterepos[1]}'	
+			self.tokenUpdaterepos=self._getTempFile(action)	
+			removeTmp=f' rm -f {self.tokenUpdaterepos}'	
 		elif action=="install":
-			self.tokenInstall=tempfile.mkstemp('_install')
-			removeTmp=f' rm -f {self.tokenInstall[1]}'
+			self.tokenInstall=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenInstall}'
 		elif action=="postInstall":	
-			self.tokenPostInstall=tempfile.mkstemp('_postInstall')
-			removeTmp=f' rm -f {self.tokenPostInstall[1]}'
+			self.tokenPostInstall=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenPostInstall}'
 		elif action=="uninstall":
-			self.tokenUninstall=tempfile.mkstemp('_uninstall')
-			removeTmp=f' rm -f {self.tokenUninstall[1]}'
+			self.tokenUninstall=self._getTempFile(action)
+			removeTmp=f' rm -f {self.tokenUninstall}'
 
 		cmd=f'{command} history -c;stty -echo;{removeTmp}\n'
 		if cmd.startswith(";"):
@@ -981,6 +981,16 @@ class EpiGuiManager:
 		return cmd
 
 	#def _createProcessToken
+
+	def _getTempFile(self,action):
+
+		suffixName=f"_{action}"
+		tmpFile=tempfile.NamedTemporaryFile(suffix=suffixName,delete=False)
+		tmpFile.close()
+
+		return tmpFile.name
+
+	#def _getTempFile
 
 	def checkRemove(self, pkgId):
 
@@ -1174,9 +1184,8 @@ class EpiGuiManager:
 				tmpParam = {
 				"resultProcess": -1,
 				"showSpinner": True
-			}
-
-			self._updatePackagesModel(tmpParam, itemId)
+				}
+				self._updatePackagesModel(tmpParam, itemId)
 	
 	#def _initUninstallProcessValues
 

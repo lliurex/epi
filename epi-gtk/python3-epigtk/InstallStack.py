@@ -315,13 +315,13 @@ class InstallStack(QObject):
 		if not self.pkgProcessed:
 			for prefix, token in globalToken:
 				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
-					tmpToken=getattr(self.epiGuiManager,token)[1]
+					tmpToken=getattr(self.epiGuiManager,token)
 					if not os.path.exists(tmpToken):
 						setattr(self.epiGuiManager, f"{prefix}Done", True)
 		else:
 			for prefix, token in processPkgToken:
 				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
-					tmpToken=getattr(self.epiGuiManager,token)[1]
+					tmpToken=getattr(self.epiGuiManager,token)
 					if not os.path.exists(tmpToken):
 						setattr(self.epiGuiManager, f"{prefix}Done", True)
 		

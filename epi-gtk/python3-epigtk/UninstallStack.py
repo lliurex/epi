@@ -151,11 +151,11 @@ class UninstallStack(QObject):
 
 		for prefix, token in processPkgToken:
 			if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
-				tmpToken=getattr(self.epiGuiManager,token)[1]
+				tmpToken=getattr(self.epiGuiManager,token)
 				if not os.path.exists(tmpToken):
 					setattr(self.epiGuiManager, f"{prefix}Done", True)
 
-	#def _checkProcessToken
+	#def __checkProcessToken
 
 #class UninstallStack
 
