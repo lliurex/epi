@@ -291,7 +291,7 @@ class EpiGuiManager:
 
 	    self.info = copy.deepcopy(self.loadEpiConf)
 	    self.areDepends = len(self.info) > 1
-	    
+
 	    self.searchEntry = False
 	    self.selectPkg = False
 	    self.uncheckAll = False
@@ -301,13 +301,11 @@ class EpiGuiManager:
 	    self.wikiUrl = ""
 	    self.defaultPkg = False
 	    self.matchWithAppFromStore = False
-	    
+
 	    defaultChecked = False
 
-	    for item, content in self.info.items():
-	        pkgOrder = 0
+	    for order, content in self.info.items():
 	        showCB = False
-	        order = item
 
 	        if order == 0:
 	            selection = content.get("selection_enabled", {})
@@ -320,90 +318,87 @@ class EpiGuiManager:
 	                    self.uncheckAll = True
 	                    self.defaultPkg = True
 
-	            if content.get("script", {}).get("remove") and not self.epiManager.lock_remove_for_group:
+	            if content.get("script", {}).get("remove") and not getattr(self.epiManager, 'lock_remove_for_group', False):
 	                self.showRemoveBtn = True
 
 	            self.wikiUrl = content.get("wiki", "")
-	            #self.totalPackages = len(content.get("pkg_list", []))
-	            
-	        for element in content.get("pkg_list", []):
-	            if not (order > 0 and pkgOrder > 0):
-	                pkgName = element.get("name")
-	                
-	                pkgSkippedFlavours = element.get("skip_flavours", [])
-	                pkgSkipped = self.epiManager.is_pkg_skipped_for_flavour(pkgName, pkgSkippedFlavours)
 
-	                if not pkgSkipped:
-	                    pkgSkipGroups = element.get("skip_groups", [])
-	                    pkgSkippedGroup = self.epiManager.is_pkg_skipped_for_group(pkgName, pkgSkipGroups)
+	        for pkgOrder, element in enumerate(content.get("pkg_list", [])):
+	            if order > 0 and pkgOrder > 0:
+	                continue
 
-	                    if pkgSkippedGroup != 1:
-	                        tmp = {
-	                            "pkgId": pkgName,
-	                            "showCb": showCB,
-	                            "showSpinner": False
-	                        }
+	            pkgName = element.get("name")
+	            pkgSkippedFlavours = element.get("skip_flavours", [])
+	            pkgSkipped = self.epiManager.is_pkg_skipped_for_flavour(pkgName, pkgSkippedFlavours)
 
-	                        if defaultChecked or not showCB:
+	            if not pkgSkipped:
+	                pkgSkipGroups = element.get("skip_groups", [])
+	                pkgSkippedGroup = self.epiManager.is_pkg_skipped_for_group(pkgName, pkgSkipGroups)
+
+	                if pkgSkippedGroup != 1:
+	                    tmp = {
+	                        "pkgId": pkgName,
+	                        "showCb": showCB,
+	                        "showSpinner": False
+	                    }
+
+	                    if defaultChecked or not showCB:
+	                        tmp["isChecked"] = True
+	                        self._managePkgSelected(pkgName, True, order)
+	                    else:
+	                        isDefault = element.get("default_pkg", False)
+	                        if isDefault:
 	                            tmp["isChecked"] = True
+	                            self.defaultPkg = True
+	                            self._managePkgSelected(pkgName, True, order)
+	                        elif self.tmpAppFromStore and tmp["pkgId"] == self.tmpAppFromStore:
+	                            tmp["isChecked"] = True
+	                            self.matchWithAppFromStore = True
 	                            self._managePkgSelected(pkgName, True, order)
 	                        else:
-	                            isDefault = element.get("default_pkg", False)
-	                            if isDefault:
-	                                tmp["isChecked"] = True
-	                                self.defaultPkg = True
-	                                self._managePkgSelected(pkgName, True, order)
-	                            elif self.tmpAppFromStore and tmp["pkgId"] == self.tmpAppFromStore:
-	                                tmp["isChecked"] = True
-	                                self.matchWithAppFromStore = True  # Corrección de la variable de instancia
-	                                self._managePkgSelected(pkgName, True, order)
-	                            else:
-	                                tmp["isChecked"] = False
-							
-	                        if order != 0:
-	                            tmp["customName"] = content.get("zomando", "")
-	                            tmp["entryPoint"] = ""
-	                            tmp["metaInfo"] = tmp["customName"]
-	                        else:
-	                            customName = element.get("custom_name", "")
-	                            if isinstance(customName, dict):
-	                                tmp["customName"] = customName.get(self.sessionLang, customName.get("en", pkgName))
-	                            else:
-	                                tmp["customName"] = customName if customName else pkgName
-	                            
-	                            tmp["metaInfo"] = f"{tmp['pkgId']}-{tmp['customName']}"
-	                            tmp["entryPoint"] = element.get("entrypoint", "")
+	                            tmp["isChecked"] = False
 
-	                        pkgInfoData = self.epiManager.pkg_info.get(pkgName, {})
-	                        tmp["status"] = pkgInfoData.get("status", "available")
-	                        
-	                        if tmp["status"] == "installed" and tmp["pkgId"] not in self.pkgsInstalled:
-	                            self.pkgsInstalled.append(tmp["pkgId"])
-
-	                        tmp["pkgIcon"] = self._getPkgIcon(order, pkgOrder, tmp["status"])
-	                        tmp["isVisible"] = (order == 0)
-	                        tmp["resultProcess"] = -1
-	                        tmp["order"] = order
-	                        
-	                        if order != 0:
-	                            if tmp["status"] != "installed":
-	                                self.packagesData.append(tmp)
+	                    if order != 0:
+	                        tmp["customName"] = content.get("zomando", "")
+	                        tmp["entryPoint"] = ""
+	                        tmp["metaInfo"] = tmp["customName"]
+	                    else:
+	                        customName = element.get("custom_name", "")
+	                        if isinstance(customName, dict):
+	                            tmp["customName"] = customName.get(self.sessionLang, customName.get("en", pkgName))
 	                        else:
-	                            self.packagesData.append(tmp)
-					
-	            self.totalPackages=len(self.packagesData)
-	            self.packagesMap = {item["pkgId"]: item for item in self.packagesData if "pkgId" in item}
-	            pkgOrder += 1
+	                            tmp["customName"] = customName if customName else pkgName
+
+	                        tmp["metaInfo"] = f"{tmp['pkgId']}-{tmp['customName']}"
+	                        tmp["entryPoint"] = element.get("entrypoint", "")
+
+	                    pkgInfoData = self.epiManager.pkg_info.get(pkgName, {})
+	                    tmp["status"] = pkgInfoData.get("status", "available")
+
+	                    if tmp["status"] == "installed" and tmp["pkgId"] not in self.pkgsInstalled:
+	                        self.pkgsInstalled.append(tmp["pkgId"])
+
+	                    tmp["pkgIcon"] = self._getPkgIcon(order, pkgOrder, tmp["status"])
+	                    tmp["isVisible"] = (order == 0)
+	                    tmp["resultProcess"] = -1
+	                    tmp["order"] = order
+
+	                    if order == 0 or tmp["status"] != "installed":
+	                        self.packagesData.append(tmp)
 
 	        if not self.defaultPkg and self.matchWithAppFromStore:
 	            self.appFromStore = self.tmpAppFromStore
 	            self.selectPkg = False
-	        
-	        if self.showRemoveBtn and len(self.epiManager.skipped_pkgs_groups) == self.totalPackages:
+
+	        total_actual_pkgs = len(self.packagesData)
+	        if self.showRemoveBtn and len(getattr(self.epiManager, 'skipped_pkgs_groups', [])) == total_actual_pkgs:
 	            self.showRemoveBtn = False
 
+	    self.totalPackages = len(self.packagesData)
+	    self.packagesMap = {item["pkgId"]: item for item in self.packagesData if "pkgId" in item}
+	    self._endGetEpiContent = True
 
-	#def _getEpiContent	
+	#def _getEpiContent
 
 	def _getPkgIcon(self, order, pkgIndex, status):
 
