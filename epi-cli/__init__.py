@@ -26,10 +26,12 @@ class EPIC(object):
 
 		if not self.epicore.epiFiles:
 			errors={
-				"path":"APP epi file not exist or its path is invalid. Use showlist to get avilabled APP epi",
-				"empty":"APP epi file is empty"
+				"path":"APP epi file not exist or its path is invalid. Use showlist to get availabled APP epi",
+				"empty":"APP epi file is empty",
+				"depends":"A problem has been detected with the dependency's .epi file: "
 			}
-			msg_log=errors.get(self.valid_json.get("error"),"APP epi file it is not a valid json")
+			tmp_log=errors.get(self.valid_json.get("error"),"APP epi file it is not a valid json")
+			msg_log=tmp_log+self.valid_json.get("data") if self.valid_json.get("data") else tmp_log
 			self._print_write_log(msg_log)
 			sys.exit(1)
 

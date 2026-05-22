@@ -42,6 +42,7 @@ class EpiGuiManager:
 	ERROR_INSTALL_ENDING=-20
 	ERROR_PARTIAL_INSTALL=-23
 	ERROR_PKG_TYPE_UNDEFINED=-24
+	ERROR_WITH_DEPENDS=-25
 	
 	MSG_LOADING_INFO=0
 	MSG_LOADING_WAIT=1
@@ -145,13 +146,15 @@ class EpiGuiManager:
 		valid_json = self.epiManager.read_conf(self.epiFile)
 
 		if not valid_json.get("status"):
-			error_type = valid_json.get("error")
-			if error_type == "path":
-				return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_FILE_NOT_EXISTS, "type": 'End', "data":""}
-			if error_type == "json":
-				return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_JSON, "type": 'End',"data":""}
-
-			return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_EMPTY_FILE, "type": 'End',"data":""}
+			if valid_json.get("depends")!="":
+				return {"status":False,"msgCode":EpiGuiManager.ERROR_WITH_DEPENDS,"type":"Depends","data":valid_json.get("depends")}
+			else:
+				error_type = valid_json.get("error")
+				if error_type == "path":
+					return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_FILE_NOT_EXISTS, "type": 'End', "data":""}
+				if error_type == "json":
+					return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_JSON, "type": 'End',"data":""}
+				return {"status": False, "msgCode": EpiGuiManager.ERROR_EPI_EMPTY_FILE, "type": 'End',"data":""}
 
 		valid_script = self.epiManager.check_script_file()
 
@@ -1217,6 +1220,7 @@ class EpiGuiManager:
 	def isAllInstalled(self):
 
 		pkgAvailable=0
+
 		if self.totalPackages==len(self.pkgsInstalled):
 			return {"allInstalled":True,"allAvailable":False}
 		else:

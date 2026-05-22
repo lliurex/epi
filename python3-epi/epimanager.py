@@ -139,18 +139,18 @@ class EpiManager:
 
 		if not os.path.isfile(epi_file):
 			self._show_debug("read_conf", f"Epi file does not exist or path is invalid: {epi_file}")
-			return {"status": False, "error": "path"}
+			return {"status": False, "error": "path","depends":""}
 
 		try:
 			with open(epi_file, 'r') as f:
 				epi_load = json.load(f)
 		except Exception as e:
 			self._show_debug("read_conf", f"Epi file is not a valid JSON. Error: {e}")
-			return {"status": False, "error": "json"}
+			return {"status": False, "error": "json","depends":""}
 
 		if not epi_load:
 			self._show_debug("read_conf", f"Epi file is empty: {epi_file}")
-			return {"status": False, "error": "empty"}
+			return {"status": False, "error": "empty","depends":""}
 
 		epi_conf = self.epi_base.copy()
 		epi_conf.update(epi_load)
@@ -162,12 +162,15 @@ class EpiManager:
 		if depends:
 			self.order += 1
 			try:
-				self.read_conf(depends)
+				result=self.read_conf(depends)
+				if not result["status"]:
+					result["depends"]=depends
+					return result				
 			except Exception as e:
 				self._show_debug("read_conf", f"Error: {e}")
 				pass
 
-		return {"status": True, "error": ""}	
+		return {"status": True, "error": "","depends":""}	
 
 	#def read_conf		
 
@@ -1188,6 +1191,8 @@ class EpiManager:
 		self.cli_available_epis = []
 		self.skipped_pkgs_groups = []
 		self.skipped_pkgs_flavours = []
+		self.epi_with_json_problems=[]
+		self.epi_with_depends_problems=[]
 
 		if not os.path.exists(self.zmd_paths):
 			return
@@ -1214,7 +1219,17 @@ class EpiManager:
 					conf = self.read_conf(epi_path, False, True)
 
 					if not conf.get("status"):
-						continue
+						if conf.get("depends")!="" and conf.get("depends") not in self.epi_with_depends_problems:
+							tmp={
+								"epi":epi_path,
+								"depends":conf.get("depends")
+							}
+							if tmp not in self.epi_with_depends_problems:
+								self.epi_with_depends_problems.append(tmp)
+						else:
+							if conf.get("error")=="json":
+								if epi_path not in self.epi_with_json_problems:
+									self.epi_with_json_problems.append(epi_path)
 
 					remote = self.cli_install()
 					epi_name = os.path.basename(epi_path)

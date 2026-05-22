@@ -31,8 +31,8 @@ Rectangle{
 
         Text{
             id:loadtext
-            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.localDebError
-            visible:mainStackBridge.localDebError!=""?true:false
+            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.additionalErrorInfo
+            visible:mainStackBridge.additionalErrorInfo!=""?true:false
             font.pointSize: 10
             Layout.alignment:Qt.AlignLeft
             Layout.leftMargin:15
@@ -69,6 +69,8 @@ Rectangle{
                 return i18nd("epi-gtk","The unlocking process has failed")
             case -24:
                 return i18nd("epi-gtk","Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information")
+            case -25:
+                return i18nd("epi-gtk","A problem has been detected with the dependency's .epi file. Run in debug mode for more information")
         }
     }
 }

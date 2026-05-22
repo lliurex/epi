@@ -62,7 +62,7 @@ class Bridge(QObject):
 	currentStackChanged=Signal()
 	currentOptionsStackChanged=Signal()
 	loadErrorCodeChanged=Signal()
-	localDebErrorChanged=Signal()
+	additionalErrorInfoChanged=Signal()
 	feedbackCodeChanged=Signal()
 	enableApplyBtnChanged=Signal()
 	enableRemoveBtnChanged=Signal()
@@ -88,7 +88,7 @@ class Bridge(QObject):
 		self._closePopUp=True
 		self._loadMsgCode=self.epiGuiManager.MSG_LOADING_INFO
 		self._loadErrorCode=""
-		self._localDebError=""
+		self._additionalErrorInfo=""
 		self._currentStack=0
 		self._currentOptionsStack=0
 		self._showStatusMessage={"show":False,"msgCode":'',"type":''}
@@ -176,21 +176,21 @@ class Bridge(QObject):
 
 	#def loadErrorCode
 
-	@Property(str,notify=localDebErrorChanged)
-	def localDebError(self):
+	@Property(str,notify=additionalErrorInfoChanged)
+	def additionalErrorInfo(self):
 
-		return self._localDebError
+		return self._additionalErrorInfo
 
-	#def localDebError
+	#def additionalErrorInfo
 
-	@localDebError.setter
-	def localDebError(self,localDebError):
+	@additionalErrorInfo.setter
+	def additionalErrorInfo(self,additionalErrorInfo):
 
-		if self._localDebError!=localDebError:
-			self._localDebError=localDebError
-			self.localDebErrorChanged.emit()
+		if self._additionalErrorInfo!=additionalErrorInfo:
+			self._additionalErrorInfo=additionalErrorInfo
+			self.additionalErrorInfoChanged.emit()
 
-	#def localDebError
+	#def additionalErrorInfo
 
 	@Property(int,notify=feedbackCodeChanged)
 	def feedbackCode(self):
@@ -489,9 +489,9 @@ class Bridge(QObject):
 			if ret.get("type")=="End":
 				self.loadErrorCode=ret.get("msgCode")
 				self.currentStack=1
-			elif ret.get("type")=="LocalDeb":
+			elif ret.get("type")=="LocalDeb" or ret.get("type")=="Depends":
 				self.loadErrorCode=ret.get("msgCode")
-				self.localDebError=ret.get("data")
+				self.additionalErrorInfo=ret.get("data")
 				self.currentStack=1
 			elif ret.get("type")=="Wait":
 				self.loadMsgCode=self.epiGuiManager.MSG_LOADING_WAIT
