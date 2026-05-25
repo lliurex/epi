@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-14 17:48+0200\n"
-"PO-Revision-Date: 2026-04-14 17:49+0200\n"
+"POT-Creation-Date: 2026-05-22 10:58+0200\n"
+"PO-Revision-Date: 2026-05-22 11:03+0200\n"
 "Last-Translator: empar <montoro_mde@gva.es>\n"
 "Language-Team: Catalan <kde-i18n-ca@kde.org>\n"
 "Language: es\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.2\n"
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:50
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:44
 msgid ""
 "Apt or Dpkg seems blocked by a failed previous execution\n"
 "Click on Unlock to try to solve the problem"
@@ -26,51 +26,51 @@ msgstr ""
 "Apt o Dpkg semblen bloquejats per una execució anterior que ha fallat\n"
 "Feu clic o desbloqueja per a intentar resoldre el problema"
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:53
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:47
 msgid "Unlock"
 msgstr "Desbloqueja"
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:71
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:64
 msgid "Loading information. Wait a moment..."
 msgstr "S'està carregant la informació. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:74
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:66
 msgid "Apt or Dpkg are being executed. Checking if they have finished"
 msgstr "S'està executant Apt o Dpkg. S'està comprovant si ha finalitzat"
 
-#: epi-gtk/python3-epigtk/rsrc/Loading.qml:77
+#: epi-gtk/python3-epigtk/rsrc/Loading.qml:68
 msgid "Executing the unlocking process. Wait a moment..."
 msgstr "S'està executant al procés de desbloqueig. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:37
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:34
 msgid "Addittional information:\n"
 msgstr "Informació adicional\n"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:58
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:47
 msgid "Application epi file does not exist or its path is invalid"
 msgstr "El fitxer .epi de l'aplicació no existeix o la seua ruta no és vàlida"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:61
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:49
 msgid "Application epi file is empty"
 msgstr "El fitxer .epi de l'aplicació està buit"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:64
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:51
 msgid "Application epi file it is not a valid json"
 msgstr "El fitxer .epi de l'aplicació no és un json vàlid"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:67
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:53
 msgid "Associated script does not exist or its path is invalid"
 msgstr "El script associat no existeix o la seua ruta no és vàlida"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:70
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:55
 msgid "Associated script does not have execute permissions"
 msgstr "El script associat no té permisos d'execució"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:73
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:57
 msgid "You need root privileges"
 msgstr "Necessiteu permisos d'administració"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:76
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:59
 msgid ""
 "The package will not be able to be installed\n"
 "An error occurred during processing"
@@ -78,74 +78,91 @@ msgstr ""
 "El paquete no podrà ser instal·lat\n"
 "S'ha produït un error durant el seu processament"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:79
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:61
 msgid ""
 "The package will not be able to be installed. Problems with dependencies"
 msgstr "El paquete no podrà ser instal·lat. Hi ha problemes amb dependències"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:82
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:63
 msgid "The package will not be able to be installed. Error has been detected"
 msgstr "El paquete no podrà ser instal·lat. S'ha detectar un error"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:85
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:65
 msgid "The system is being updated. Wait a few minutes and try again"
 msgstr ""
 "S'està actualitzant el sistema. Espereu uns minuts i torneu-ho a intentar"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:88
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:67
 msgid "Apt or Dpkg are being executed. Wait a few minutes and try again"
 msgstr "S'està executant Apt o Dpkg. Espereu uns minuts i torneu a intentar-ho"
 
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:91
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:69
 msgid "The unlocking process has failed"
 msgstr "El procés de desbloqueig ha fallat"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:28
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:71
+msgid ""
+"Application epi file it is not a valid json. Missing some keys or keys with "
+"incorrect value in json definition. Run in debug mode for more information"
+msgstr ""
+"El fitxer .epi de l'aplicació no és un json vàlid. Falten claus o hi ha "
+"claus amb valors incorrectes. Executeu el mode de depuració per a més "
+"informació"
+
+#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:73
+msgid ""
+"A problem has been detected with the dependency's .epi file. Run in debug "
+"mode for more information"
+msgstr ""
+"S'ha detectat un problema amb el fitxer .epi de la dependència. Executeu el "
+"mode de depuració per a més informació"
+
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:23
 msgid "Home"
 msgstr "Inici"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:43
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:36
 msgid "View details"
 msgstr "Veure details"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:55
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:44
 msgid "Help"
 msgstr "Ajuda"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:148
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:119
 msgid "Uninstall"
 msgstr "Desinstal·la"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:151
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:121
 msgid "Reject Eula"
 msgstr "Rebutja la llicència"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:154
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:123
 msgid "Back"
 msgstr "Torna"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:232
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:183
 msgid "Reinstall"
 msgstr "Reinstal·la"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:234
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:185
 msgid "Install"
 msgstr "Instal·la"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:238
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:188
 msgid "Accept Eula"
 msgstr "Accepta la llicència"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:275
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:214
 msgid "Do you want uninstall the application?"
 msgstr "Voleu desinstal·lar l'aplicació?"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:278
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:302
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:217
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:241
 msgid "Cancel"
 msgstr "Cancel·la"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:298
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:237
 msgid ""
 "It seems that the installation/uninstallation process has not finished yet?\n"
 "If you close EPI the process will be closed.\n"
@@ -155,11 +172,11 @@ msgstr ""
 "Si tanca EPI el procés en curs serà cancel·lat.\n"
 "Desitja tancar EPI?"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:346
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:280
 msgid "The selected applications cannot be uninstalled.\n"
 msgstr "Les aplicacions seleccionades no poden ser desinstal·lades.\n"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:347
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:281
 msgid ""
 "Some selected application successfully uninstalled.\n"
 "Others not because "
@@ -167,62 +184,62 @@ msgstr ""
 "Algunes aplicacions seleccionades s'han desinstal·lat correctament.\n"
 "Unes altres no perquè "
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:351
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:285
 msgid "Internet connection not detected"
 msgstr "No s'ha detectat connexió a Internet"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:354
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:287
 msgid "It is part of the system meta-package"
 msgstr "Formen part del meta-paquet del sistema"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:357
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:289
 msgid "Uninstalled process ending with errors"
 msgstr "El procés de desinstal·lació ha finalitzat amb errors"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:360
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:291
 msgid "Installation aborted. Error preparing system"
 msgstr ""
 "La instal·lació s'ha cancel·lat. S'ha produït un error en preparar el sistema"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:363
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:293
 msgid "Installation aborted. Unable to download package"
 msgstr "La instal·lació s'ha cancel·lat. No s'ha pogut descarregar el paquet"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:366
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:295
 msgid "Installation aborted. Error installing application"
 msgstr ""
 "La instal·lació s'ha cancel·lat. S'ha produït un error en instal·lar "
 "l'aplicació"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:369
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:297
 msgid "Installation aborted. Error ending installation"
 msgstr ""
 "La instal·lació s'ha cancel·lat. S'ha produït un error en finalitzar la "
 "instal·lació"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:372
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:299
 msgid "You do not have permissions to perfom this action"
 msgstr "No teniu permisos per a realitzar aquesta acció"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:375
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:301
 msgid ""
 "Action blocked due to insufficient permissions and meta-package protection"
 msgstr ""
 "Acció bloquejada a causa de permisos insuficients i protecció del meta-paquet"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:378
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:303
 msgid "The installation process ended with errors"
 msgstr "El procés d' instal·lació ha finalitzat amb errors"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:381
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:305
 msgid "Checking internet connection. Wait a moment..."
 msgstr "S'està comprobant la conexió a Internet. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:384
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:307
 msgid "Application already installed"
 msgstr "L'aplicació ja està instal·lada"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:387
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:309
 msgid ""
 "It seems that the packages were installed without using EPI.\n"
 "It may be necessary to run EPI for proper operation"
@@ -230,7 +247,7 @@ msgstr ""
 "Sembla que els paquets van ser instal·lats sense usar EPI.\n"
 "Pot ser necessari executar EPI per a un correcte funcionament"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:390
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:311
 msgid ""
 "It seems that the packages were installed but the execution of EPI failed.\n"
 "It may be necessary to run EPI for proper operation"
@@ -239,154 +256,149 @@ msgstr ""
 "EPI.\n"
 "Pot ser necessari executar EPI per a un correcte funcionament"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:393
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:313
 msgid "Showing the end user license agreement for:\n"
 msgstr "S'està mostrant l'acord de llicència d'usuari final  para:\n"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:396
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:315
 msgid "Checking if repositories need updating..."
 msgstr "S'està comprovant si els repositoris necessiten ser actualitzats..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:399
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:317
 msgid "Checking system architecture..."
 msgstr "S'està comprovant l'arquitectura del sistema..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:402
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:319
 msgid "Gathering Information..."
 msgstr "S'està obtenint informació..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:405
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:321
 msgid "Downloading application..."
 msgstr "S'està descarregant l'aplicació..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:408
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:323
 msgid "Preparing installation..."
 msgstr "S'està preparant la instal·lació..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:411
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:325
 msgid "Installing application..."
 msgstr "S'està instal·lant l'aplicació..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:414
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:327
 msgid "Ending the installation..."
 msgstr "Està finalitzant la instal·lació..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:417
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:329
 msgid "Installation completed successfully"
 msgstr "La instal·lació s'ha completat correctament"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:420
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:331
 msgid "Checking if selected applications can be uninstalled..."
 msgstr ""
 "S'està comprovant si les aplicacions seleccionades poden ser "
 "desinstal·lades..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:423
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:333
 msgid "Uninstall selected applications. Wait a moment..."
 msgstr ""
 "S'està desinstal·lant les aplicacions seleccionades. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:426
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:335
 msgid "Applications successfully uninstalled"
 msgstr "L'aplicació s'ha desinstal·lat correctament"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:429
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:337
 msgid "they are part of the system's meta-package"
 msgstr "formen part del meta-paquet del sistema"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:432
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:339
 msgid "Searching information.Wait a moment..."
 msgstr "S'està buscant la informació. Espereu un moment..."
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:435
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:341
 msgid "Information not availabled"
 msgstr "La informació no està disponible"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:438
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:343
 msgid "you do not have permissions to uninstall them"
 msgstr "no teniu permisos per a desinstal·lar-les"
 
-#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:441
+#: epi-gtk/python3-epigtk/rsrc/ApplicationOptions.qml:345
 msgid "you do not have permissions and meta-package protection"
 msgstr "no tenius permisos i la protecció del meta-paquet"
 
-#: epi-gtk/python3-epigtk/rsrc/CustomDialog.qml:58
+#: epi-gtk/python3-epigtk/rsrc/CustomDialog.qml:70
 msgid "Accept"
 msgstr "Accepta"
 
-#: epi-gtk/python3-epigtk/rsrc/KonsolePanel.qml:12
+#: epi-gtk/python3-epigtk/rsrc/KonsolePanel.qml:20
 msgid "Uninstall process details"
 msgstr "Detalls del procés de desinstal·lació"
 
-#: epi-gtk/python3-epigtk/rsrc/KonsolePanel.qml:14
+#: epi-gtk/python3-epigtk/rsrc/KonsolePanel.qml:20
 msgid "Installation process details"
 msgstr "Detalls del procés d'instal·lació"
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:77
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:74
 msgid "Previous actions: executing "
 msgstr "Accions prèvies: executant "
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:192
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:131
 msgid "Press to view application information"
 msgstr "Premeu per a veure la informació de l'aplicació"
 
-#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:231
+#: epi-gtk/python3-epigtk/rsrc/ListDelegatePkgItem.qml:160
 msgid "Click to launch the application"
 msgstr "Premeu per a llançar l'aplicació"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesInfo.qml:11
+#: epi-gtk/python3-epigtk/rsrc/PackagesInfo.qml:18
 msgid "Applications availables"
 msgstr "Aplicacions disponibles"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:57
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:43
 msgid "Click to filter applications by status"
 msgstr "Premeu per a filtrar les aplicacions per estat"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:73
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:59
 msgid "Show installed apps"
 msgstr "Mostra aplicacions instal·lades"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:86
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:66
 msgid "Show uninstalled apps"
 msgstr "Mostra aplicacions no instal·lades"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:98
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:72
 msgid "Show apps with error"
 msgstr "Mostra aplicacions amb error"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:114
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:80
 msgid "Remove filter"
 msgstr "Elimina el filtre"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:137
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:96
 msgid "Search..."
 msgstr "Busca..."
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:209
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:169
 msgid "Applications not found"
 msgstr "No s'han trobat aplicacions"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:232
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:170
+msgid "Loading application list..."
+msgstr "S'està carregant la llista d'aplicacions..."
+
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:187
 msgid "Uncheck all packages"
 msgstr "Desmarca tots els paquets"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:234
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:187
 msgid "Check all packages"
 msgstr "Marca tots els paquets"
 
-#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:249
+#: epi-gtk/python3-epigtk/rsrc/PackagesList.qml:200
 msgid "(D) Addicitional application required"
 msgstr "(D) Aplicació addicional requerida"
 
-#: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:10
+#: epi-gtk/python3-epigtk/rsrc/InfoPanel.qml:19
 msgid "Additional information"
 msgstr "Informació adicional"
-
-#: epi-gtk/python3-epigtk/rsrc/ErrorPanel.qml:94
-msgid ""
-"Application epi file it is not a valid json. Missing some keys or keys with "
-"incorrect value in json definition. Run in debug mode for more information"
-msgstr ""
-"El fitxer .epi de l'aplicació no és un json vàlid. Falten claus o hi ha "
-"claus amb valors incorrectes. Executeu el mode de depuració per a més "
-"informació"
