@@ -112,14 +112,11 @@ class EpiManager:
 
 	def check_connection(self,url):
 		
-		result=[]
 		try:
-			res=urllib.request.urlopen(url)
-			result.append(True)
-			
+			with urllib.request.urlopen(url,timeout=5) as response:
+				result=(True,f"Connection successfully")
 		except Exception as e:
-			result.append(False)
-			result.append(str(e))
+			result=(False,str(e))
 		
 		self._show_debug("check_connection",f"Result: {result}")
 
