@@ -78,6 +78,7 @@ class EpiGuiManager:
 	def __init__(self):
 
 		self.packagesData=[]
+		self.packagesMap={}
 		self.defaultIconPath="/usr/lib/python3/dist-packages/epigtk/rsrc/"
 		self.initialStatusCode={"msgCode":'',"type":''}
 		self.lockInfo={}
@@ -258,7 +259,7 @@ class EpiGuiManager:
 
 		return ret
 
-	#def _getLockInfo
+	#def getLockInfo
 
 	def execUnlockProcess(self):
 
@@ -573,7 +574,7 @@ class EpiGuiManager:
 			self._writeLog(f"{msgError}:{firstError}")
 			self.retConnection = {"status":False, "msgCode":msgError,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
 
-	#getResultCheckConnection
+	#def getResultCheckConnection
 
 	def getEulasToCheck(self):
 
@@ -1048,7 +1049,7 @@ class EpiGuiManager:
 		elif action == "uninstall":
 			self._updateUninstallModelInfo(order, pkgId, result, dpkgStatus)
 	
-	#_updateProcessModelInfo
+	#def _updateProcessModelInfo
 
 	def _updateInstallModelInfo(self, order, pkgId, result, dpkgStatus=None):
 

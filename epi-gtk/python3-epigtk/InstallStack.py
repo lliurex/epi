@@ -296,7 +296,6 @@ class InstallStack(QObject):
 		
 		self.epiGuiManager.clearEnvironment()
 
-
 	#def _endInstallProcess
 
 	def _handleStepError(self):
@@ -308,7 +307,6 @@ class InstallStack(QObject):
 			self.totalError += 1
 
 	#def _handleStepError
-
 
 	def _checkProcessTokens(self):
 
@@ -324,9 +322,7 @@ class InstallStack(QObject):
 					tmpToken=getattr(self.epiGuiManager,token)
 					if not os.path.exists(tmpToken):
 						setattr(self.epiGuiManager, f"{prefix}Done", True)
-		
-
-		
+			
 	#def _checkProcessTokens
 
 #class InstallStack

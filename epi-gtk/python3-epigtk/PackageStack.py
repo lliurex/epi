@@ -29,7 +29,7 @@ class GetPkgInfo(QThread):
 
 	#def run
 
-#class getPkgInfo
+#class GetPkgInfo
 
 class Bridge(QObject):
 

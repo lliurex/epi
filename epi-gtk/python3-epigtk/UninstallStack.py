@@ -92,7 +92,6 @@ class UninstallStack(QObject):
 				if self.pkgToSelect<self.countLimit:
 					try:
 						self.pkgToProcess=self.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
-						print(self.pkgToProcess)
 					except:
 						self.pkgToProcess="all"
 

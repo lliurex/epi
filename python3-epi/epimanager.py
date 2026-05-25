@@ -720,6 +720,7 @@ class EpiManager:
 
 		cmd="".join(cmd_parts)
 		self._show_debug("add_repository_keys",f"Command to add keys: {cmd}")
+		
 		return cmd		
 
 	#def add_repository_keys	
@@ -1007,6 +1008,7 @@ class EpiManager:
 	def _get_install_snap_cmd_base(self):
 
 		cmd="snap install "
+		
 		return cmd
 
 	#def _get_install_snap_cmd_base
@@ -1014,6 +1016,7 @@ class EpiManager:
 	def _get_install_flatpak_cmd_base(self):
 
 		cmd="flatpak -y --system install "
+		
 		return cmd
 
 	#def _get_install_flatpak_cmd_base
@@ -1526,6 +1529,7 @@ class EpiManager:
 			if pkg_id not in self.skipped_pkgs_flavours:
 				self.skipped_pkgs_flavours.append(pkg_id)
 				return True
+		
 		return False
 
 	#def is_pkg_skipped_for_flavour
@@ -1579,6 +1583,7 @@ class EpiManager:
 				if pkg_id not in self.skipped_pkgs_groups:
 					self.skipped_pkgs_groups.append(pkg_id)
 				return 2
+		
 		return 0
 
 	#def is_pkg_skipped_for_group
