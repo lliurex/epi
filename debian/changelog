@@ -1,3 +1,9 @@
+epi (0.25.34) noble; urgency=medium
+
+  * Refactorized code
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 25 May 2026 11:29:02 +0200
+
 epi (0.25.33) noble; urgency=medium
 
   * Restored missing function
