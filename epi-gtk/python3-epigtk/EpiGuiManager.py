@@ -280,7 +280,6 @@ class EpiGuiManager:
 			ret={"status":False,"msgCode":EpiGuiManager.ERROR_DEPENDS_LOCAL_DEB,"type":'LocalDeb',"data":str(testInstall[1])}
 		else:
 			ret={"status":False,"msgCode":EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,"type":'LocalDeb',"data":str(testinstall[0])}
-			ret=[False,EpiGuiManager.ERROR_LOCAL_DEB_PROBLEMS,'LocalDeb',str(testinstall[0])]
 
 		self._writeLog(f"Test to install local deb: Unable to install package: {testInstall}")
 	
