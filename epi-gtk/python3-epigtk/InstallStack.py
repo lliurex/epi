@@ -9,6 +9,21 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class InstallStack(QObject):
 
+	GLOBALTOKENS = [
+		("addRepositoryKeys", "tokenKeys"),
+		("updateKeyRing", "tokenKeyring"),
+		("checkArquitecture", "tokenArquitecture"),
+		("updateRepos", "tokenUpdaterepos"),
+
+	]
+
+	PROCESSPKGTOKENS=[
+		("downloadApp", "tokenDownload"),
+		("preInstallApp", "tokenPreInstall"),
+		("installApp", "tokenInstall"),
+		("postInstallApp", "tokenPostInstall")
+	]	
+
 	def __init__(self):
 
 		super().__init__()
@@ -297,29 +312,14 @@ class InstallStack(QObject):
 
 	def _checkProcessTokens(self):
 
-		globalToken = [
-			("addRepositoryKeys", "tokenKeys"),
-			("updateKeyRing", "tokenKeyring"),
-			("checkArquitecture", "tokenArquitecture"),
-			("updateRepos", "tokenUpdaterepos"),
-
-		]
-
-		processPkgToken=[
-			("downloadApp", "tokenDownload"),
-			("preInstallApp", "tokenPreInstall"),
-			("installApp", "tokenInstall"),
-			("postInstallApp", "tokenPostInstall")
-		]
-
 		if not self.pkgProcessed:
-			for prefix, token in globalToken:
+			for prefix, token in self.GLOBALTOKENS:
 				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
 					tmpToken=getattr(self.epiGuiManager,token)
 					if not os.path.exists(tmpToken):
 						setattr(self.epiGuiManager, f"{prefix}Done", True)
 		else:
-			for prefix, token in processPkgToken:
+			for prefix, token in self.PROCESSPKGTOKENS:
 				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
 					tmpToken=getattr(self.epiGuiManager,token)
 					if not os.path.exists(tmpToken):

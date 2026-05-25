@@ -29,9 +29,14 @@ class CheckMetaProtection(QThread):
 
 class UninstallStack(QObject):
 
+	PROCESSPKGTOKENS=[
+		("removePkg", "tokenUninstall")
+	]
+
+
 	def __init__(self):
 
-		QObject.__init__(self)
+		super().__init__()
 		self.core=Core.Core.get_core()
 		self.epiGuiManager=self.core.epiGuiManager
 
@@ -145,17 +150,13 @@ class UninstallStack(QObject):
 
 	def _checkProcessToken(self):
 
-		processPkgToken=[
-			("removePkg", "tokenUninstall")
-		]
-
-		for prefix, token in processPkgToken:
+		for prefix, token in self.PROCESSPKGTOKENS:
 			if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
 				tmpToken=getattr(self.epiGuiManager,token)
 				if not os.path.exists(tmpToken):
 					setattr(self.epiGuiManager, f"{prefix}Done", True)
 
-	#def __checkProcessToken
+	#def _checkProcessToken
 
 #class UninstallStack
 
