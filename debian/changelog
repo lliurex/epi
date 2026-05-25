@@ -1,3 +1,9 @@
+epi (0.25.35) noble; urgency=medium
+
+  * Fixed function to check local deb
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 25 May 2026 12:20:51 +0200
+
 epi (0.25.34) noble; urgency=medium
 
   * Refactorized code
