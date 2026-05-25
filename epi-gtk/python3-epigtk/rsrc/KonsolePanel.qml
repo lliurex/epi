@@ -6,28 +6,27 @@ import QMLTermWidget
 
 Rectangle{
     color:"transparent"
-    Text{ 
-        text:{
-            if (mainStackBridge.launchedProcess=="uninstall"){  
-                i18nd("epi-gtk","Uninstall process details")
-            }else{
-                i18nd("epi-gtk","Installation process details")
-            }
-        }
-        font.family: "Quattrocento Sans Bold"
-        font.pointSize: 16
-    }
-
-    RowLayout{
+    Layout.fillWidth:true
+    Layout.fillHeight:true
+ 
+    ColumnLayout{
         id:terminalLayout
-        anchors.left:parent.left
-        width:parent.width-10
-        height:parent.height-25
-        
+        spacing: 5
+        anchors.leftMargin:5
+        anchors.fill:parent
+        anchors.bottomMargin:25
+
+        Text{ 
+            text:mainStackBridge.launchedProcess=="uninstall"?i18nd("epi-gtk","Uninstall process details"):i18nd("epi-gtk","Installation process details")
+            font.pointSize: 16
+        }
+
+     
         Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.topMargin:40
+            Layout.rightMargin:15
+            Layout.topMargin:15
             QMLTermWidget {
                 id: terminal
                 anchors.fill: parent

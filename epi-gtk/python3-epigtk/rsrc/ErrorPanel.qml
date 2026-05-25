@@ -7,12 +7,11 @@ Rectangle{
     visible: true
     color:"transparent"
 
-    GridLayout{
-        id: loadGrid
-        rows: 2
-        rowSpacing:10
-        flow: GridLayout.TopToBottom
-        anchors.centerIn:parent
+    ColumnLayout{
+        id: mainLoaderLayout
+        anchors.centerIn: parent
+        width: parent.width * 0.9
+        spacing: 15
         property var warningCode:[-10,-11]
 
         Kirigami.InlineMessage {
@@ -20,29 +19,20 @@ Rectangle{
             visible:true
             text:getErrorText(mainStackBridge.loadErrorCode)
             type:{
-                if (loadGrid.warningCode.includes(mainStackBridge.loadErrorCode)){
-                    Kirigami.MessageType.Warning;
+                if (mainLoaderLayout.warningCode.includes(mainStackBridge.loadErrorCode)){
+                    Kirigami.MessageType.Warning
                 }else{
-                    Kirigami.MessageType.Error;
+                    Kirigami.MessageType.Error
                 }
             }
-            Layout.minimumWidth:770
             Layout.fillWidth:true
-            Layout.rightMargin:15
-            Layout.leftMargin:15
+
         }
 
         Text{
             id:loadtext
-            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.localDebError
-            visible:{
-                if (mainStackBridge.localDebError!=""){
-                    true
-                }else{
-                    false
-                }
-            }
-            font.family: "Quattrocento Sans Bold"
+            text:i18nd("epi-gtk","Addittional information:\n")+mainStackBridge.additionalErrorInfo
+            visible:mainStackBridge.additionalErrorInfo!=""?true:false
             font.pointSize: 10
             Layout.alignment:Qt.AlignLeft
             Layout.leftMargin:15
@@ -52,48 +42,35 @@ Rectangle{
 
     function getErrorText(code){
 
-        var msg=""
         switch (code){
             case -1:
-                msg=i18nd("epi-gtk","Application epi file does not exist or its path is invalid");
-                break;
+                return i18nd("epi-gtk","Application epi file does not exist or its path is invalid")
             case -2:
-                msg=i18nd("epi-gtk","Application epi file is empty")
-                break;
+                return i18nd("epi-gtk","Application epi file is empty")
             case -3:
-                msg=i18nd("epi-gtk","Application epi file it is not a valid json")
-                break;
+                return i18nd("epi-gtk","Application epi file it is not a valid json")
             case -4:
-                msg=i18nd("epi-gtk","Associated script does not exist or its path is invalid")
-                break;
+                return i18nd("epi-gtk","Associated script does not exist or its path is invalid")
             case -5:
-                msg=i18nd("epi-gtk","Associated script does not have execute permissions")
-                break;
+                return i18nd("epi-gtk","Associated script does not have execute permissions")
             case -6:
-                msg=i18nd("epi-gtk","You need root privileges")
-                break;
+                return i18nd("epi-gtk","You need root privileges")
             case -7:
-                msg=i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
-                break;
+                return i18nd("epi-gtk","The package will not be able to be installed\nAn error occurred during processing")
             case -8:
-                msg=i18nd("epi-gtk","The package will not be able to be installed. Problems with dependencies")
-                break;
+                return i18nd("epi-gtk","The package will not be able to be installed. Problems with dependencies")
             case -9:
-                msg=i18nd("epi-gtk","The package will not be able to be installed. Error has been detected")
-                break;
+                return i18nd("epi-gtk","The package will not be able to be installed. Error has been detected")
             case -10:
-                msg=i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
-                break;
+                return i18nd("epi-gtk","The system is being updated. Wait a few minutes and try again")
             case -11:
-                msg=i18nd("epi-gtk","Apt or Dpkg are being executed. Wait a few minutes and try again")
-                break;
+                return i18nd("epi-gtk","Apt or Dpkg are being executed. Wait a few minutes and try again")
             case -13:
-                msg=i18nd("epi-gtk","The unlocking process has failed")
-                break;
+                return i18nd("epi-gtk","The unlocking process has failed")
             case -24:
-                msg=i18nd("epi-gtk","Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information")
-                break;
+                return i18nd("epi-gtk","Application epi file it is not a valid json. Missing some keys or keys with incorrect value in json definition. Run in debug mode for more information")
+            case -25:
+                return i18nd("epi-gtk","A problem has been detected with the dependency's .epi file. Run in debug mode for more information")
         }
-        return msg
     }
 }
