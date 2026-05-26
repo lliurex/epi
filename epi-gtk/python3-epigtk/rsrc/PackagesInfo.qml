@@ -1,5 +1,3 @@
-import org.kde.plasma.core 2.1 as PlasmaCore
-import org.kde.kirigami 2.16 as Kirigami
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -7,22 +5,21 @@ import QtQuick.Layouts 1.15
 
 Rectangle{
     color:"transparent"
-    Text{ 
-        text:i18nd("epi-gtk","Applications availables")
-        font.family: "Quattrocento Sans Bold"
-        font.pointSize: 16
-    }
 
-    GridLayout{
+    ColumnLayout{
         id:generalPackagesLayout
-        rows:1
-        flow: GridLayout.TopToBottom
-        rowSpacing:10
-        anchors.left:parent.left
-        width:parent.width-10
-        height:parent.height-22
-        enabled:true
+        spacing: 5
+        anchors.fill:parent
+        anchors.leftMargin:5
+        anchors.rightMargin:15
+        anchors.bottomMargin:10
 
+        Text{ 
+            text:i18nd("epi-gtk","Applications availables")
+            font.pointSize: 16
+
+        }
+        
         PackagesList{
             id:packagesList
             Layout.fillHeight:true

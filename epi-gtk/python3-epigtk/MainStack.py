@@ -2,6 +2,7 @@
 
 from PySide2.QtCore import QObject,Signal,Slot,QThread,Property,QTimer,Qt,QModelIndex
 import os
+import subprocess
 import threading
 import signal
 import copy
@@ -13,35 +14,43 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class GatherInfo(QThread):
 
-	def __init__(self,*args):
+	infoGathered=Signal('QVariant')
 
-		QThread.__init__(self)
-		self.epiFile=args[0]
-		self.noCheck=args[1]
-		self.debug=args[2]
-		self.app=args[3]
+	def __init__(self,manager,epiFile,noCheck,debug,app):
+
+		super().__init__()
+		self.manager=manager
+		self.epiFile=epiFile
+		self.noCheck=noCheck
+		self.debug=debug
+		self.app=app
 	
 	#def __init__
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
-
+		ret=self.manager.initProcess(self.epiFile,self.noCheck,self.debug,self.app)
+		self.infoGathered.emit(ret)
+	
 	#def run
 
 #class GatherInfo
 
 class UnlockProcess(QThread):
 
-	def __init__(self,*args):
+	processUnlocked=Signal('QVariant')
 
-		QThread.__init__(self)
+	def __init__(self,manager):
+
+		super().__init__()
+		self.manager=manager
 
 	#def __init__
 		
 	def run(self,*args):
 		
-		self.ret=Bridge.epiGuiManager.execUnlockProcess()
+		ret=self.manager.execUnlockProcess()
+		self.processUnlocked.emit(ret)
 
 	#def run
 
@@ -49,19 +58,40 @@ class UnlockProcess(QThread):
 
 class Bridge(QObject):
 
+	loadMsgCodeChanged=Signal()
+	currentStackChanged=Signal()
+	currentOptionsStackChanged=Signal()
+	loadErrorCodeChanged=Signal()
+	additionalErrorInfoChanged=Signal()
+	feedbackCodeChanged=Signal()
+	enableApplyBtnChanged=Signal()
+	enableRemoveBtnChanged=Signal()
+	showRemoveBtnChanged=Signal()
+	isProcessRunningChanged=Signal()
+	showStatusMessageChanged=Signal()
+	showDialogChanged=Signal()
+	endProcessChanged=Signal()
+	endCurrentCommandChanged=Signal()
+	currentCommandChanged=Signal()
+	enableKonsoleChanged=Signal()
+	launchedProcessChanged=Signal()
+	isProgressBarVisibleChanged=Signal()
+	showCloseDialogChanged=Signal()
+	closeGuiChanged=Signal()
+
 	def __init__(self):
 
-		QObject.__init__(self)
+		super().__init__()
 		self.core=Core.Core.get_core()
-		Bridge.epiGuiManager=self.core.epiGuiManager
+		self.epiGuiManager=self.core.epiGuiManager
 		self._closeGui=False
 		self._closePopUp=True
-		self._loadMsgCode=Bridge.epiGuiManager.MSG_LOADING_INFO
+		self._loadMsgCode=self.epiGuiManager.MSG_LOADING_INFO
 		self._loadErrorCode=""
-		self._localDebError=""
+		self._additionalErrorInfo=""
 		self._currentStack=0
 		self._currentOptionsStack=0
-		self._showStatusMessage=[False,"","Ok"]
+		self._showStatusMessage={"show":False,"msgCode":'',"type":''}
 		self._feedbackCode=""
 		self._showRemoveBtn=False
 		self._isProcessRunning=False
@@ -80,6 +110,326 @@ class Bridge(QObject):
 		self.waitRetryCount=0
 
 	#def __init__
+
+	@Property(int,notify=loadMsgCodeChanged)
+	def loadMsgCode(self):
+
+		return self._loadMsgCode
+
+	#def loadMsgCode	
+
+	@loadMsgCode.setter
+	def loadMsgCode(self,loadMsgCode):
+		
+		if self._loadMsgCode!=loadMsgCode:
+			self._loadMsgCode=loadMsgCode
+			self.loadMsgCodeChanged.emit()
+
+	#def loadMsgCode
+
+	@Property(int,notify=currentStackChanged)
+	def currentStack(self):
+
+		return self._currentStack
+
+	#def currentStack	
+
+	@currentStack.setter
+	def currentStack(self,currentStack):
+		
+		if self._currentStack!=currentStack:
+			self._currentStack=currentStack
+			self.currentStackChanged.emit()
+
+	#def currentStack
+	
+	@Property(int,notify=currentOptionsStackChanged)
+	def currentOptionsStack(self):
+
+		return self._currentOptionsStack
+
+	#def currentOptionsStack
+
+	@currentOptionsStack.setter
+	def currentOptionsStack(self,currentOptionsStack):
+
+		if self._currentOptionsStack!=currentOptionsStack:
+			self._currentOptionsStack=currentOptionsStack
+			self.currentOptionsStackChanged.emit()
+
+	#def currentOptionsStack
+
+	@Property(int,notify=loadErrorCodeChanged)
+	def loadErrorCode(self):
+
+		return self._loadErrorCode
+
+	#def loadErrorCode
+
+	@loadErrorCode.setter
+	def loadErrorCode(self,loadErrorCode):
+
+		if self._loadErrorCode!=loadErrorCode:
+			self._loadErrorCode=loadErrorCode
+			self.loadMsgCodeChanged.emit()
+
+	#def loadErrorCode
+
+	@Property(str,notify=additionalErrorInfoChanged)
+	def additionalErrorInfo(self):
+
+		return self._additionalErrorInfo
+
+	#def additionalErrorInfo
+
+	@additionalErrorInfo.setter
+	def additionalErrorInfo(self,additionalErrorInfo):
+
+		if self._additionalErrorInfo!=additionalErrorInfo:
+			self._additionalErrorInfo=additionalErrorInfo
+			self.additionalErrorInfoChanged.emit()
+
+	#def additionalErrorInfo
+
+	@Property(int,notify=feedbackCodeChanged)
+	def feedbackCode(self):
+
+		return self._feedbackCode
+
+	#def feedbackCode
+
+	@feedbackCode.setter
+	def feedbackCode(self,feedbackCode):
+
+		if self._feedbackCode!=feedbackCode:
+			self._feedbackCode=feedbackCode
+			self.feedbackCodeChanged.emit()
+
+	#def feedbackCode
+
+	@Property(bool,notify=enableApplyBtnChanged)
+	def enableApplyBtn(self):
+
+		return self._enableApplyBtn
+
+	#def enableApplyBtn
+
+	@enableApplyBtn.setter
+	def enableApplyBtn(self,enableApplyBtn):
+
+		if self._enableApplyBtn!=enableApplyBtn:
+			self._enableApplyBtn=enableApplyBtn
+			self.enableApplyBtnChanged.emit()
+
+	#def enableApplyBtn
+
+	@Property(bool,notify=enableRemoveBtnChanged)
+	def enableRemoveBtn(self):
+
+		return self._enableRemoveBtn
+
+	#def enableRemoveBtn
+
+	@enableRemoveBtn.setter
+	def enableRemoveBtn(self,enableRemoveBtn):
+
+		if self._enableRemoveBtn!=enableRemoveBtn:
+			self._enableRemoveBtn=enableRemoveBtn
+			self.enableRemoveBtnChanged.emit()
+
+	#def enableRemoveBtn
+
+	@Property(bool,notify=showRemoveBtnChanged)
+	def showRemoveBtn(self):
+
+		return self._showRemoveBtn
+
+	#def showRemoveBtn
+
+	@showRemoveBtn.setter
+	def showRemoveBtn(self,showRemoveBtn):
+
+		if self._showRemoveBtn!=showRemoveBtn:
+			self._showRemoveBtn=showRemoveBtn
+			self.showRemoveBtnChanged.emit()
+
+	#def showRemoveBtn
+
+	@Property(bool,notify=isProcessRunningChanged)
+	def isProcessRunning(self):
+
+		return self._isProcessRunning
+
+	#def isProcessRunning
+
+	@isProcessRunning.setter
+	def isProcessRunning(self, isProcessRunning):
+
+		if self._isProcessRunning!=isProcessRunning:
+			self._isProcessRunning=isProcessRunning
+			self.isProcessRunningChanged.emit()
+
+	#def isProcessRunning
+
+	@Property('QVariant',notify=showStatusMessageChanged)
+	def showStatusMessage(self):
+
+		return self._showStatusMessage
+
+	#def showStatusMessage
+
+	@showStatusMessage.setter
+	def showStatusMessage(self,showStatusMessage):
+
+		if self._showStatusMessage!=showStatusMessage:
+			self._showStatusMessage=showStatusMessage
+			self.showStatusMessageChanged.emit()
+
+	#def showStatusMessage
+
+	@Property(bool,notify=showDialogChanged)
+	def showDialog(self):
+
+		return self._showDialog
+
+	#def showDialog
+
+	@showDialog.setter
+	def showDialog(self,showDialog):
+
+		if self._showDialog!=showDialog:
+			self._showDialog=showDialog
+			self.showDialogChanged.emit()
+	
+	#def showDialog
+
+	@Property(bool,notify=endProcessChanged)
+	def endProcess(self):
+
+		return self._endProcess
+
+	#def endProcess	
+
+	@endProcess.setter
+	def endProcess(self,endProcess):
+		
+		if self._endProcess!=endProcess:
+			self._endProcess=endProcess		
+			self.endProcessChanged.emit()
+
+	#def endProcess
+
+	@Property(bool,notify=endCurrentCommandChanged)
+	def endCurrentCommand(self):
+
+		return self._endCurrentCommand
+
+	#def endCurrentCommand
+
+	@endCurrentCommand.setter
+	def endCurrentCommand(self,endCurrentCommand):
+		
+		if self._endCurrentCommand!=endCurrentCommand:
+			self._endCurrentCommand=endCurrentCommand		
+			self.endCurrentCommandChanged.emit()
+
+	#def endCurrentCommand
+
+	@Property('QString',notify=currentCommandChanged)
+	def currentCommand(self):
+
+		return self._currentCommand
+
+	#def currentCommand
+
+	@currentCommand.setter
+	def currentCommand(self,currentCommand):
+		
+		if self._currentCommand!=currentCommand:
+			self._currentCommand=currentCommand		
+			self.currentCommandChanged.emit()
+
+	#def currentCommand
+
+	@Property(bool,notify=enableKonsoleChanged)
+	def enableKonsole(self):
+
+		return self._enableKonsole
+
+	#def enableKonsole
+
+	@enableKonsole.setter
+	def enableKonsole(self,enableKonsole):
+
+		if self._enableKonsole!=enableKonsole:
+			self._enableKonsole=enableKonsole
+			self.enableKonsoleChanged.emit()
+
+	#def enableKonsole
+
+	@Property('QString',notify=launchedProcessChanged)
+	def launchedProcess(self):
+
+		return self._launchedProcess
+
+	#def launchedProcess
+
+	@launchedProcess.setter
+	def launchedProcess(self,launchedProcess):
+
+		if self._launchedProcess!=launchedProcess:
+			self._launchedProcess=launchedProcess
+			self.launchedProcessChanged.emit()
+
+	#def launchedProcess
+
+	@Property(bool,notify=isProgressBarVisibleChanged)
+	def isProgressBarVisible(self):
+
+		return self._isProgressBarVisible
+
+	#def isProgressBarVisible
+
+	@isProgressBarVisible.setter
+	def isProgressBarVisible(self,isProgressBarVisible):
+
+		if self._isProgressBarVisible!=isProgressBarVisible:
+			self._isProgressBarVisible=isProgressBarVisible
+			self.isProgressBarVisibleChanged.emit()
+
+	#def isProgressBarVisible
+
+	@Property(bool,notify=showCloseDialogChanged)
+	def showCloseDialog(self):
+
+		return self._showCloseDialog
+
+	#def showCloseDialog
+
+	@showCloseDialog.setter
+	def showCloseDialog(self,showCloseDialog):
+
+		if self._showCloseDialog!=showCloseDialog:
+			self._showCloseDialog=showCloseDialog
+			self.showCloseDialogChanged.emit()
+
+	#def showCloseDialog
+
+	@Property(bool,notify=closeGuiChanged)
+	def closeGui(self):
+
+		return self._closeGui
+
+	#def closeGui	
+
+	@closeGui.setter
+	def closeGui(self,closeGui):
+		
+		if self._closeGui!=closeGui:
+			self._closeGui=closeGui		
+			self.closeGuiChanged.emit()
+
+	#def closeGui
 
 	def initBridge(self):
 
@@ -115,31 +465,32 @@ class Bridge(QObject):
 
 		if epiFile!=None:
 			if epiFile!="error":
-				self.gatherInfoT=GatherInfo(epiFile,noCheck,debug,app)
+				self.gatherInfoT=GatherInfo(self.epiGuiManager,epiFile,noCheck,debug,app)
 				self.gatherInfoT.start()
-				self.gatherInfoT.finished.connect(self._gatherInfoRet)
+				self.gatherInfoT.infoGathered.connect(self._gatherInfoRet)
+				self.gatherInfoT.finished.connect(self.gatherInfoT.deleteLater)
 
-	
 	#def initBridge
 
-	def _gatherInfoRet(self):
+	@Slot('QVariant')
+	def _gatherInfoRet(self,ret):
 
-		if 	self.gatherInfoT.ret[0]:
+		if 	ret.get("status"):
 			self._showInfo()
 		else:
-			if self.gatherInfoT.ret[2]=="End":
-				self.loadErrorCode=self.gatherInfoT.ret[1]
+			if ret.get("type")=="End":
+				self.loadErrorCode=ret.get("msgCode")
 				self.currentStack=1
-			elif self.gatherInfoT.ret[2]=="LocalDeb":
-				self.loadErrorCode=self.gatherInfoT.ret[1]
-				self.localDebError=self.gatherInfoT.ret[3]
+			elif ret.get("type")=="LocalDeb" or ret.get("type")=="Depends":
+				self.loadErrorCode=ret.get("msgCode")
+				self.additionalErrorInfo=ret.get("data")
 				self.currentStack=1
-			elif self.gatherInfoT.ret[2]=="Wait":
-				self.loadMsgCode=Bridge.epiGuiManager.MSG_LOADING_WAIT
+			elif ret.get("type")=="Wait":
+				self.loadMsgCode=self.epiGuiManager.MSG_LOADING_WAIT
 				self.waitUnlockTimer=QTimer()
 				self.waitUnlockTimer.timeout.connect(self._waitUnlockTimerRet)
 				self.waitUnlockTimer.start(5000)
-			elif self.gatherInfoT.ret[2]=="Lock":
+			elif ret.get("type")=="Lock":
 				self.showDialog=True
 
 	#def _gatherInfoRet
@@ -149,11 +500,11 @@ class Bridge(QObject):
 		self.core.packageStack.showInfo()
 		self.manageRemoveBtn(True)
 
-		if len(Bridge.epiGuiManager.epiManager.packages_selected)>0:
+		if len(self.epiGuiManager.epiManager.packages_selected)>0:
 			self.enableApplyBtn=True
 		
-		if Bridge.epiGuiManager.initialStatusCode[0]!="":
-			self.showStatusMessage=[True,Bridge.epiGuiManager.initialStatusCode[0],Bridge.epiGuiManager.initialStatusCode[1]]
+		if self.epiGuiManager.initialStatusCode.get("msgCode")!="":
+			self.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.initialStatusCode.get("msgCode"),"type":self.epiGuiManager.initialStatusCode.get("type")}
 		
 		self.currentStack=2
 
@@ -161,304 +512,24 @@ class Bridge(QObject):
 
 	def _waitUnlockTimerRet(self):
 
-		Bridge.epiGuiManager.checkLockInfo()
-		ret=Bridge.epiGuiManager.getLockInfo()
+		self.epiGuiManager.checkLockInfo()
+		ret=self.epiGuiManager.getLockInfo()
 
 		if self.waitRetryCount<self.waitMaxRetry:
-			if not ret[0]:
+			if not ret.get("status"):
 				self.waitRetryCount+=1
 			else:
 				self.waitUnlockTimer.stop()
 				self._showInfo()
 		else:
 			self.waitUnlockTimer.stop()
-			if ret[0]:
+			if ret.get("status"):
 				self._showInfo()
 			else:
-				self.loadErrorCode=ret[1]
+				self.loadErrorCode=ret.get("msgCode")
 				self.currentStack=1
 
 	#def _waitUnlockTimerRet
-
-	def _getLoadMsgCode(self):
-
-		return self._loadMsgCode
-
-	#def _getLoadMsgCode
-
-	def _setLoadMsgCode(self,loadMsgCode):
-
-		if self._loadMsgCode!=loadMsgCode:
-			self._loadMsgCode=loadMsgCode
-			self.on_loadMsgCode.emit()
-
-	#def _setLoadMsgCode
-
-	def _getLocalDebError(self):
-
-		return self._localDebError
-
-	#def _getLocalDebError
-
-	def _setLocalDebError(self,localDebError):
-
-		if self._localDebError!=localDebError:
-			self._localDebError=localDebError
-			self.on_localDebError.emit()
-
-	#def _setLocalDebError
-
-	def _getCurrentStack(self):
-
-		return self._currentStack
-
-	#def _getCurrentStack
-
-	def _setCurrentStack(self,currentStack):
-
-		if self._currentStack!=currentStack:
-			self._currentStack=currentStack
-			self.on_currentStack.emit()
-
-	#def _setCurrentStack
-
-	def _getCurrentOptionsStack(self):
-
-		return self._currentOptionsStack
-
-	#def _getCurrentOptionsStack
-
-	def _setCurrentOptionsStack(self,currentOptionsStack):
-
-		if self._currentOptionsStack!=currentOptionsStack:
-			self._currentOptionsStack=currentOptionsStack
-			self.on_currentOptionsStack.emit()
-
-	#def _setCurrentOptionsStack
-
-	def _getFeedbackCode(self):
-
-		return self._feedbackCode
-
-	#def _getFeedbackCode
-
-	def _setFeedbackCode(self,feedbackCode):
-
-		if self._feedbackCode!=feedbackCode:
-			self._feedbackCode=feedbackCode
-			self.on_feedbackCode.emit()
-
-	#def _setFeedbackCode
-
-	def _getLoadErrorCode(self):
-
-		return self._loadErrorCode
-
-	#def _getLoadErrorCode
-
-	def _setLoadErrorCode(self,loadErrorCode):
-
-		if self._loadErrorCode!=loadErrorCode:
-			self._loadErrorCode=loadErrorCode
-			self.on_loadErrorCode.emit()
-
-	#def _setLoadErrorCode
-
-	def _getEnableApplyBtn(self):
-
-		return self._enableApplyBtn
-
-	#def _getEnableApplyBtn
-
-	def _setEnableApplyBtn(self,enableApplyBtn):
-
-		if self._enableApplyBtn!=enableApplyBtn:
-			self._enableApplyBtn=enableApplyBtn
-			self.on_enableApplyBtn.emit()
-
-	#def _setEnableApplyBtn
-
-	def _getEnableRemoveBtn(self):
-
-		return self._enableRemoveBtn
-
-	#def _getEnableRemoveBtn
-
-	def _setEnableRemoveBtn(self,enableRemoveBtn):
-
-		if self._enableRemoveBtn!=enableRemoveBtn:
-			self._enableRemoveBtn=enableRemoveBtn
-			self.on_enableRemoveBtn.emit()
-
-	#def _setEnableRemoveBtn
-
-	def _getShowRemoveBtn(self):
-
-		return self._showRemoveBtn
-
-	#def _getShowRemoveBtn
-
-	def _setShowRemoveBtn(self,showRemoveBtn):
-
-		if self._showRemoveBtn!=showRemoveBtn:
-			self._showRemoveBtn=showRemoveBtn
-			self.on_showRemoveBtn.emit()
-
-	#def _setShowRemoveBtn
-
-	def _getIsProcessRunning(self):
-
-		return self._isProcessRunning
-
-	#def _getIsProcessRunning
-
-	def _setIsProcessRunning(self, isProcessRunning):
-
-		if self._isProcessRunning!=isProcessRunning:
-			self._isProcessRunning=isProcessRunning
-			self.on_isProcessRunning.emit()
-
-	#def _setIsProcessRunning
-
-	def _getShowStatusMessage(self):
-
-		return self._showStatusMessage
-
-	#def _getShowStatusMessage
-
-	def _setShowStatusMessage(self,showStatusMessage):
-
-		if self._showStatusMessage!=showStatusMessage:
-			self._showStatusMessage=showStatusMessage
-			self.on_showStatusMessage.emit()
-
-	#def _setShowStatusMessage
-
-	def _getShowDialog(self):
-
-		return self._showDialog
-
-	#def _getShowDialog
-
-	def _setShowDialog(self,showDialog):
-
-		if self._showDialog!=showDialog:
-			self._showDialog=showDialog
-			self.on_showDialog.emit()
-	
-	#def _setShowDialog
-
-	def _getEndProcess(self):
-
-		return self._endProcess
-
-	#def _getEndProcess	
-
-	def _setEndProcess(self,endProcess):
-		
-		if self._endProcess!=endProcess:
-			self._endProcess=endProcess		
-			self.on_endProcess.emit()
-
-	#def _setEndProcess
-
-	def _getEndCurrentCommand(self):
-
-		return self._endCurrentCommand
-
-	#def _getEndCurrentCommand
-
-	def _setEndCurrentCommand(self,endCurrentCommand):
-		
-		if self._endCurrentCommand!=endCurrentCommand:
-			self._endCurrentCommand=endCurrentCommand		
-			self.on_endCurrentCommand.emit()
-
-	#def _setEndCurrentCommand
-
-	def _getCurrentCommand(self):
-
-		return self._currentCommand
-
-	#def _getCurrentCommand
-
-	def _setCurrentCommand(self,currentCommand):
-		
-		if self._currentCommand!=currentCommand:
-			self._currentCommand=currentCommand		
-			self.on_currentCommand.emit()
-
-	#def _setCurrentCommand
-
-	def _getEnableKonsole(self):
-
-		return self._enableKonsole
-
-	#def _getEnableKonsole
-
-	def _setEnableKonsole(self,enableKonsole):
-
-		if self._enableKonsole!=enableKonsole:
-			self._enableKonsole=enableKonsole
-			self.on_enableKonsole.emit()
-
-	#def _setEnableKonsole
-
-	def _getLaunchedProcess(self):
-
-		return self._launchedProcess
-
-	#def _getLaunchedProcess
-
-	def _setLaunchedProcess(self,launchedProcess):
-
-		if self._launchedProcess!=launchedProcess:
-			self._launchedProcess=launchedProcess
-			self.on_launchedProcess.emit()
-
-	#def _setLaunchedProcess
-
-	def _getIsProgressBarVisible(self):
-
-		return self._isProgressBarVisible
-
-	#def _getIsProgressBarVisible
-
-	def _setIsProgressBarVisible(self,isProgressBarVisible):
-
-		if self._isProgressBarVisible!=isProgressBarVisible:
-			self._isProgressBarVisible=isProgressBarVisible
-			self.on_isProgressBarVisible.emit()
-
-	#def _setIsProgressBarVisible
-
-	def _getShowCloseDialog(self):
-
-		return self._showCloseDialog
-
-	#def _getShowCloseDialog
-
-	def _setShowCloseDialog(self,showCloseDialog):
-
-		if self._showCloseDialog!=showCloseDialog:
-			self._showCloseDialog=showCloseDialog
-			self.on_showCloseDialog.emit()
-
-	#def _setShowCloseDialog
-
-	def _getCloseGui(self):
-
-		return self._closeGui
-
-	#def _getCloseGui	
-
-	def _setCloseGui(self,closeGui):
-		
-		if self._closeGui!=closeGui:
-			self._closeGui=closeGui		
-			self.on_closeGui.emit()
-
-	#def _setCloseGui
 
 	@Slot()
 	def getNewCommand(self):
@@ -471,19 +542,21 @@ class Bridge(QObject):
 	def launchUnlockProcess(self):
 
 		self.showDialog=False
-		self.loadMsgCode=Bridge.epiGuiManager.MSG_LOADING_UNLOCK
+		self.loadMsgCode=self.epiGuiManager.MSG_LOADING_UNLOCK
 		self.unlockProcessT=UnlockProcess()
 		self.unlockProcessT.start()
-		self.unlockProcessT.finished.connect(self._unlockProcessRet)
+		self.unlockProcessT.processUnlocked.connect(self._unlockProcessRet)
+		self.unlockProcessT.finished.connect(self.unlockProcessT.deleteLater)
 
 	#def launchUnlockProcess
 
-	def _unlockProcessRet(self):
+	@Slot('QVariant')
+	def _unlockProcessRet(self,ret):
 
-		if self.unlockProcessT.ret[0]:
+		if ret.get("status"):
 			self._showInfo()
 		else:
-			self.loadErrorCode=self.unlockProcessT.ret[1]
+			self.loadErrorCode=ret.get("msgCode")
 			self.currentStack=1
 
 	#def _unlockProcessT	
@@ -492,35 +565,32 @@ class Bridge(QObject):
 
 		match=False
 		
-		if Bridge.epiGuiManager.showRemoveBtn:
-			if Bridge.epiGuiManager.pkgsInstalled:
+		if self.epiGuiManager.showRemoveBtn:
+			if self.epiGuiManager.pkgsInstalled:
 				self.showRemoveBtn=True
 			else:
 				self.showRemoveBtn=False
 		
-		for item in Bridge.epiGuiManager.epiManager.packages_selected:
-			if item in Bridge.epiGuiManager.pkgsInstalled:
+		for item in self.epiGuiManager.epiManager.packages_selected:
+			if item in self.epiGuiManager.pkgsInstalled:
 				match=True
 				break
 		
-		if match:
-			self.enableRemoveBtn=True
-		else:
-			self.enableRemoveBtn=False
+		self.enableRemoveBtn=match
 
 	#def manageRemoveBtn
 
 	@Slot()
 	def launchInstallProcess(self):
 
-		self.showStatusMessage=[False,"","Ok"]
+		self.showStatusMessage={"show":False,"msgCode":'',"type":''}
 		self.core.packageStack.enablePkgList=False
 		self.core.packageStack.filterStatusValue="all"
 		self.endProcess=False
 		self.enableApplyBtn=False
-		if not Bridge.epiGuiManager.noCheck:
+		if not self.epiGuiManager.noCheck:
 			self.isProgressBarVisible=True
-			self.feedbackCode=Bridge.epiGuiManager.MSG_FEEDBACK_INTERNET
+			self.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INTERNET
 			self.core.installStack.checkInternetConnection()
 		else:
 			self.core.packageStack.getEulas()
@@ -534,14 +604,14 @@ class Bridge(QObject):
 		self.enableRemoveBtn=False
 		self.core.packageStack.enablePkgList=False
 		self.core.packageStack.filterStatusValue="all"
-		self.showStatusMessage=[False,"","Ok"]
+		self.showStatusMessage={"show":False,"msgCode":'',"type":''}
 		self.endProcess=False
 		self.isProgressBarVisible=True
-		Bridge.epiGuiManager.totalUninstallError=0
-		Bridge.epiGuiManager.totalWarningSkipPkg=0
-		Bridge.epiGuiManager.totalWarningSkipMeta=0
-		Bridge.epiGuiManager.totalWarningSkipPkg=0
-		self.feedbackCode=Bridge.epiGuiManager.MSG_FEEDBACK_UNINSTALL_CHECK
+		self.epiGuiManager.totalUninstallError=0
+		self.epiGuiManager.totalWarningSkipPkg=0
+		self.epiGuiManager.totalWarningSkipMeta=0
+		self.epiGuiManager.totalWarningSkipPkg=0
+		self.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_UNINSTALL_CHECK
 		self.core.uninstallStack.checkMetaProtection()
 
 	#def launchUninstallProcess 
@@ -578,7 +648,7 @@ class Bridge(QObject):
 
 	def _openHelpRet(self):
 
-		os.system(self.helpCmd)
+		subprocess.run(self.helpCmd,shell=True)
 
 	#def _openHelpRet
 
@@ -586,11 +656,11 @@ class Bridge(QObject):
 	def closeApplication(self):
 
 		if self.endProcess:
-			Bridge.epiGuiManager.clearEnvironment()
+			self.epiGuiManager.clearEnvironment()
 			self.closeGui=True
 		else:
 			try:
-				if os.path.exists(Bridge.epiGuiManager.tokenPostInstall[1]):
+				if os.path.exists(self.epiGuiManager.tokenPostInstall[1]):
 					self.showCloseDialog=True
 			except:
 				pass
@@ -603,7 +673,7 @@ class Bridge(QObject):
 
 		self.showCloseDialog=False
 		self.endProcess=True
-		Bridge.epiGuiManager.clearEnvironment(True)
+		self.epiGuiManager.clearEnvironment(True)
 		self.closeGui=True
 
 	#def forceClossing
@@ -614,66 +684,6 @@ class Bridge(QObject):
 		self.showCloseDialog=False
 
 	#def cancelClossing
-	
-	on_loadMsgCode=Signal()
-	loadMsgCode=Property(int,_getLoadMsgCode,_setLoadMsgCode,notify=on_loadMsgCode)
-	
-	on_currentStack=Signal()
-	currentStack=Property(int,_getCurrentStack,_setCurrentStack, notify=on_currentStack)
-	
-	on_currentOptionsStack=Signal()
-	currentOptionsStack=Property(int,_getCurrentOptionsStack,_setCurrentOptionsStack, notify=on_currentOptionsStack)
-
-	on_loadErrorCode=Signal()
-	loadErrorCode=Property(int,_getLoadErrorCode,_setLoadErrorCode,notify=on_loadErrorCode)
-	
-	on_localDebError=Signal()
-	localDebError=Property(str,_getLocalDebError,_setLocalDebError,notify=on_localDebError)
-
-	on_feedbackCode=Signal()
-	feedbackCode=Property(int,_getFeedbackCode,_setFeedbackCode,notify=on_feedbackCode)
-
-	on_enableApplyBtn=Signal()
-	enableApplyBtn=Property(bool,_getEnableApplyBtn,_setEnableApplyBtn,notify=on_enableApplyBtn)
-
-	on_enableRemoveBtn=Signal()
-	enableRemoveBtn=Property(bool,_getEnableRemoveBtn,_setEnableRemoveBtn,notify=on_enableRemoveBtn)
-
-	on_showRemoveBtn=Signal()
-	showRemoveBtn=Property(bool,_getShowRemoveBtn,_setShowRemoveBtn,notify=on_showRemoveBtn)
-
-	on_isProcessRunning=Signal()
-	isProcessRunning=Property(bool,_getIsProcessRunning,_setIsProcessRunning,notify=on_isProcessRunning)
-
-	on_showStatusMessage=Signal()
-	showStatusMessage=Property('QVariantList',_getShowStatusMessage,_setShowStatusMessage,notify=on_showStatusMessage)
-
-	on_showDialog=Signal()
-	showDialog=Property(bool,_getShowDialog,_setShowDialog,notify=on_showDialog)
-	
-	on_endProcess=Signal()
-	endProcess=Property(bool,_getEndProcess,_setEndProcess, notify=on_endProcess)
-
-	on_endCurrentCommand=Signal()
-	endCurrentCommand=Property(bool,_getEndCurrentCommand,_setEndCurrentCommand, notify=on_endCurrentCommand)
-
-	on_currentCommand=Signal()
-	currentCommand=Property('QString',_getCurrentCommand,_setCurrentCommand, notify=on_currentCommand)
-
-	on_enableKonsole=Signal()
-	enableKonsole=Property(bool,_getEnableKonsole,_setEnableKonsole,notify=on_enableKonsole)
-
-	on_launchedProcess=Signal()
-	launchedProcess=Property('QString',_getLaunchedProcess,_setLaunchedProcess,notify=on_launchedProcess)
-	
-	on_isProgressBarVisible=Signal()
-	isProgressBarVisible=Property(bool,_getIsProgressBarVisible,_setIsProgressBarVisible,notify=on_isProgressBarVisible)
-
-	on_showCloseDialog=Signal()
-	showCloseDialog=Property(bool,_getShowCloseDialog,_setShowCloseDialog,notify=on_showCloseDialog)
-
-	on_closeGui=Signal()
-	closeGui=Property(bool,_getCloseGui,_setCloseGui, notify=on_closeGui)
 
 #class Bridge
 

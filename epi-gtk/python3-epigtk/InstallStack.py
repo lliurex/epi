@@ -2,28 +2,39 @@
 
 from PySide2.QtCore import QObject,Signal,Slot,QThread,Property,QTimer,Qt,QModelIndex
 import os
-import threading
 import signal
-import copy
-import time
 import sys
-import pwd
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class InstallStack(QObject):
 
+	GLOBALTOKENS = [
+		("addRepositoryKeys", "tokenKeys"),
+		("updateKeyRing", "tokenKeyring"),
+		("checkArquitecture", "tokenArquitecture"),
+		("updateRepos", "tokenUpdaterepos"),
+
+	]
+
+	PROCESSPKGTOKENS=[
+		("downloadApp", "tokenDownload"),
+		("preInstallApp", "tokenPreInstall"),
+		("installApp", "tokenInstall"),
+		("postInstallApp", "tokenPostInstall")
+	]	
+
 	def __init__(self):
 
-		QObject.__init__(self)
+		super().__init__()
 		self.core=Core.Core.get_core()
-		InstallStack.epiGuiManager=self.core.epiGuiManager
+		self.epiGuiManager=self.core.epiGuiManager
 
 	#def __init__
 
 	def checkInternetConnection(self):
 
-		InstallStack.epiGuiManager.checkInternetConnection()
+		self.epiGuiManager.checkInternetConnection()
 		self.checkConnectionTimer=QTimer()
 		self.checkConnectionTimer.timeout.connect(self._checkConnectionTimerRet)
 		self.checkConnectionTimer.start(1000)
@@ -32,15 +43,15 @@ class InstallStack(QObject):
 
 	def _checkConnectionTimerRet(self):
 
-		InstallStack.epiGuiManager.getResultCheckConnection()
-		if InstallStack.epiGuiManager.endCheck:
+		self.epiGuiManager.getResultCheckConnection()
+		if self.epiGuiManager.endCheck:
 			self.checkConnectionTimer.stop()
 			self.core.mainStack.feedbackCode=0
-			if InstallStack.epiGuiManager.retConnection[0]:
+			if not self.epiGuiManager.retConnection.get('status'):
 				self.core.mainStack.isProgressBarVisible=False
 				self.core.mainStack.endProcess=True
 				self.core.mainStack.enableApplyBtn=True
-				self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.retConnection[1],"Error"]
+				self.core.mainStack.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.retConnection.get("msgCode"),"type":self.epiGuiManager.retConnection.get("type")}
 			else:
 				self.core.mainStack.isProgressBarVisible=False
 				self.core.packageStack.getEulas()
@@ -57,22 +68,22 @@ class InstallStack(QObject):
 		self.core.packageStack.totalErrorInProcess=0
 		self.launchedProcess="install"
 		self._initInstallProcess()
-		self.installProcessTimer=QTimer(None)
-		self.installProcessTimer.timeout.connect(self._installProcessTimerRet)
-		self.installProcessTimer.start(100)		
+		self.globalInstallProcessTimer=QTimer(None)
+		self.globalInstallProcessTimer.timeout.connect(self._globalInstallProcessTimerRet)
+		self.globalInstallProcessTimer.start(100)		
 
 	#def _installProcess
 
 	def _initInstallProcess(self):
 
-		self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
-		InstallStack.epiGuiManager.initInstallProcess()
+		self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_GATHER
+		self.epiGuiManager.initInstallProcess()
 		self.core.mainStack.isProcessRunning=True
 		self.error=False
 		self.showError=False
 		self.endAction=False
 		self.pkgProcessed=False
-		countLimit=len(InstallStack.epiGuiManager.pkgSelectedFromList)
+		countLimit=len(self.epiGuiManager.pkgSelectedFromList)
 		if countLimit==0:
 			self.countLimit=1
 		else:
@@ -83,221 +94,236 @@ class InstallStack(QObject):
 
 	#def _initInstallProcess
 
-	def _installProcessTimerRet(self):
+	def _globalInstallProcessTimerRet(self):
 
-		if not InstallStack.epiGuiManager.addRepositoryKeysLaunched:
-			InstallStack.epiGuiManager.addRepositoryKeysLaunched=True
-			self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getAddRepositoryCommand()
+		if not self.epiGuiManager.addRepositoryKeysLaunched:
+			self.epiGuiManager.addRepositoryKeysLaunched=True
+			self.core.mainStack.currentCommand=self.epiGuiManager.getAddRepositoryCommand()
 			self.core.mainStack.endCurrentCommand=True
 
-		if InstallStack.epiGuiManager.addRepositoryKeysDone:
-			if not InstallStack.epiGuiManager.updateKeyRingLaunched:
-				InstallStack.epiGuiManager.updateKeyRingLaunched=True
-				self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getUpdateKeyRingCommand() 
+		if not self.epiGuiManager.addRepositoryKeysDone:
+			return self._checkProcessTokens()
+
+		if not self.epiGuiManager.updateKeyRingLaunched:
+			self.epiGuiManager.updateKeyRingLaunched=True
+			self.core.mainStack.currentCommand=self.epiGuiManager.getUpdateKeyRingCommand() 
+			self.core.mainStack.endCurrentCommand=True
+
+		if not self.epiGuiManager.updateKeyRingDone:
+			return self._checkProcessTokens()
+		
+		if not self.epiGuiManager.checkArquitectureLaunched:
+			self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_ARQUITECTURE
+			self.epiGuiManager.checkArquitectureLaunched=True
+			self.core.mainStack.currentCommand=self.epiGuiManager.getCheckArquitectureCommand()
+			self.core.mainStack.endCurrentCommand=True
+
+		if not self.epiGuiManager.checkArquitectureDone:
+			return self._checkProcessTokens()
+		
+		if not self.epiGuiManager.updateReposLaunched:
+			self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_REPOSITORIES
+			self.epiGuiManager.updateReposLaunched=True
+			self.core.mainStack.currentCommand=self.epiGuiManager.getUpdateReposCommand()
+			self.core.mainStack.endCurrentCommand=True
+
+		if not self.epiGuiManager.updateReposDone:
+			return self._checkProcessTokens()
+		
+		self.globalInstallProcessTimer.stop()
+		self.pkgInstallProcessTimer=QTimer(None)
+		self.pkgInstallProcessTimer.timeout.connect(self._pkgInstallProcessTimerRet)
+		self.pkgInstallProcessTimer.start(100)		
+	
+	#def _globalInstallProcessTimerRet
+
+	def _pkgInstallProcessTimerRet(self):
+		
+		if not self.pkgProcessed:
+			if self.epiGuiManager.order!=0:
+				if self.error:
+					self.endAction=True
+				else:
+					self.error=False
+			
+			if not self.endAction:
+				self.pkgToSelect+=1
+				if self.pkgToSelect<self.countLimit:
+					if self.epiGuiManager.order==0:
+						try:
+							self.pkgToProcess=self.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+						except:
+							self.pkgToProcess="all"
+					else:
+						self.pkgToProcess="all"
+
+					self.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
+					self.core.packageStack.updateResultPackagesModel('start',"install")
+					if self.epiGuiManager.order>0:
+						self.core.packageStack.showDependEpi=True
+						self.core.packageStack.showDependLabel=True
+					if not self.epiGuiManager.downloadAppLaunched:
+						self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_DOWNLOAD
+						self.epiGuiManager.downloadAppLaunched=True
+						self.core.mainStack.currentCommand=self.epiGuiManager.getDownloadAppCommand(self.pkgToProcess)
+						self.core.mainStack.endCurrentCommand=True
+					
+				else:
+					self.endAction=True
+
+			self.pkgProcessed=True
+
+		if not self.endAction:
+			if not self.epiGuiManager.downloadAppDone:
+				return self._checkProcessTokens()
+			
+			if not self.epiGuiManager.checkDownloadLaunched:
+				self.epiGuiManager.checkDownloadLaunched=True
+				self.epiGuiManager.checkDownload(self.pkgToProcess)
+
+			if not self.epiGuiManager.checkDownloadDone:
+				return
+			
+			if not self.epiGuiManager.feedBackCheck.get("status"):
+				self._handleStepError()
+				return
+
+			if not self.epiGuiManager.preInstallAppLaunched:
+				self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_PREINSTALL
+				self.epiGuiManager.preInstallAppLaunched=True
+				self.core.mainStack.currentCommand=self.epiGuiManager.getPreInstallCommand(self.pkgToProcess)
 				self.core.mainStack.endCurrentCommand=True
 
-			if InstallStack.epiGuiManager.updateKeyRingDone:
-				if not InstallStack.epiGuiManager.checkArquitectureLaunched:
-					self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_ARQUITECTURE
-					InstallStack.epiGuiManager.checkArquitectureLaunched=True
-					self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getCheckArquitectureCommand()
-					self.core.mainStack.endCurrentCommand=True
+			if not self.epiGuiManager.preInstallAppDone:
+				return self._checkProcessTokens()
 
-				if InstallStack.epiGuiManager.checkArquitectureDone:
-					if not InstallStack.epiGuiManager.updateReposLaunched:
-						self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_REPOSITORIES
-						InstallStack.epiGuiManager.updateReposLaunched=True
-						self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getUpdateReposCommand()
-						self.core.mainStack.endCurrentCommand=True
+			if not self.epiGuiManager.checkPreInstallLaunched:
+				self.epiGuiManager.checkPreInstallLaunched=True
+				self.epiGuiManager.checkPreInstall(self.pkgToProcess)
 
-					if InstallStack.epiGuiManager.updateReposDone:
-						if not self.pkgProcessed:
-							if InstallStack.epiGuiManager.order!=0:
-								if self.error:
-									self.endAction=True
-								else:
-									self.error=False
-							
-							if not self.endAction:
-								self.pkgToSelect+=1
-								if self.pkgToSelect<self.countLimit:
-									if InstallStack.epiGuiManager.order==0:
-										try:
-											self.pkgToProcess=InstallStack.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
-										except:
-											self.pkgToProcess="all"
-									else:
-										self.pkgToProcess="all"
+			if not self.epiGuiManager.checkPreInstallDone:
+				return
 
-									InstallStack.epiGuiManager.initPkgInstallProcess(self.pkgToProcess)
-									self.core.packageStack.updateResultPackagesModel('start',"install")
-									if InstallStack.epiGuiManager.order>0:
-										self.core.packageStack.showDependEpi=True
-										self.core.packageStack.showDependLabel=True
-									if not InstallStack.epiGuiManager.downloadAppLaunched:
-										self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_DOWNLOAD
-										InstallStack.epiGuiManager.downloadAppLaunched=True
-										self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getDownloadAppCommand(self.pkgToProcess)
-										self.core.mainStack.endCurrentCommand=True
+			if not self.epiGuiManager.feedBackCheck.get("status"):
+				self._handleStepError()
+				return
+			
+			if not self.epiGuiManager.installAppLaunched:
+				self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_INSTALL
+				self.epiGuiManager.installAppLaunched=True
+				self.core.mainStack.currentCommand=self.epiGuiManager.getInstallCommand(self.pkgToProcess)
+				self.core.mainStack.endCurrentCommand=True
 
-								else:
-									self.endAction=True
+			if not self.epiGuiManager.installAppDone:
+				return self._checkProcessTokens()
 
-							self.pkgProcessed=True
+			if not self.epiGuiManager.checkInstallLaunched:
+				self.epiGuiManager.checkInstallLaunched=True
+				self.epiGuiManager.checkInstall(self.pkgToProcess)
 
-						if not self.endAction:
-							if InstallStack.epiGuiManager.downloadAppDone:
-								if not InstallStack.epiGuiManager.checkDownloadLaunched:
-									InstallStack.epiGuiManager.checkDownloadLaunched=True
-									InstallStack.epiGuiManager.checkDownload(self.pkgToProcess)
+			if not self.epiGuiManager.checkInstallDone:
+				return
+			
+			if not self.epiGuiManager.feedBackCheck.get("status"):
+				self._handleStepError()
+				return
+			
+			if not self.epiGuiManager.postInstallAppLaunched:
+				self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACK_INSTALL_ENDING
+				self.epiGuiManager.postInstallAppLaunched=True
+				self.core.mainStack.currentCommand=self.epiGuiManager.getPostInstallCommand(self.pkgToProcess)
+				self.core.mainStack.endCurrentCommand=True
+										
+			if not self.epiGuiManager.postInstallAppDone:
+				return self._checkProcessTokens()
+										
+			if not self.epiGuiManager.checkPostInstallLaunched:
+				self.epiGuiManager.checkPostInstallLaunched=True
+				self.epiGuiManager.checkPostInstall(self.pkgToProcess)
+										
+			if not self.epiGuiManager.checkPostInstallDone:
+				return
 
-								if InstallStack.epiGuiManager.checkDownloadDone:
-									if InstallStack.epiGuiManager.feedBackCheck[0]:
-										if not InstallStack.epiGuiManager.preInstallAppLaunched:
-											self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_PREINSTALL
-											InstallStack.epiGuiManager.preInstallAppLaunched=True
-											self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getPreInstallCommand(self.pkgToProcess)
-											self.core.mainStack.endCurrentCommand=True
+			self.core.packageStack.updateResultPackagesModel('end',"install")
 
-										if InstallStack.epiGuiManager.preInstallAppDone:
-											if not InstallStack.epiGuiManager.checkPreInstallLaunched:
-												InstallStack.epiGuiManager.checkPreInstallLaunched=True
-												InstallStack.epiGuiManager.checkPreInstall(self.pkgToProcess)
-
-											if InstallStack.epiGuiManager.checkPreInstallDone:
-												if InstallStack.epiGuiManager.feedBackCheck[0]:
-													if not InstallStack.epiGuiManager.installAppLaunched:
-														self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_INSTALL
-														InstallStack.epiGuiManager.installAppLaunched=True
-														self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getInstallCommand(self.pkgToProcess)
-														self.core.mainStack.endCurrentCommand=True
-
-													if InstallStack.epiGuiManager.installAppDone:
-														if not InstallStack.epiGuiManager.checkInstallLaunched:
-															InstallStack.epiGuiManager.checkInstallLaunched=True
-															InstallStack.epiGuiManager.checkInstall(self.pkgToProcess)
-
-														if InstallStack.epiGuiManager.checkInstallDone:
-															if InstallStack.epiGuiManager.feedBackCheck[0]:
-																if not InstallStack.epiGuiManager.postInstallAppLaunched:
-																	self.core.mainStack.feedbackCode=InstallStack.epiGuiManager.MSG_FEEDBACK_INSTALL_ENDING
-																	InstallStack.epiGuiManager.postInstallAppLaunched=True
-																	self.core.mainStack.currentCommand=InstallStack.epiGuiManager.getPostInstallCommand(self.pkgToProcess)
-																	self.core.mainStack.endCurrentCommand=True
-																if InstallStack.epiGuiManager.postInstallAppDone:
-																	if not InstallStack.epiGuiManager.checkPostInstallLaunched:
-																		InstallStack.epiGuiManager.checkPostInstallLaunched=True
-																		InstallStack.epiGuiManager.checkPostInstall(self.pkgToProcess)
-																	if InstallStack.epiGuiManager.checkPostInstallDone:
-																		self.core.packageStack.updateResultPackagesModel('end',"install")
-
-																		if InstallStack.epiGuiManager.feedBackCheck[0]:
-																			self.core.packageStack.showDependEpi=False
-																			if InstallStack.epiGuiManager.order>0:
-																				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",True)
-																				self._initInstallProcess()
-																			else:
-																				self.pkgProcessed=False
-																			
-																		else:
-																			self.error=True
-																			self.pkgProcessed=False
-																			self.core.packageStack.updateResultPackagesModel('end',"install")
-																			if InstallStack.epiGuiManager.order==0:
-																				self.totalError+=1
-															else:
-																self.error=True
-																self.pkgProcessed=False
-																self.core.packageStack.updateResultPackagesModel('end',"install")
-																if InstallStack.epiGuiManager.order==0:
-																	self.totalError+=1
-												else:
-													self.error=True
-													self.pkgProcessed=False
-													self.core.packageStack.updateResultPackagesModel('end',"install")
-													if InstallStack.epiGuiManager.order==0:
-														self.totalError+=1
-									else:
-										self.error=True
-										self.pkgProcessed=False
-										self.core.packageStack.updateResultPackagesModel('end',"install")
-										if InstallStack.epiGuiManager.order==0:
-											self.totalError+=1
+			if  self.epiGuiManager.feedBackCheck.get("status"):
+				self.core.packageStack.showDependEpi=False
+				if self.epiGuiManager.order>0:
+					self.epiGuiManager.epiManager.zerocenter_feedback(self.epiGuiManager.order,"install",True)
+					self._initInstallProcess()
+				else:
+					self.pkgProcessed=False
+			else:
+				self._handleStepError()
+											
 
 		if self.endAction:
-			if InstallStack.epiGuiManager.order>0:
-				if self.error:
-					self.showError=True
+			self.pkgInstallProcessTimer.stop()
+			self._endInstallProcess()
+
+	#def pkgInstallProcessTimer
+
+	def _endInstallProcess(self):
+		
+		if self.epiGuiManager.order>0:
+			if self.error:
+				self.showError=True
+		else:
+			if self.totalError>0:
+				self.showError=True
+
+		self.core.mainStack.isProgressBarVisible=False
+		self.core.mainStack.endProcess=True
+		self.core.mainStack.feedbackCode=""
+		self.core.mainStack.isProcessRunning=False
+		self.core.packageStack.showDependEpi=False
+		self.core.packageStack.isAllInstalled=self.epiGuiManager.isAllInstalled()
+		self.core.packageStack.totalErrorInProcess=self.totalError
+
+		if self.showError:
+			self.epiGuiManager.epiManager.zerocenter_feedback(self.epiGuiManager.order,"install",False)
+			if self.countLimit==1:
+				self.core.mainStack.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.feedBackCheck.get("msgCode"),"type":self.epiGuiManager.feedBackCheck.get("type")}
 			else:
-				if self.totalError>0:
-					self.showError=True
+				self.core.mainStack.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.ERROR_PARTIAL_INSTALL,"type":self.epiGuiManager.KIRIGAMI_MSG_ERROR}
+		else:
+			self.epiGuiManager.epiManager.zerocenter_feedback(self.epiGuiManager.order,"install",True)
+			self.core.mainStack.manageRemoveBtn(True)
+			self.core.mainStack.enableApplyBtn=True
+			self.core.packageStack.enablePkgList=True
+			self.core.mainStack.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.feedBackCheck.get("msgCode"),"type":self.epiGuiManager.feedBackCheck.get("type")}
 
-			self.core.mainStack.isProgressBarVisible=False
-			self.core.mainStack.endProcess=True
-			self.core.mainStack.feedbackCode=""
-			self.core.mainStack.isProcessRunning=False
-			self.core.packageStack.showDependEpi=False
-			self.core.packageStack.isAllInstalled=InstallStack.epiGuiManager.isAllInstalled()
-			self.core.packageStack.totalErrorInProcess=self.totalError
-			self.installProcessTimer.stop()
+		
+		self.epiGuiManager.clearEnvironment()
 
-			if self.showError:
-				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",False)
-				if self.countLimit==1:
-					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
-				else:
-					self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.ERROR_PARTIAL_INSTALL,"Error"]
-				InstallStack.epiGuiManager.clearEnvironment()
-			else:
-				InstallStack.epiGuiManager.epiManager.zerocenter_feedback(InstallStack.epiGuiManager.order,"install",True)
-				self.core.mainStack.manageRemoveBtn(True)
-				self.core.mainStack.enableApplyBtn=True
-				self.core.packageStack.enablePkgList=True
-				self.core.mainStack.showStatusMessage=[True,InstallStack.epiGuiManager.feedBackCheck[1],InstallStack.epiGuiManager.feedBackCheck[2]]
-				InstallStack.epiGuiManager.clearEnvironment()
+	#def _endInstallProcess
 
-		if InstallStack.epiGuiManager.addRepositoryKeysLaunched:
-			if not InstallStack.epiGuiManager.addRepositoryKeysDone:
-				if not os.path.exists(InstallStack.epiGuiManager.tokenKeys[1]):
-					InstallStack.epiGuiManager.addRepositoryKeysDone=True
+	def _handleStepError(self):
+		
+		self.error = True
+		self.pkgProcessed = False
+		self.core.packageStack.updateResultPackagesModel('end', "install")
+		if self.epiGuiManager.order == 0:
+			self.totalError += 1
 
-		if InstallStack.epiGuiManager.updateKeyRingLaunched:
-			if not InstallStack.epiGuiManager.updateKeyRingDone:
-				if not os.path.exists(InstallStack.epiGuiManager.tokenKeyring[1]):
-					InstallStack.epiGuiManager.updateKeyRingDone=True
+	#def _handleStepError
 
-		if InstallStack.epiGuiManager.checkArquitectureLaunched:
-			if not InstallStack.epiGuiManager.checkArquitectureDone:
-				if not os.path.exists(InstallStack.epiGuiManager.tokenArquitecture[1]):
-					InstallStack.epiGuiManager.checkArquitectureDone=True
+	def _checkProcessTokens(self):
 
-		if InstallStack.epiGuiManager.updateReposLaunched:
-			if not InstallStack.epiGuiManager.updateReposDone:
-				if not os.path.exists(InstallStack.epiGuiManager.tokenUpdaterepos[1]):
-					InstallStack.epiGuiManager.updateReposDone=True
-
-		if self.pkgProcessed:
-			if InstallStack.epiGuiManager.downloadAppLaunched:
-				if not InstallStack.epiGuiManager.downloadAppDone:
-					if not os.path.exists(InstallStack.epiGuiManager.tokenDownload[1]):
-						InstallStack.epiGuiManager.downloadAppDone=True
-
-			if InstallStack.epiGuiManager.preInstallAppLaunched:
-				if not InstallStack.epiGuiManager.preInstallAppDone:
-					if not os.path.exists(InstallStack.epiGuiManager.tokenPreInstall[1]):
-						InstallStack.epiGuiManager.preInstallAppDone=True
-
-			if InstallStack.epiGuiManager.installAppLaunched:
-				if not InstallStack.epiGuiManager.installAppDone:
-					if not os.path.exists(InstallStack.epiGuiManager.tokenInstall[1]):
-						InstallStack.epiGuiManager.installAppDone=True
-
-			if InstallStack.epiGuiManager.postInstallAppLaunched:
-				if not InstallStack.epiGuiManager.postInstallAppDone:
-					if not os.path.exists(InstallStack.epiGuiManager.tokenPostInstall[1]):
-						InstallStack.epiGuiManager.postInstallAppDone=True
-	
-	#def _installProcessTimerRet
+		if not self.pkgProcessed:
+			for prefix, token in self.GLOBALTOKENS:
+				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
+					tmpToken=getattr(self.epiGuiManager,token)
+					if not os.path.exists(tmpToken):
+						setattr(self.epiGuiManager, f"{prefix}Done", True)
+		else:
+			for prefix, token in self.PROCESSPKGTOKENS:
+				if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
+					tmpToken=getattr(self.epiGuiManager,token)
+					if not os.path.exists(tmpToken):
+						setattr(self.epiGuiManager, f"{prefix}Done", True)
+			
+	#def _checkProcessTokens
 
 #class InstallStack
 

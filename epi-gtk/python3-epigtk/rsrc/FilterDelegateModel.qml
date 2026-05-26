@@ -3,14 +3,16 @@ import QtQml.Models 2.8
 
 DelegateModel {
 	id:filterModel
-	property string role
-	property string search
-	property bool showDepend
-	property string statusFilter
-	onRoleChanged:Qt.callLater(update)
-	onSearchChanged:Qt.callLater(update)
-	onShowDependChanged:Qt.callLater(update)
-	onStatusFilterChanged:Qt.callLater(update)
+	property var externalTimer: null
+	property string role: ""
+	property string search:""
+	property bool showDepend:false
+	property string statusFilter: "all"
+
+	onRoleChanged:if (externalTimer) externalTimer.restart()
+	onSearchChanged:if (externalTimer) externalTimer.restart()
+	onShowDependChanged:if (externalTimer) externalTimer.restart()
+	onStatusFilterChanged:if (externalTimer) externalTimer.restart()
 	property var visibleElements:[]
 	
 	groups: [
@@ -18,7 +20,7 @@ DelegateModel {
 			id:allItems
 			name:"all"
 			includeByDefault:true
-			onCountChanged:Qt.callLater(update)
+			onCountChanged:if (externalTimer) externalTimer.restart()
 		},
 		DelegateModelGroup{
 			id:visibleItems
@@ -29,42 +31,54 @@ DelegateModel {
 	filterOnGroup:"visible"
 
 	function update(){
-		visibleElements=[]
-		if (allItems.count>0){
-			allItems.setGroups(0,allItems.count,[ "all"]);
-			for (let index = 0; index < allItems.count; index++) {
-	            let item = allItems.get(index).model;
-	            let visible = item[role].toLowerCase().includes(search.toLowerCase());
-	            let matchStatus=true
-	            if (statusFilter!="all"){
-	            	switch(statusFilter){
-	            		case "available":
-	            			if (item["status"]=="installed"){
-	            				matchStatus=false
-			            	}
-			            	break;
-			            case "installed":
-			            	if (item["status"]=="available"){
-			            		matchStatus=false
-			            	}
-			            	break;
-			            case "error":
-			            	if (item["resultProcess"]!=1){
-			            		matchStatus=false
-			            	}
-			            	break
-			       	}
 
-			    }
-	            if (!visible) continue;
-	            if (!item["isVisible"] || !matchStatus) continue;
-	            allItems.setGroups(index, 1, [ "all", "visible" ]);
-	            visibleElements.push(index);
-	            
-	        }
-    	}
+		let count = allItems.count
+		if (count === 0) {
+			visibleElements = []
+			return
+		}
 
-	}
-	Component.onCompleted: Qt.callLater(update)
+		let localVisibleElements = []
+		let searchLower = search.toLowerCase()
+
+		for (let index = 0; index < count; index++) {
+			let item = allItems.get(index).model
+            let matchesSearch = true
+            if (role && item[role] !== undefined) {
+                matchesSearch = String(item[role]).toLowerCase().includes(searchLower)
+            } else if (searchLower !== "") {
+                matchesSearch = false
+            }
+
+            let matchesStatus = true
+            if (statusFilter !== "all") {
+                let currentStatus = item["status"]
+                switch(statusFilter) {
+                    case "available":
+                        matchesStatus = (currentStatus === "available")
+                        break
+                    case "installed":
+                        matchesStatus = (currentStatus === "installed")
+                        break
+                    case "error":
+                        matchesStatus = (item["resultProcess"] === 1)
+                        break
+                }
+            }
+
+            let isItemVisible = item["isVisible"] !== undefined ? item["isVisible"] : true
+
+            if (matchesSearch && matchesStatus && isItemVisible) {
+                allItems.setGroups(index, 1, ["all", "visible"])
+                localVisibleElements.push(index)
+            } else {
+                allItems.setGroups(index, 1, ["all"])
+            }
+        }
+
+        visibleElements = localVisibleElements
+    }
+    
+	Component.onCompleted: if (externalTimer) externalTimer.restart()
 
 }
