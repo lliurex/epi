@@ -1,3 +1,9 @@
+epi (0.15.20) jammy; urgency=medium
+
+  * Refactorized code
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 27 May 2026 10:56:07 +0200
+
 epi (0.15.19) jammy; urgency=medium
 
   * Added support to display the translated custom_name .
