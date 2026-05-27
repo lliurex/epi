@@ -29,10 +29,10 @@ Rectangle{
                 display:AbstractButton.IconOnly
                 icon.name:"view-filter"
                 visible:packageStackBridge.selectPkg
-                enabled:packageStackBridge.totalErrorInProcess!=0 &&
-                        packageStackBridge.enablePkgList &&
-                        !packageStackBridge.isAllInstalled.allInstalled &&
-                        !packageStackBridge.isAllInstalled.allAvailable
+                enabled:packageStackBridge.totalErrorInProcess!==0 ||(
+                        packageStackBridge.enablePkgList
+                        && !packageStackBridge.isAllInstalled.allInstalled
+                        && !packageStackBridge.isAllInstalled.allAvailable)
 
                 
                 ToolTip{
