@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 from PySide2.QtWidgets import QApplication
-from PySide2.QtCore import QUrl
+from PySide2.QtCore import QUrl,Qt
 from PySide2.QtGui import QIcon
 from PySide2.QtQml import QQmlApplicationEngine
+
 
 import sys
 import os
@@ -15,6 +16,13 @@ _ = gettext.gettext
 
 from epigtk.Core import Core
 import epigtk.IconProvider as IconProvider
+
+if os.geteuid()==0:
+	os.environ["XDG_CURRENT_DESKTOP"]="KDE"
+
+icons_paths=["/usr/share/icons","/usr/local/share/icons"]
+QIcon.setThemeName("breeze")
+
 
 c=Core.get_core()
 

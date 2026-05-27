@@ -2,26 +2,26 @@
 
 from PySide2.QtCore import QObject,Signal,Slot,QThread,Property,QTimer,Qt,QModelIndex
 import os
-import threading
 import signal
-import copy
-import time
 import sys
-import pwd
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class CheckMetaProtection(QThread):
 
-	def __init__(self, *args):
+	metaProtectionChecked=Signal()
 
-		QThread.__init__(self)
+	def __init__(self, manager):
+
+		super().__init__()
+		self.manager=manager
 
 	#def __init__
 
 	def run(self):
 
-		UninstallStack.epiGuiManager.checkRemoveMeta()
+		self.manager.checkRemoveMeta()
+		self.metaProtectionChecked.emit()
 
 	#def run
 
@@ -29,41 +29,48 @@ class CheckMetaProtection(QThread):
 
 class UninstallStack(QObject):
 
+	PROCESSPKGTOKENS=[
+		("removePkg", "tokenUninstall")
+	]
+
+
 	def __init__(self):
 
-		QObject.__init__(self)
+		super().__init__()
 		self.core=Core.Core.get_core()
-		UninstallStack.epiGuiManager=self.core.epiGuiManager
+		self.epiGuiManager=self.core.epiGuiManager
 
 	#def __init__
 
 	def checkMetaProtection(self):
 
-		self.checkMetaProtectionT=CheckMetaProtection()
+		self.checkMetaProtectionT=CheckMetaProtection(self.epiGuiManager)
 		self.checkMetaProtectionT.start()
-		self.checkMetaProtectionT.finished.connect(self._checkMetaProtectionRet)
+		self.checkMetaProtectionT.metaProtectionChecked.connect(self._checkMetaProtectionRet)
+		self.checkMetaProtectionT.finished.connect(self.checkMetaProtectionT.deleteLater)
 
 	#def checkMetaProtection
 
+	@Slot()
 	def _checkMetaProtectionRet(self):
 
-		if UninstallStack.epiGuiManager.stopUninstall[0]:
+		if self.epiGuiManager.stopUninstall.get("stop"):
 			self.core.mainStack.isProgressBarVisible=False
 			self.core.mainStack.enableApplyBtn=True
 			self.core.mainStack.endProcess=True
 			self.core.packageStack.enablePkgList=True
 			self.core.mainStack.feedbackCode=""
-			self.core.mainStack.showStatusMessage=[True,UninstallStack.epiGuiManager.stopUninstall[1],"Error"]
+			self.core.mainStack.showStatusMessage={"show":True,"msgCode":self.epiGuiManager.stopUninstall.get("code"),"type":self.epiGuiManager.KIRIGAMI_MSG_ERROR}
 		else:
 			self.core.mainStack.enableKonsole=True
-			self.core.mainStack.feedbackCode=UninstallStack.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
+			self.core.mainStack.feedbackCode=self.epiGuiManager.MSG_FEEDBACk_UNINSTALL_RUN
 			self.core.mainStack.isProcessRunning=True
 			self.core.mainStack.launchedProcess="uninstall"
-			UninstallStack.epiGuiManager.totalUninstallError=0
-			self.core.packageStack.totalErrorInProcess=UninstallStack.epiGuiManager.totalUninstallError
+			self.epiGuiManager.totalUninstallError=0
+			self.core.packageStack.totalErrorInProcess=self.epiGuiManager.totalUninstallError
 			self.endAction=False
 			self.pkgProcessed=False
-			countLimit=len(UninstallStack.epiGuiManager.pkgSelectedFromList)
+			countLimit=len(self.epiGuiManager.pkgSelectedFromList)
 			if countLimit==0:
 				self.countLimit=1
 			else:
@@ -84,15 +91,15 @@ class UninstallStack(QObject):
 				self.pkgToSelect+=1
 				if self.pkgToSelect<self.countLimit:
 					try:
-						self.pkgToProcess=UninstallStack.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
+						self.pkgToProcess=self.epiGuiManager.pkgSelectedFromList[self.pkgToSelect]
 					except:
 						self.pkgToProcess="all"
 
-					UninstallStack.epiGuiManager.initUnInstallProcess(self.pkgToProcess)
+					self.epiGuiManager.initUnInstallProcess(self.pkgToProcess)
 					self.core.packageStack.updateResultPackagesModel('start',"uninstall")
-					if not UninstallStack.epiGuiManager.removePkgLaunched:
-						UninstallStack.epiGuiManager.removePkgLaunched=True
-						self.core.mainStack.currentCommand=UninstallStack.epiGuiManager.getUninstallCommand(self.pkgToProcess)
+					if not self.epiGuiManager.removePkgLaunched:
+						self.epiGuiManager.removePkgLaunched=True
+						self.core.mainStack.currentCommand=self.epiGuiManager.getUninstallCommand(self.pkgToProcess)
 						self.core.mainStack.endCurrentCommand=True
 				else:
 					self.endAction=True
@@ -100,14 +107,18 @@ class UninstallStack(QObject):
 				self.pkgProcessed=True
 
 		if not self.endAction:
-			if UninstallStack.epiGuiManager.removePkgDone:
-				if not UninstallStack.epiGuiManager.checkRemoveLaunched:
-					UninstallStack.epiGuiManager.checkRemoveLaunched=True
-					UninstallStack.epiGuiManager.checkRemove(self.pkgToProcess)
+			if not self.epiGuiManager.removePkgDone:
+				return self._checkProcessToken()
+		
+			if not self.epiGuiManager.checkRemoveLaunched:
+				self.epiGuiManager.checkRemoveLaunched=True
+				self.epiGuiManager.checkRemove(self.pkgToProcess)
 
-				if UninstallStack.epiGuiManager.checkRemoveDone:
-					self.core.packageStack.updateResultPackagesModel("end","uninstall")
-					self.pkgProcessed=False
+			if not self.epiGuiManager.checkRemoveDone:
+				return;
+		
+			self.core.packageStack.updateResultPackagesModel("end","uninstall")
+			self.pkgProcessed=False
 		
 		else:
 			self.core.mainStack.isProgressBarVisible=False
@@ -116,25 +127,35 @@ class UninstallStack(QObject):
 			self.core.mainStack.feedbackCode=""
 			self.core.mainStack.enableApplyBtn=True
 			self.core.packageStack.enablePkgList=True
-			self.core.packageStack.isAllInstalled=UninstallStack.epiGuiManager.isAllInstalled()
-			self.core.packageStack.totalErrorInProcess=UninstallStack.epiGuiManager.totalUninstallError
+			self.core.packageStack.isAllInstalled=self.epiGuiManager.isAllInstalled()
+			self.core.packageStack.totalErrorInProcess=self.epiGuiManager.totalUninstallError
 			self.core.mainStack.manageRemoveBtn(True)
 			self.uninstallProcessTimer.stop()
-			if UninstallStack.epiGuiManager.totalUninstallError>0:
-				UninstallStack.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",False)
+			if self.epiGuiManager.totalUninstallError>0:
+				self.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",False)
 			else:
-				UninstallStack.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",True)
+				self.epiGuiManager.epiManager.zerocenter_feedback(0,"uninstall",True)
 			
-			getUninstallGlobalResult=UninstallStack.epiGuiManager.getUninstallGlobalResult()
-			self.core.mainStack.showStatusMessage=[True,getUninstallGlobalResult[0],getUninstallGlobalResult[1]]
-			UninstallStack.epiGuiManager.epiManager.remove_repo_keys()
+			getUninstallGlobalResult=self.epiGuiManager.getUninstallGlobalResult()
+			self.core.mainStack.showStatusMessage={"show":True,"msgCode":getUninstallGlobalResult.get("msgCode"),"type":getUninstallGlobalResult.get("type")}
+			self.epiGuiManager.epiManager.remove_repo_keys()
 		
-		if UninstallStack.epiGuiManager.removePkgLaunched:
-			if not UninstallStack.epiGuiManager.removePkgDone:
-				if not os.path.exists(UninstallStack.epiGuiManager.tokenUninstall[1]):
-					UninstallStack.epiGuiManager.removePkgDone=True
+		if self.epiGuiManager.removePkgLaunched:
+			if not self.epiGuiManager.removePkgDone:
+				if not os.path.exists(self.epiGuiManager.tokenUninstall[1]):
+					self.epiGuiManager.removePkgDone=True
 		
 	#def _uninstallProcessTimerRet
+
+	def _checkProcessToken(self):
+
+		for prefix, token in self.PROCESSPKGTOKENS:
+			if getattr(self.epiGuiManager, f"{prefix}Launched") and not getattr(self.epiGuiManager, f"{prefix}Done"):
+				tmpToken=getattr(self.epiGuiManager,token)
+				if not os.path.exists(tmpToken):
+					setattr(self.epiGuiManager, f"{prefix}Done", True)
+
+	#def _checkProcessToken
 
 #class UninstallStack
 

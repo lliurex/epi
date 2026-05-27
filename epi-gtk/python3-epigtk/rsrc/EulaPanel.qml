@@ -16,6 +16,7 @@ Rectangle {
     WebEngineView {
         id:webEngine
         anchors.fill:parent
+        anchors.topMargin:15
         url: eulaUrl
         profile.persistentCookiesPolicy:WebEngineProfile.NoPersistentCookies
                 

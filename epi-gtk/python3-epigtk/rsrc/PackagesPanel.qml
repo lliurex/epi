@@ -5,18 +5,17 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 
-GridLayout{
+RowLayout{
     id:generalPkgLayout
-    rows:1
-    flow: GridLayout.TopToBottom
-    rowSpacing:10
+    spacing: 10
+    Layout.fillWidth: true
+    Layout.fillHeight: true
  
     StackView{
         id:generalPkgView
         property int currentPkgOption:packageStackBridge.currentPkgOption
         Layout.fillHeight:true
         Layout.fillWidth:true
-        Layout.alignment:Qt.AlignHCenter
         initialItem:pkgInfoView
 
         onCurrentPkgOptionChanged:{
@@ -29,7 +28,7 @@ GridLayout{
                     break
                 case 2:
                     generalPkgView.replace(infoView)
-                    break;
+                    break
             }
         }
 
@@ -38,7 +37,7 @@ GridLayout{
                 property: "opacity"
                 from: 0
                 to:1
-                duration: 600
+                duration: 60
             }
         }
         replaceExit: Transition {
@@ -46,7 +45,7 @@ GridLayout{
                 property: "opacity"
                 from: 1
                 to:0
-                duration: 600
+                duration: 60
             }
         }
 
