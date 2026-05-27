@@ -68,9 +68,6 @@ class InstallStack(QObject):
 		self.core.packageStack.totalErrorInProcess=0
 		self.launchedProcess="install"
 		self._initInstallProcess()
-		self.globalInstallProcessTimer=QTimer(None)
-		self.globalInstallProcessTimer.timeout.connect(self._globalInstallProcessTimerRet)
-		self.globalInstallProcessTimer.start(100)		
 
 	#def _installProcess
 
@@ -91,6 +88,10 @@ class InstallStack(QObject):
 
 		self.pkgToSelect=-1
 		self.pkgToProcess=""
+
+		self.globalInstallProcessTimer=QTimer(None)
+		self.globalInstallProcessTimer.timeout.connect(self._globalInstallProcessTimerRet)
+		self.globalInstallProcessTimer.start(100)		
 
 	#def _initInstallProcess
 
@@ -250,6 +251,7 @@ class InstallStack(QObject):
 				self.core.packageStack.showDependEpi=False
 				if self.epiGuiManager.order>0:
 					self.epiGuiManager.epiManager.zerocenter_feedback(self.epiGuiManager.order,"install",True)
+					self.pkgInstallProcessTimer.stop()
 					self._initInstallProcess()
 				else:
 					self.pkgProcessed=False
