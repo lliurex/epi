@@ -1,3 +1,10 @@
+epi (0.25.36) noble; urgency=medium
+
+  * Fixed installation process
+  * Improved interacction with pkg list
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 27 May 2026 11:18:36 +0200
+
 epi (0.25.35) noble; urgency=medium
 
   * Fixed function to check local deb
