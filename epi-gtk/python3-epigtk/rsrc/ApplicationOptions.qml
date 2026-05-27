@@ -81,11 +81,6 @@ RowLayout{
             Layout.fillWidth:true
             Layout.rightMargin:10
 
-            onVisibleChanged:{
-                if (messageLabel.visible && mainStackBridge.runPkexec){
-                    background.color=getMsgColor()
-                }
-            }
         }
 
         RowLayout{
@@ -165,7 +160,7 @@ RowLayout{
                     indeterminate:true
                     visible:mainStackBridge.isProgressBarVisible
                     implicitWidth:100
-                    implicitHeight:mainStackBridge.runPkexec?7:25
+                    implicitHeight:25
                     Layout.alignment:Qt.AlignHCenter
                 }
             }
@@ -363,20 +358,5 @@ RowLayout{
         }
     }
 
-    function getMsgColor(){
-
-        switch(mainStackBridge.showStatusMessage.type){
-            case 0:
-                return "#3cb371"
-            case 1:
-                return "#dc143c"
-           case 2:
-                return "#ff8c00"
-            case 3:
-            default:
-                return "#00bfff"
-         }
-    }
-
-}
+ }
 

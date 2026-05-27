@@ -17,6 +17,13 @@ _ = gettext.gettext
 from epigtk.Core import Core
 import epigtk.IconProvider as IconProvider
 
+if os.geteuid()==0:
+	os.environ["XDG_CURRENT_DESKTOP"]="KDE"
+
+icons_paths=["/usr/share/icons","/usr/local/share/icons"]
+QIcon.setThemeName("breeze")
+
+
 c=Core.get_core()
 
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"]="--no-sandbox"

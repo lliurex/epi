@@ -108,7 +108,7 @@ class Bridge(QObject):
 		self.moveToStack=""
 		self.waitMaxRetry=1
 		self.waitRetryCount=0
-		self._runPkexec=self.epiGuiManager.runPkexec
+		self.runPkexec=self.epiGuiManager.runPkexec
 
 	#def __init__
 
@@ -431,13 +431,6 @@ class Bridge(QObject):
 			self.closeGuiChanged.emit()
 
 	#def closeGui
-
-	@Property(bool,constant=True)
-	def runPkexec(self):
-
-		return self._runPkexec
-
-	#def runPkexec
 
 	def initBridge(self):
 
