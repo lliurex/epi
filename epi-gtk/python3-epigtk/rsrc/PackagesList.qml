@@ -217,7 +217,6 @@ Rectangle{
                 id:dependText
                 text:i18nd("epi-gtk","(D) Addicitional application required")
                 visible:packageStackBridge.showDependLabel
-                font.family: "Quattrocento Sans Bold"
                 font.pointSize: 10
                 horizontalAlignment:Text.AlignLeft
                 Layout.fillWidth:true
