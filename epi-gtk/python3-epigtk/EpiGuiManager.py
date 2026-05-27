@@ -306,7 +306,6 @@ class EpiGuiManager:
 
 	    for order, content in self.info.items():
 	        showCB = False
-
 	        if order == 0:
 	            selection = content.get("selection_enabled", {})
 	            if selection.get("active"):
@@ -343,8 +342,8 @@ class EpiGuiManager:
 	                    }
 
 	                    if defaultChecked or not showCB:
-	                        tmp["isChecked"] = True
-	                        self._managePkgSelected(pkgName, True, order)
+	                    	tmp["isChecked"] = True
+	                    	self._managePkgSelected(pkgName, True, order)
 	                    else:
 	                        isDefault = element.get("default_pkg", False)
 	                        if isDefault:
@@ -516,6 +515,7 @@ class EpiGuiManager:
 			if checkListFromReply and pkgId in self.pkgSelectedFromList:
 				self.pkgSelectedFromList.remove(pkgId)
 
+	
 	#def _managePkgSelected
 	
 	def checkInternetConnection(self):
@@ -761,7 +761,6 @@ class EpiGuiManager:
 		command=""
 		command=self.epiManager.download_app(pkgId)
 		length=len(command)
-
 		if length>0:
 			command=self._createProcessToken(command,"download")
 		else:
