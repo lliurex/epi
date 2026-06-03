@@ -1,3 +1,9 @@
+epi (0.15.21) jammy; urgency=medium
+
+  * Fixed detection of failiure in installation
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 03 Jun 2026 09:02:04 +0200
+
 epi (0.15.20) jammy; urgency=medium
 
   * Refactorized code
