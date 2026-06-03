@@ -861,7 +861,7 @@ class EpiGuiManager:
 		if not self.installed:
 			self._updateProcessModelInfo(self.order,pkgId,'install',self.installed,self.dpkgStatus)
 			msgCode=EpiGuiManager.ERROR_INSTALL_INSTALL
-			self.feedBackCheck={"status":installed,"msgCode":msgCode,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
+			self.feedBackCheck={"status":self.installed,"msgCode":msgCode,"type":EpiGuiManager.KIRIGAMI_MSG_ERROR}
 			self._writeLog(f"Install process. Result: PkgId: {pkgId} - Status: Error - Code: {msgCode}")
 	
 		self.checkInstallDone=True
