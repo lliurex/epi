@@ -22,23 +22,33 @@ Rectangle{
             Image{
                 id:spinnerImage
                 source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
-                Layout.preferredWidth: 32
-                Layout.preferredHeight: 32
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter
                 fillMode: Image.PreserveAspectFit
-                smooth:true
-                antialiasing:true
+                smooth:false
+                antialiasing:false
 
                 rotation:0
             }
             Timer{
                 id:rotationTimer
-                running:spinnerImage.visible
+                running:(spinnerImage!==null && loadRoot!==null) && spinnerImage.visible && loadRoot.visible
                 repeat:true
-                interval:60
+                interval:100
 
                 onTriggered:{
-                    spinnerImage.rotation=(spinnerImage.rotation+10)%360
+
+                    if (spinnerImage && typeof spinnerImage.rotation!="undefined"){
+                        var nextRotation= spinnerImage.rotation-30
+
+                            if (nextRotation<0){
+                                nextRotation=330
+                            }
+                            spinnerImage.rotation=nextRotation
+                     }else{
+                        stop()
+                     }   
 
                 }
             }

@@ -179,9 +179,13 @@ RowLayout{
                         repeat:true
                         interval:60
                         onTriggered:{
-                            bar.x+=4;
-                            if (bar.x > feedBackBar.width){
-                                bar.x=-bar.width
+                            if (feedBackBar.visible){
+                                bar.x+=4;
+                                if (bar.x > customPB.width){
+                                    bar.x=-bar.width
+                                }
+                            }else{
+                                stop()
                             }   
                         }
                     }
