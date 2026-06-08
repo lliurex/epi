@@ -41,11 +41,10 @@ Rectangle{
 
                     if (spinnerImage && typeof spinnerImage.rotation!="undefined"){
                         var nextRotation= spinnerImage.rotation-30
-
-                            if (nextRotation<0){
-                                nextRotation=330
-                            }
-                            spinnerImage.rotation=nextRotation
+                        if (nextRotation<0){
+                            nextRotation=330
+                        }
+                        spinnerImage.rotation=nextRotation
                      }else{
                         stop()
                      }   
