@@ -175,11 +175,11 @@ RowLayout{
                         }    
                     }
                     Timer{
-                        running:feedBackBar.visible
+                        running:mainStackBridge.isProgressBarVisible
                         repeat:true
                         interval:60
                         onTriggered:{
-                            if (feedBackBar.visible){
+                            if (mainStackBridge.isProgressBarVisible){
                                 bar.x+=4;
                                 if (bar.x > customPB.width){
                                     bar.x=-bar.width
