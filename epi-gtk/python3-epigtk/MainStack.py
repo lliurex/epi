@@ -438,38 +438,36 @@ class Bridge(QObject):
 		noCheck=False
 		epiFile=""
 		app=None
-		indexToPop=[]
+
+		argsList=sys.argv[1:]
+		remainingArgs=[]
 		
-		sys.argv.pop(0)
-
-		for item in range(len(sys.argv)-1,-1,-1):
-			if "-d" in sys.argv[item] or "--debug" in sys.argv[item]:
-				if '.epi' not in sys.argv[item]:
+		for item in argsList:
+			if "-d" in item or "--debug" in item:
+				if '.epi' not in item:
 					debug=True
-					indexToPop.append(item)
-			if "-nc" in sys.argv[item] or "--no-check" in sys.argv[item]:
-				if '.epi' not in sys.argv[item]:
+					continue
+			if "-nc" in item or "--no-check" in item:
+				if '.epi' not in item:
 					noCheck=True
-					indexToPop.append(item)
-			if "-u" in sys.argv[item] or "--unattended" in sys.argv[item]:
-				if '.epi' not in sys.argv[item]:
-					indexToPop.append(item)
-			if ".epi" in sys.argv[item]:
-				epiFile=sys.argv[item]
-				indexToPop.append(item)
+					continue
+			if "-u" in item or "--unattended" in item:
+				if '.epi' not in item:
+					continue
+			if ".epi" in item:
+				epiFile=item
+				continue
 
-		for item in indexToPop:
-			sys.argv.pop(item)
+			remainingArgs.append(item)
 
-		if len(sys.argv)>0:
-			app=sys.argv[0]
+		if len(remainingArgs)>0:
+			app=remainingArgs[0]
 
-		if epiFile!=None:
-			if epiFile!="error":
-				self.gatherInfoT=GatherInfo(self.epiGuiManager,epiFile,noCheck,debug,app)
-				self.gatherInfoT.start()
-				self.gatherInfoT.infoGathered.connect(self._gatherInfoRet)
-				self.gatherInfoT.finished.connect(self.gatherInfoT.deleteLater)
+		if epiFile and epiFile!="error":
+			self.gatherInfoT=GatherInfo(self.epiGuiManager,epiFile,noCheck,debug,app)
+			self.gatherInfoT.start()
+			self.gatherInfoT.infoGathered.connect(self._gatherInfoRet)
+			self.gatherInfoT.finished.connect(self.gatherInfoT.deleteLater)
 
 	#def initBridge
 

@@ -155,14 +155,44 @@ RowLayout{
                     wrapMode: Text.WordWrap
                 }
                 
-                ProgressBar{
+                Item{
                     id:feedBackBar
-                    indeterminate:true
                     visible:mainStackBridge.isProgressBarVisible
                     implicitWidth:100
-                    implicitHeight:25
+                    implicitHeight:5
                     Layout.alignment:Qt.AlignHCenter
+
+                    Rectangle{
+                        anchors.fill:parent
+                        color:"#E0E0E0"
+                        clip:true
+
+                        Rectangle{
+                            id:bar
+                            width:parent.width*0.2
+                            height:parent.height
+                            color:"#2196F3"
+                            x:0
+                        }    
+                    }
+                    Timer{
+                        id:pbTimer
+                        running:mainStackBridge.isProgressBarVisible
+                        repeat:true
+                        interval:60
+                        onTriggered:{
+                            if (mainStackBridge.isProgressBarVisible){
+                                bar.x+=4;
+                                if (bar.x > feedBackBar.width){
+                                    bar.x=-bar.width
+                                }
+                            }else{
+                                pbTimer.stop()
+                            }  
+                        }
+                    }
                 }
+                
             }
 
             PC.Button {
