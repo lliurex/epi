@@ -3,9 +3,10 @@ import QtQuick.Controls 2.15
 import QtQml.Models 2.15
 import QtQuick.Layouts 1.15
 import org.kde.plasma.components 3.0 as PC3
-import org.kde.plasma.core 2.0 as PlasmaCore // Importante para el icono nativo en QML 5
+import org.kde.plasma.core 2.0 as PlasmaCore
+import org.kde.kirigami 2.16 as Kirigami
 
-PC3.ItemDelegate {
+ItemDelegate {
     id: listPkgItem
 
     property string pkgId
@@ -29,20 +30,25 @@ PC3.ItemDelegate {
     leftPadding:15
     rightPadding:15
 
-    onHoveredChanged: {
-        if (hovered){
-            if (typeof listPkg !== "undefined" && typeof filterModel !== "undefined") {
-                var targetIndex = filterModel.visibleElements.indexOf(index)
-                if (targetIndex !== -1) {
-                    listPkg.currentIndex = targetIndex
-                }
-            }
-        }else{
-            if (typeof listPkg !=="undefined" && listPkg.currentIndex===model.index){
-                listPkg.currentIndex=-1
-            }
-        }
+    background: Rectangle {
+        anchors.fill: parent
+
+        anchors.leftMargin: 5
+        anchors.rightMargin: 5
+        anchors.topMargin: 5
+        anchors.bottomMargin: 0
+    
+        color: (listPkgItem.hovered || listPkgItem.ListView.isCurrentItem)
+                ? Qt.rgba(Kirigami.Theme.highlightColor.r, Kirigami.Theme.highlightColor.g, Kirigami.Theme.highlightColor.b, 0.15)
+                : "transparent"
+                
+        radius:6
+        border.width:1
+        border.color: (listPkgItem.hovered || listPkgItem.ListView.isCurrentItem)
+                      ? Kirigami.Theme.highlightColor
+                      : "transparent"
     }
+    
 
     contentItem: RowLayout {
         id: mainRowLayout
@@ -99,13 +105,28 @@ PC3.ItemDelegate {
             Layout.preferredHeight: visible ? 24 : 0
             visible: packageCheck.checked && listPkgItem.showSpinner && mainStackBridge.isProcessRunning
 
-            AnimatedImage {
-                id: animation
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
-                anchors.fill: parent
-                paused: !animationFrame.visible
+            Image{
+                id:spinnerImage
+                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
+                anchors.fill:parent
                 fillMode: Image.PreserveAspectFit
+                smooth:true
+                antialiasing:true
+
+                rotation:0
             }
+            Timer{
+                id:rotationTimer
+                running:animationFrame.visible
+                repeat:true
+                interval:60
+
+                onTriggered:{
+                    spinnerImage.rotation=(spinnerImage.rotation+10)%360
+
+                }
+            }
+                
         }
 
         PC3.Button {
@@ -115,7 +136,7 @@ PC3.ItemDelegate {
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: visible ? implicitWidth : 0
 
-            visible: listPkgItem.ListView.isCurrentItem &&
+            visible: (listPkgItem.ListView.isCurrentItem || listPkgItem.hovered)&&
                      !(listPkgItem.status === "installed" && listPkgItem.entryPoint !== "") &&
                      !mainStackBridge.isProcessRunning
 
@@ -144,7 +165,7 @@ PC3.ItemDelegate {
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: visible ? implicitWidth : 0
 
-            visible: listPkgItem.ListView.isCurrentItem &&
+            visible: (listPkgItem.ListView.isCurrentItem || listPkgItem.hovered)&&
                      (listPkgItem.status === "installed" && listPkgItem.entryPoint !== "") &&
                      !mainStackBridge.isProcessRunning
 

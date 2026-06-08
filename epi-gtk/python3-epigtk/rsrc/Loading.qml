@@ -18,16 +18,32 @@ Rectangle{
         ColumnLayout{
             Layout.alignment:Qt.AlignHCenter
             spacing:10
-        
-            AnimatedImage{
-                id:loadingGif
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
+
+            Image{
+                id:spinnerImage
+                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
                 Layout.preferredWidth: 32
                 Layout.preferredHeight: 32
                 Layout.alignment: Qt.AlignHCenter
                 fillMode: Image.PreserveAspectFit
-            }
+                smooth:true
+                antialiasing:true
 
+                rotation:0
+            }
+            Timer{
+                id:rotationTimer
+                running:spinnerImage.visible
+                repeat:true
+                interval:60
+
+                onTriggered:{
+                    spinnerImage.rotation=(spinnerImage.rotation+10)%360
+
+                }
+            }
+        
+           
             Text{
                 id:loadtext
                 text:getMsg()
