@@ -1086,15 +1086,19 @@ class EpiManager:
 
 	def remove_repo_keys(self):
 	
-		if os.path.exists(self.epi_sources):
-			os.remove(self.epi_sources)	
+		try:
+			if os.path.exists(self.epi_sources):
+				os.remove(self.epi_sources)	
 
-		if os.path.exists(self.epi_keyring_path):
-			os.remove(self.epi_keyring_path)	
+			if os.path.exists(self.epi_keyring_path):
+				os.remove(self.epi_keyring_path)	
 
-		dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")	
-		if os.path.exists(dest_path):
-			os.remove(dest_path)	
+			dest_path=os.path.join(self.keyring_path,self.epi_keyring_file+".gpg")	
+			if os.path.exists(dest_path):
+				os.remove(dest_path)
+		
+		except Exception as e:
+			pass	
 
 	#def remove_repo_keys	
 	

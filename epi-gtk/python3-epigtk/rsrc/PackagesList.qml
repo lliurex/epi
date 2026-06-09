@@ -152,32 +152,8 @@ Rectangle{
                     highlightFollowsCurrentItem:true
                     highlightMoveDuration: 0
                     highlightResizeDuration: 0
-                    highlight: Item {
-                        width: listPkg.width
-                        height: listPkg.currentItem?listPkg.currentItem.height:65
-                        Rectangle{
-                            x:5
-                            y:5
-                            width:parent.width-10
-                            height:parent.height-5
-                            color: Kirigami.Theme.highlightColor
-                            opacity:0.15
-                            radius:6
-                        }
-                        Rectangle{
-                            x:5
-                            y:5
-                            width:parent.width-10
-                            height:parent.height-5
-                            color: "transparent"
-                            border.width:1
-                            border.color:Kirigami.Theme.highlightColor
-                            radius:6
-                        }
-                    }
-                   
-
-                    Kirigami.PlaceholderMessage { 
+                    
+		    Kirigami.PlaceholderMessage { 
                         id: emptyHint
                         anchors.centerIn: parent
                         width: parent.width - (Kirigami.Units.largeSpacing * 4)
