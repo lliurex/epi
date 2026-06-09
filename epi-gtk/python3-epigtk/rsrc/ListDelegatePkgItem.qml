@@ -100,12 +100,25 @@ PC.ItemDelegate {
             Layout.preferredHeight: visible ? 24 : 0
             visible: packageCheck.checked && listPkgItem.showSpinner && mainStackBridge.isProcessRunning
 
-            AnimatedImage {
-                id: animation
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.gif"
-                anchors.fill: parent
-                paused: !animationFrame.visible
+            Image{
+                id:spinnerImage
+                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
+                anchors.fill:parent
                 fillMode: Image.PreserveAspectFit
+                smooth:false
+                antialiasing:false
+
+                rotation:0
+            }
+            Timer{
+                id:rotationTimer
+                running:animationFrame.visible
+                repeat:true
+                interval:100
+
+                onTriggered:{
+                    spinnerImage.rotation=(spinnerImage.rotation+330)%360
+                }
             }
         }
 
