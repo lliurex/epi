@@ -117,18 +117,7 @@ PC.ItemDelegate {
                 interval:100
 
                 onTriggered:{
-
-                    if (listPkgItem.showSpinner){
-                        var nextRotation= spinnerImage.rotation-30
-
-                        if (nextRotation<0){
-                            nextRotation=330
-                        }
-                        spinnerImage.rotation=nextRotation
-                     }else{
-                        stop()
-                     }   
-
+                    spinnerImage.rotation=(spinnerImage.rotation+330)%360
                 }
             }
         }
