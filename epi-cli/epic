@@ -1,76 +1,115 @@
 #! /usr/bin/python3
 import sys
-
-from clint import arguments
-from clint.textui import puts, indent
+import os
+import argparse
 
 from epicli import EPIC
 
-def usage():
-	puts("Usage")
-	with indent(4):
-		puts("epic [FLAGS...] ACTION")
-		puts("Actions")
-		with indent(4):	
-			puts("showlist : Shows alls epi files avaliables to be installed with EPIC")
-			puts("showinfo PATH or NAME APP_EPI_FILE : Shows information about APP_EPI_FILE")
-			puts("install PATH or NAME APP_EPI_FILE <optional all> or <optional pkg1> <optional pkg2>...")
-			puts("uninstall PATH or NAME APP_EPÌ_FILE <optional all> or <optional pkg1> <optional pkg2>...")
-			puts("showall : Show alls epi files availabes in the system installable or not with EPIC")
-		puts("Flags")
-		with indent(4):
-			puts("-h --help : Show help")
-			puts("-u --unattended: Run the install/uninstall without prompting for user confirmation")
-			puts("-nc --nocheck: Run the install/uninstall without previous system checking")
-			puts("-d --debug: Run the install/uninstall in debug mode")
-	sys.exit(1)
-
-#def usage	
-		
 if __name__ == '__main__':
-	args = arguments.Args().copy
-	mode=False
-	nocheck=False
-	debug=False
-	app_file=None
-	pkgsToInstall=[]
 
-	if args.contains(["-h","--help"]) or len(args.all) == 0 :
-		usage()		
-	if args.contains(["-u","--unattended"]):
-		mode=True
-		index = args.first(["-u","--unattended"])
-		args.pop(index)
-	if args.contains(["-nc","--nocheck"]):
-		nocheck=True
-		index = args.first(["-nc","--nocheck"])
-		args.pop(index)
-	if args.contains(["-d","--debug"]):
-		debug=True
-		index = args.first(["-d","--debug"])
-		args.pop(index)
-	
-	action = args.pop(0)
-	if action!="showlist" and action!="showall":
-		app_file=args.get(0)
-		args.pop(0)
-		if len(args.all)>0:
-			for item in args.all:
-				pkgsToInstall.append(item)
-		if app_file ==None:
-			usage()
+	parser = argparse.ArgumentParser(add_help=False)
+	parent_parser=argparse.ArgumentParser(add_help=False)
 
-	epic = EPIC(app_file,pkgsToInstall,debug)
+	def custom_print_help():
+		help_text = (
+		    "Usage:\n"
+		    "    epic [FLAGS...] ACTION\n\n"
+		    "Actions:\n"
+		    "   showlist:          Shows alls epi files avaliables to be installed with EPIC\n"
+		    "   showinfo           PATH or NAME APP_EPI_FILE : Shows information about APP_EPI_FILE\n"
+		    "   install:           PATH or NAME APP_EPI_FILE <optional all> or <optional pkg1> <optional pkg2>...\n"
+		    "   uninstall:         PATH or NAME APP_EPÌ_FILE <optional all> or <optional pkg1> <optional pkg2>...\n"
+		    "   showall:           Show alls epi files availabes in the system installable or not with EPIC\n\n"
+
+		    "Flags:\n"
+		    "   -h, --help         Show help\n"
+		    "   -u, --unattended   Run the install/uninstall without prompting for user confirmation\n"
+		    "   -nc --nocheck      Run the install/uninstall without previous system checking\n"
+		    "   -d  --debug        Run the install/uninstall in debug mode"
+
+		)
+		print(help_text)
+
+	parser.print_help = custom_print_help
+
+	def custom_error(message):
+		print(f"Error: {message}\n", file=sys.stderr)
+		parser.print_help()
+		sys.exit(2)
+
+	parser.error = custom_error
+
+	class HelpAction(argparse.Action):
+		def __call__(self, parser, namespace, values, option_string=None):
+			parser.print_help()
+			sys.exit(0)
+
+	parser.add_argument("-h", "--help", action=HelpAction, nargs=0)
+
+	parent_parser.add_argument("-u", "--unattended", action="store_true",dest="unattended",default=argparse.SUPPRESS)
+	parser.add_argument("-u", "--unattended", action="store_true",dest="unattended")
+
+	parent_parser.add_argument("-nc", "--nocheck", action="store_true",dest="nocheck",default=argparse.SUPPRESS)
+	parser.add_argument("-nc", "--nocheck", action="store_true",dest="nocheck")
+
+	parent_parser.add_argument("-d", "--debug", action="store_true",dest="debug",default=argparse.SUPPRESS)
+	parser.add_argument("-d", "--debug", action="store_true",dest="debug")
+
+	VALID_ACTIONS = ["showlist", "showinfo", "install", "uninstall", "showall"]
+
+	user_args = [arg for arg in sys.argv[1:] if arg not in ["-h", "--help", "-u", "--unattended", "-nc", "--nocheck", "-d", "--debub"]]
+
+	if user_args:
+		potential_action = user_args[0]
+		if potential_action not in VALID_ACTIONS:
+			print(f"Error: Invalid action or unknown parameter: '{potential_action}'\n", file=sys.stderr)
+			parser.print_help()
+			sys.exit(2)
+
+	subparsers = parser.add_subparsers(dest="action", required=True)
+
+	subparsers.add_parser("showlist", parents=[parent_parser])
 	
-	if action=="showlist":
+	subparsers.add_parser("showall", parents=[parent_parser])
+
+	parser_showinfo=subparsers.add_parser("showinfo", parents=[parent_parser])
+	parser_showinfo.add_argument("app_file")
+
+	parser_install=subparsers.add_parser("install", parents=[parent_parser])
+	parser_install.add_argument("app_file")
+	parser_install.add_argument("pkgs",nargs="*")
+
+	parser_uninstall=subparsers.add_parser("uninstall", parents=[parent_parser])
+	parser_uninstall.add_argument("app_file")
+	parser_uninstall.add_argument("pkgs",nargs="*")
+
+	try:
+		args = parser.parse_args()
+	except argparse.ArgumentError:
+		parser.print_help()
+		sys.exit(1)
+
+	mode = args.unattended
+	nocheck = args.nocheck
+	debug = args.debug
+	action = args.action 
+
+	app_file=getattr(args,"app_file",None)
+	pkgs_to_install=getattr(args,"pkgs",[])
+
+	epic=EPIC(app_file,pkgs_to_install,debug)
+
+	if action == "showlist":
 		sys.exit(epic.listEpi())
-	elif action=="showall":
+
+	elif action == "showall":
 		sys.exit(epic.listAllEpi())
+
 	elif action == "showinfo":
 		sys.exit(epic.showInfo())
-	elif action=="install":
-		sys.exit(epic.install(mode,nocheck))	
-	elif action=="uninstall":
+
+	elif action == "install":
+		sys.exit(epic.install(mode,nocheck))
+
+	elif action == "uninstall":
 		sys.exit(epic.uninstall(mode,nocheck))
-	else:
-		usage()		

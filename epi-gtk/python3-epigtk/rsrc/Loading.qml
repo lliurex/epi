@@ -21,7 +21,7 @@ Rectangle{
 
             Image{
                 id:spinnerImage
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
+                source: "loading.png"
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter

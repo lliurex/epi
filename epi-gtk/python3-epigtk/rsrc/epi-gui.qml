@@ -60,7 +60,7 @@ ApplicationWindow {
 
             Image{
                 id:banner
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/epi-banner.png"
+                source: "epi-banner.png"
                 asynchronous: false
                 anchors.centerIn: parent
                 fillMode: Image.PreserveAspectFit  
