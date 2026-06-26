@@ -42,6 +42,22 @@ PC.ItemDelegate {
             }
         }
     }
+
+    background:Rectangle {
+        x:5
+        y:5
+        width:parent.width-10
+        height:parent.height-5 
+        color: listPkgItem.hovered
+               ?Qt.alpha(Kirigami.Theme.highlightColor,0.15)
+               :"transparent"
+        radius:6
+        border.width:1
+        border.color:listPkgItem.hovered
+                      ?Kirigami.Theme.highlightColor
+                      :"transparent"
+
+    }
           
     contentItem: RowLayout {
         id: mainRowLayout
@@ -102,12 +118,11 @@ PC.ItemDelegate {
 
             Image{
                 id:spinnerImage
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
+                source: "loading.png"
                 anchors.fill:parent
                 fillMode: Image.PreserveAspectFit
                 smooth:false
                 antialiasing:false
-
                 rotation:0
             }
             Timer{
