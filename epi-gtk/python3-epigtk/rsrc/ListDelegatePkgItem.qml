@@ -107,12 +107,11 @@ ItemDelegate {
 
             Image{
                 id:spinnerImage
-                source: "/usr/lib/python3/dist-packages/epigtk/rsrc/loading.png"
+                source: "loading.png"
                 anchors.fill:parent
                 fillMode: Image.PreserveAspectFit
                 smooth:false
                 antialiasing:false
-
                 rotation:0
             }
             Timer{
