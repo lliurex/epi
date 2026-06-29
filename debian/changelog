@@ -1,3 +1,9 @@
+epi (0.25.39) noble; urgency=medium
+
+  * Migrated epic from python3-clint to python3 argparser
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 26 Jun 2026 13:55:44 +0200
+
 epi (0.25.38) noble; urgency=medium
 
   * Changed animation to reduce CPU usage
