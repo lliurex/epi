@@ -107,7 +107,7 @@ class EpiGuiManager:
 
 	def _getSessionLang(self):
 
-		tmpLang=os.environ["LANGUAGE"]
+		tmpLang=os.environ.get("LANGUAGE","")
 
 		if tmpLang!="":
 			tmpLang=tmpLang.split(":")
@@ -116,7 +116,7 @@ class EpiGuiManager:
 		if len(tmpLang)>0:
 			currentLang=tmpLang[0]
 		else:
-			currentLang=os.environ["LANG"]
+			currentLang=os.environ.get("LANG","")
 		
 		if 'ca' in currentLang:
 			self.sessionLang="ca@valencia"
