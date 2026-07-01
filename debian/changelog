@@ -1,3 +1,9 @@
+epi (0.25.40) noble; urgency=medium
+
+  * Improved session language retrieva.
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 01 Jul 2026 12:08:25 +0200
+
 epi (0.25.39) noble; urgency=medium
 
   * Migrated epic from python3-clint to python3 argparser
