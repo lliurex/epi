@@ -440,12 +440,12 @@ class Bridge(QObject):
 
 		updatedInfo=self.epiGuiManager.packagesData
 		if len(updatedInfo)>0:
-			for i in range(len(updatedInfo)):
+			for i,infoItem in enumerate(updatedInfo):
 				valuesToUpdate=[]
 				index=self._packagesModel.index(i)
 				for item in params:
 					tmp={}
-					tmp[item]=updatedInfo[i][item]
+					tmp[item]=infoItem[item]
 					valuesToUpdate.append(tmp)
 				self._packagesModel.setData(index,valuesToUpdate)
 	
