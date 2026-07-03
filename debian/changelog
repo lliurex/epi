@@ -1,3 +1,9 @@
+epi (0.15.24) jammy; urgency=medium
+
+  * Improved session language retrieval
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 03 Jul 2026 08:29:13 +0200
+
 epi (0.15.23) jammy; urgency=medium
 
   * Migrated epic from python3-clint to argparser
