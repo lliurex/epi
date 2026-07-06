@@ -35,69 +35,69 @@ Dialog {
     }
 
     contentItem: Rectangle {
-        id: container
+        id:container
         color: "#ebeced"
-        implicitHeight: 120
+        implicitWidth: 550
+        implicitHeight: 155
 
-        PlasmaCore.IconItem {
-            id: dialogIcon
-            width: 64
-            height: 64
-            anchors.left: parent.left
-            anchors.top: parent.top
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 15
+            spacing: 15
 
-        }
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: 15
 
-        Text {
-            id: dialogText
-            font.pointSize: 10
-            anchors.left: dialogIcon.right
-            anchors.verticalCenter: dialogIcon.verticalCenter
-            anchors.leftMargin: 15
-            anchors.right: parent.right
-            anchors.rightMargin: 15
-            wrapMode: Text.WordWrap
-        }
+                PlasmaCore.IconItem {
+                    id: dialogIcon
+                    source: "dialog-warning"
+                    implicitWidth: 64
+                    implicitHeight: 64
+                }
 
-        PC3.Button {
-            id: dialogApplyBtn
-            display: AbstractButton.TextBesideIcon
-            icon.name: "dialog-ok"
-            text: i18nd("epi-gtk", "Accept")
-            focus: true
-            font.pointSize: 10
-
-            anchors.bottom: parent.bottom
-            anchors.right: dialogCancelBtn.left
-            anchors.rightMargin: 10
-            anchors.bottomMargin: 10
-
-            Keys.onReturnPressed: dialogApplyBtn.clicked()
-            Keys.onEnterPressed: dialogApplyBtn.clicked()
-
-            onClicked: {
-                xButton = false
-                customDialog.dialogApplyClicked()
+                Text {
+                    id: dialogText
+                    font.pointSize: 10
+                    wrapMode: Text.WordWrap
+                    Layout.fillWidth: true
+                }
             }
-        }
 
-        PC3.Button {
-            id: dialogCancelBtn
-            display: AbstractButton.TextBesideIcon
-            focus: true
-            font.pointSize: 10
+            RowLayout {
+                Layout.alignment: Qt.AlignRight | Qt.AlignBottom
+                spacing: 10
 
-            anchors.bottom: parent.bottom
-            anchors.right: parent.right
-            anchors.rightMargin: 15
-            anchors.bottomMargin: 10
+                PC3.Button {
+                    id: dialogApplyBtn
+                    display: AbstractButton.TextBesideIcon
+                    icon.name: "dialog-ok"
+                    text: i18nd("epi-gtk", "Accept")
+                    focus: true
+                    font.pointSize: 10
+                    Keys.onReturnPressed: clicked()
+                    Keys.onEnterPressed: clicked()
+                    onClicked: {
+                        customDialog.xButton = false
+                        customDialog.dialogApplyClicked()
+                    }
+                }
 
-            Keys.onReturnPressed: dialogCancelBtn.clicked()
-            Keys.onEnterPressed: dialogCancelBtn.clicked()
-
-            onClicked: {
-                xButton = false
-                customDialog.cancelDialogClicked()
+                PC3.Button {
+                    id: dialogCancelBtn
+                    display: AbstractButton.TextBesideIcon
+                    icon.name: "dialog-cancel"
+                    text: i18nd("epi-gtk", "Cancel")
+                    focus: true
+                    font.pointSize: 10
+                    Keys.onReturnPressed: clicked()
+                    Keys.onEnterPressed: clicked()
+                    onClicked: {
+                        customDialog.xButton = false
+                        customDialog.cancelDialogClicked()
+                    }
+                }
             }
         }
     }
