@@ -1,3 +1,9 @@
+epi (0.15.25) jammy; urgency=medium
+
+  * Fixed icon size in main menu
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Mon, 06 Jul 2026 13:40:28 +0200
+
 epi (0.15.24) jammy; urgency=medium
 
   * Improved session language retrieval
